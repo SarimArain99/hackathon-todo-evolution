@@ -198,9 +198,19 @@ class TaskStore:
         # Handle recurring task - create next occurrence
         new_task = None
         if task.recurrence and task.due_date:
-            # Check if we should create next occurrence
-            if not task.recurrence_end_date or datetime.now() < task.recurrence_end_date:
-                new_task = self._create_next_occurrence(task)
+            # Calculate next due date
+            next_due = self._calculate_next_due(task.due_date, task.recurrence)
+
+            # Check if next due date exceeds recurrence end date
+            # If no end date, always create next occurrence (infinite recurrence)
+            # If next due <= end date, create next occurrence
+            should_create = (
+                task.recurrence_end_date is None
+                or next_due <= task.recurrence_end_date
+            )
+
+            if should_create:
+                new_task = self._create_next_occurrence(task, next_due)
 
         return (task, new_task)
 
@@ -244,10 +254,16 @@ class TaskStore:
             return current_due.replace(year=year, month=month, day=day)
         return current_due
 
-    def _create_next_occurrence(self, task: Task) -> Task:
-        """Create the next occurrence of a recurring task."""
-        next_due = self._calculate_next_due(task.due_date, task.recurrence)  # type: ignore
+    def _create_next_occurrence(self, task: Task, next_due: datetime) -> Task:
+        """Create the next occurrence of a recurring task.
 
+        Args:
+            task: The original task to create next occurrence from
+            next_due: The calculated next due date (passed from complete() to avoid recalculation)
+
+        Returns:
+            The new Task object for the next occurrence
+        """
         return self.add(
             title=task.title,
             description=task.description,

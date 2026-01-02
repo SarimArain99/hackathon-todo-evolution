@@ -210,4 +210,9 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
 
 ## Recent Changes
+- 002-fix-recurrence-validation: Added Python 3.13+ + Rich library (console UI)
 - 002-console-enhanced-features: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+
+## Active Technologies
+- Python 3.13+ + Rich library (console UI) (002-fix-recurrence-validation)
+- In-memory dictionary (Phase I) (002-fix-recurrence-validation)

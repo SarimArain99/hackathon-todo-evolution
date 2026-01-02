@@ -934,9 +934,17 @@ class TestRecurrenceEndDate:
         self.store = TaskStore()
 
     def test_recurrence_stops_after_end_date(self) -> None:
-        """Test that recurrence stops after end date is reached."""
-        due_date = datetime(2025, 1, 15)
-        end_date = datetime(2025, 1, 16)  # End date is before next occurrence
+        """Test that recurrence stops when next due date exceeds end date.
+
+        This tests the scenario where:
+        - Task is due in 2 days
+        - End date is in 2.5 days (so end_date >= due_date for task creation)
+        - Next occurrence would be in 3 days
+        - Since next_due (3 days) > end_date (2.5 days), no new task should be created
+        """
+        now = datetime.now()
+        due_date = now + timedelta(days=2)  # Due in 2 days
+        end_date = now + timedelta(days=2, hours=12)  # End date is 2.5 days from now
         task = self.store.add(
             "Limited recurrence",
             due_date=due_date,
@@ -947,7 +955,7 @@ class TestRecurrenceEndDate:
         completed_task, new_task = self.store.complete(task.id)
 
         assert completed_task.status == TaskStatus.COMPLETED
-        # Should NOT create new task since end_date is reached
+        # Should NOT create new task since next_due (now + 3 days) > end_date (now + 2.5 days)
         assert new_task is None
 
     def test_recurrence_continues_before_end_date(self) -> None:
@@ -1170,3 +1178,131 @@ class TestReminders:
         upcoming = self.store.get_upcoming_reminders()
         assert len(upcoming) == 1
         assert upcoming[0].title == "Past reminder"
+
+
+class TestRecurrenceEndDateValidation:
+    """Tests for recurrence end date validation bug fix (T001-T004).
+
+    These tests verify the fix for the bug where completing a recurring task
+    crashes with "Recurrence end date must be on or after due date" error.
+    """
+
+    def setup_method(self) -> None:
+        """Create a fresh TaskStore for each test."""
+        self.store = TaskStore()
+
+    # T001: Test for completing recurring task when next due exceeds end date
+    def test_complete_recurring_task_next_due_exceeds_end_date_no_crash(self) -> None:
+        """Test that completing a recurring task doesn't crash when next due exceeds end date.
+
+        Given a task with weekly recurrence, due today, and end date tomorrow,
+        When the user completes the task,
+        Then no error should occur and no new task should be created.
+        """
+        # Create a task due today with end date tomorrow
+        today = datetime.now()
+        end_date = today + timedelta(days=1)
+
+        task = self.store.add(
+            "Weekly meeting",
+            due_date=today,
+            recurrence=RecurrencePattern.WEEKLY,
+            recurrence_end_date=end_date,
+        )
+
+        # Complete the task - should NOT crash
+        completed, new_task = self.store.complete(task.id)
+
+        assert completed is not None
+        assert completed.status == TaskStatus.COMPLETED
+        # No new task should be created since next due (today + 7 days) exceeds end date
+        assert new_task is None
+
+    # T002: Test for completing recurring task within end date
+    def test_complete_recurring_task_within_end_date_creates_next(self) -> None:
+        """Test that completing a recurring task creates next occurrence when within end date.
+
+        Given a task with weekly recurrence and end date set to next month,
+        When the user completes the task,
+        Then a new task occurrence should be created with the correct next due date.
+        """
+        today = datetime.now()
+        end_date = today + timedelta(weeks=4)  # End date is 4 weeks from now
+
+        task = self.store.add(
+            "Weekly review",
+            due_date=today,
+            recurrence=RecurrencePattern.WEEKLY,
+            recurrence_end_date=end_date,
+        )
+
+        # Complete the task
+        completed, new_task = self.store.complete(task.id)
+
+        assert completed is not None
+        assert completed.status == TaskStatus.COMPLETED
+        assert new_task is not None
+        # Next due should be 1 week later
+        assert new_task.due_date == today + timedelta(weeks=1)
+        assert new_task.recurrence == RecurrencePattern.WEEKLY
+        assert new_task.recurrence_end_date == end_date
+
+    # T003: Test for completing recurring task without end date
+    def test_complete_recurring_task_no_end_date_creates_next(self) -> None:
+        """Test that completing a recurring task without end date creates next occurrence indefinitely.
+
+        Given a task with monthly recurrence and no end date,
+        When the user completes the task,
+        Then a new task occurrence should be created with the next month's due date.
+        """
+        today = datetime.now()
+
+        task = self.store.add(
+            "Monthly bills",
+            due_date=today,
+            recurrence=RecurrencePattern.MONTHLY,
+        )
+
+        # Complete the task
+        completed, new_task = self.store.complete(task.id)
+
+        assert completed is not None
+        assert completed.status == TaskStatus.COMPLETED
+        assert new_task is not None
+        # Next due should be 1 month later
+        expected_month = (today.month % 12) + 1
+        expected_year = today.year + (today.month // 12)
+        expected_day = min(today.day, 28)  # Safe for all months
+        expected_due = today.replace(year=expected_year, month=expected_month, day=expected_day)
+        assert new_task.due_date == expected_due
+        assert new_task.recurrence == RecurrencePattern.MONTHLY
+        assert new_task.recurrence_end_date is None
+
+    # T004: Test for edge case - next due equals end date
+    def test_complete_recurring_task_next_due_equals_end_date_creates_occurrence(self) -> None:
+        """Test that completing a recurring task creates next occurrence when next due equals end date.
+
+        Given a task with due date and end date on the same day as next due,
+        When the user completes the task,
+        Then a new task occurrence should be created (boundary case).
+        """
+        today = datetime.now()
+        # End date is exactly one week from now (same as next due date)
+        end_date = today + timedelta(weeks=1)
+
+        task = self.store.add(
+            "Weekly sync",
+            due_date=today,
+            recurrence=RecurrencePattern.WEEKLY,
+            recurrence_end_date=end_date,
+        )
+
+        # Complete the task - should create next occurrence
+        completed, new_task = self.store.complete(task.id)
+
+        assert completed is not None
+        assert completed.status == TaskStatus.COMPLETED
+        assert new_task is not None
+        # Next due equals end date - should still create
+        assert new_task.due_date == end_date
+        assert new_task.recurrence == RecurrencePattern.WEEKLY
