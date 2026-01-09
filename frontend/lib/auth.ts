@@ -49,6 +49,9 @@ export const auth = betterAuth({
     crossSubDomainCookies: {
       enabled: false,
     },
+    // Disable CSRF origin check for Vercel serverless deployment
+    // Note: In production with a custom domain, you should use trustedOrigins instead
+    disableOriginCheck: true,
   },
 
   // Social providers (optional - add GitHub, Google, etc. as needed)
