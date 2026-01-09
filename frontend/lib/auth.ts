@@ -3,44 +3,14 @@
  *
  * Configures Better Auth with JWT plugin for integration with the FastAPI backend.
  * The JWT tokens are used to authenticate requests to the backend API.
+ *
+ * Uses STATELESS mode for Vercel serverless compatibility - no database required.
+ * All user and session data is stored in secure JWT cookies.
  */
 
 import { betterAuth } from "better-auth";
 import { jwt } from "better-auth/plugins/jwt";
 import { nextCookies } from "better-auth/next-js";
-import Database from "better-sqlite3";
-import path from "path";
-
-// Initialize SQLite database
-// Store the database file in the project root for persistence
-// In Vercel serverless, we use /tmp for writable storage
-const getDbPath = () => {
-  // Vercel serverless functions use /tmp for writable storage
-  if (process.env.VERCEL) {
-    return "/tmp/todo-app.db";
-  }
-  // Local development
-  return path.join(process.cwd(), "todo-app.db");
-};
-
-const dbPath = getDbPath();
-
-// Initialize database with error handling
-let db: Database.Database;
-
-try {
-  db = new Database(dbPath);
-  // Enable WAL mode for better concurrent access
-  db.pragma("journal_mode = WAL");
-} catch (error) {
-  console.error("Failed to initialize SQLite database:", error);
-  // Throw a more descriptive error for debugging
-  throw new Error(
-    `Database initialization failed at ${dbPath}. ` +
-    `This may be due to better-sqlite3 native module not being properly built. ` +
-    `Error: ${error instanceof Error ? error.message : String(error)}`
-  );
-}
 
 export const auth = betterAuth({
   // Base URL for the application
@@ -56,11 +26,9 @@ export const auth = betterAuth({
     // Add custom domain here when ready: "https://your-custom-domain.com"
   ],
 
-  // Secret key for signing JWT tokens (should match backend)
+  // Secret key for signing JWT tokens
+  // IMPORTANT: Set BETTER_AUTH_SECRET environment variable in production!
   secret: process.env.BETTER_AUTH_SECRET || "change-this-secret-in-production",
-
-  // Database configuration - pass the better-sqlite3 database instance directly
-  database: db,
 
   // Advanced configuration
   advanced: {
@@ -72,6 +40,8 @@ export const auth = betterAuth({
     // Disable CSRF origin check for Vercel serverless deployment
     // Note: In production with a custom domain, you should use trustedOrigins instead
     disableOriginCheck: true,
+    // Use secure cookies (HTTPS only)
+    useSecureCookies: process.env.NODE_ENV === "production",
   },
 
   // Social providers (optional - add GitHub, Google, etc. as needed)
@@ -85,6 +55,8 @@ export const auth = betterAuth({
       jwks: {
         jwksPath: "/api/auth/jwks",
       },
+      // JWT expiration time
+      expiresIn: 60 * 60 * 24 * 7, // 7 days
     }),
     // Next.js cookies plugin for server actions
     nextCookies(),
@@ -96,9 +68,22 @@ export const auth = betterAuth({
     requireEmailVerification: false, // Set to true in production
   },
 
-  // Session configuration
+  // STATELESS SESSION CONFIGURATION
+  // No database required - all data stored in JWT cookies
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // 1 day
+    // Cookie cache for stateless sessions
+    cookieCache: {
+      enabled: true,
+      maxAge: 60 * 60 * 24 * 7, // 7 days - same as session
+      // Auto-refresh before expiry
+      refreshCache: true,
+    },
+  },
+
+  // Account configuration for stateless OAuth flows
+  account: {
+    storeStateStrategy: "cookie",
+    storeAccountCookie: true,
   },
 });
