@@ -15,6 +15,10 @@ Skills documentation fetched from **Context7 MCP** for the Hackathon II - Todo E
 | [Better Auth](./better-auth/SKILL.md) | `better-auth/` | II-V | Authentication library for Next.js |
 | [Helm](./helm/SKILL.md) | `helm/` | IV-V | Kubernetes package manager |
 | [Kafka Python](./kafka-python/SKILL.md) | `kafka-python/` | V | Event streaming client |
+| [next-themes](./next-themes/SKILL.md) | `next-themes/` | II | Theme management for Next.js |
+| [Framer Motion](./framer-motion/SKILL.md) | `framer-motion/` | II | Animation library for React |
+| [shadcn/ui](./shadcn-ui/SKILL.md) | `shadcn-ui/` | II | Re-usable UI components |
+| [Sonner](./sonner/SKILL.md) | `sonner/` | II | Toast notifications |
 
 ## Phase Technology Mapping
 

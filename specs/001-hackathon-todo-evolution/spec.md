@@ -97,11 +97,11 @@ An operations team wants to deploy the application to a production Kubernetes cl
 
 ### Edge Cases
 
-- What happens when a user tries to complete a task that doesn't exist? System shows appropriate error message
-- How does the system handle concurrent modifications to the same task? Last-write-wins with conflict notification
-- What happens when the AI cannot understand the user's intent? AI asks for clarification politely
-- How does the system handle database connection failures? Graceful degradation with user-friendly error messages
-- What happens when Kafka is temporarily unavailable? Dapr provides retry logic and fallback
+- What happens when a user tries to complete a task that doesn't exist? System returns `404 Not Found` with JSON body `{"detail": "Task not found"}` (per phase2-rest-api.md contract)
+- How does the system handle concurrent modifications to the same task? Last-write-wins with HTTP 200, client notified via `X-Conflict` header
+- What happens when the AI cannot understand the user's intent? AI responds: "I'm not sure what you mean. Could you rephrase that? You can say things like 'add a task', 'show my list', or 'complete task 1'."
+- How does the system handle database connection failures? Backend returns `503 Service Unavailable` with `{"detail": "Database unavailable. Please try again."}` (per phase2-rest-api.md)
+- What happens when Kafka is temporarily unavailable? Dapr retries with exponential backoff (1s, 2s, 4s); after 3 failures, event routed to DLQ (per phase5-events.md)
 
 ## Requirements _(mandatory)_
 
@@ -210,14 +210,14 @@ An operations team wants to deploy the application to a production Kubernetes cl
 
 ## Phase Timeline
 
-| Phase     | Description                  | Due Date     | Points   |
-| --------- | ---------------------------- | ------------ | -------- |
-| Phase I   | In-Memory Python Console App | Dec 7, 2025  | 100      |
-| Phase II  | Full-Stack Web Application   | Dec 14, 2025 | 150      |
-| Phase III | AI-Powered Todo Chatbot      | Dec 21, 2025 | 200      |
-| Phase IV  | Local Kubernetes Deployment  | Jan 4, 2026  | 250      |
-| Phase V   | Advanced Cloud Deployment    | Jan 18, 2026 | 300      |
-| **Total** |                              |              | **1000** |
+| Phase     | Description                  | Target Days | Points   |
+| --------- | ---------------------------- | ----------- | -------- |
+| Phase I   | In-Memory Python Console App | 1 day       | 100      |
+| Phase II  | Full-Stack Web Application   | 2-3 days    | 150      |
+| Phase III | AI-Powered Todo Chatbot      | 2-3 days    | 200      |
+| Phase IV  | Local Kubernetes Deployment  | 2-3 days    | 250      |
+| Phase V   | Advanced Cloud Deployment    | 3-4 days    | 300      |
+| **Total** |                              | 10-14 days  | **1000** |
 
 ## Bonus Opportunities
 
