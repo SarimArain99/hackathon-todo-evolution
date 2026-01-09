@@ -7,12 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "npm run db:setup",
-    "db:migrate": "node -e \"const Database = require('better-sqlite3'); const db = new Database('todo-app.db'); const sql = require('fs').readFileSync('better-auth_migrations/2026-01-08T13-21-33.403Z.sql', 'utf-8'); db.exec(sql); console.log('Migrations applied'); db.close();\"",
-    "db:setup": "node -e \"try { const Database = require('better-sqlite3'); const db = new Database(process.env.VERCEL ? '/tmp/todo-app.db' : 'todo-app.db'); db.pragma('journal_mode = WAL'); console.log('Database initialized'); } catch(e) { console.log('Database setup skipped:', e.message); }\""
-  },
-  "optionalDependencies": {
-    "better-sqlite3": "^12.5.0"
+    "db:migrate": "node -e \"const Database = require('better-sqlite3'); const db = new Database('todo-app.db'); const sql = require('fs').readFileSync('better-auth_migrations/2026-01-08T13-21-33.403Z.sql', 'utf-8'); db.exec(sql); console.log('Migrations applied'); db.close();\""
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
