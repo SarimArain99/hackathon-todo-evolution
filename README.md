@@ -24,7 +24,16 @@ The application uses a distributed architecture for scalability:
 
 - **Frontend**: Deployed on [Vercel](https://vercel.com) for edge-optimized delivery.
 - **Backend API**: Hugging Face Docker Space (containerized FastAPI).
-- **Database**: SQLite (local), configurable for PostgreSQL/Neon.
+- **Database**: SQLite (ephemeral, see note below).
+
+### ⚠️ Data Persistence Note
+
+**Phase II Limitation**: The Docker container uses SQLite storage which is **ephemeral**:
+- Data is lost on every new deployment
+- Data is lost when the Hugging Face Space "sleeps" (~48hr inactivity)
+- This is acceptable for Phase II hackathon submission
+
+**Phase III Solution**: Migrate to [Neon Serverless Postgres](https://neon.tech) for persistent cloud storage.
 
 ---
 
