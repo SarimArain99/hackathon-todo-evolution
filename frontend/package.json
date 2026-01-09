@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:migrate": "node -e \"const Database = require('better-sqlite3'); const db = new Database('todo-app.db'); const sql = require('fs').readFileSync('better-auth_migrations/2026-01-08T13-21-33.403Z.sql', 'utf-8'); db.exec(sql); console.log('Migrations applied'); db.close();\""
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
