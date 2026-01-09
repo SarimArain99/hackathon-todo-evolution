@@ -19,6 +19,8 @@ Skills documentation fetched from **Context7 MCP** for the Hackathon II - Todo E
 | [Framer Motion](./framer-motion/SKILL.md) | `framer-motion/` | II | Animation library for React |
 | [shadcn/ui](./shadcn-ui/SKILL.md) | `shadcn-ui/` | II | Re-usable UI components |
 | [Sonner](./sonner/SKILL.md) | `sonner/` | II | Toast notifications |
+| [Docker](./docker/SKILL.md) | `docker/` | IV-V | Containerization platform |
+| [Hugging Face](./huggingface/SKILL.md) | `huggingface/` | III-V | ML models, datasets, and inference |
 
 ## Phase Technology Mapping
 
@@ -36,9 +38,10 @@ Skills documentation fetched from **Context7 MCP** for the Hackathon II - Todo E
 - OpenAI Agents SDK
 - MCP SDK
 - OpenAI ChatKit
+- **Hugging Face** - ML models and inference (NEW)
 
 ### Phase IV: Local Kubernetes
-- Docker
+- **Docker** - Containerization (NEW)
 - Helm Charts
 - Minikube
 - kubectl-ai / kagent
@@ -60,4 +63,10 @@ Reference these skills when implementing each phase:
 
 ## Source
 
-All documentation fetched from Context7 MCP on 2025-12-29.
+All documentation fetched from Context7 MCP on 2025-12-29 and 2026-01-09.
+
+## Skills Coverage Summary
+
+**Total Skills: 15/15 (100%)** ✅
+
+All required hackathon skills are now documented and available in the skills folder.

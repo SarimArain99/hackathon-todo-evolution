@@ -27,12 +27,12 @@ export default function HomePage() {
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
-      transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } 
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as const },
     },
-  };
+  } as const;
 
   return (
     <main className="relative min-h-screen w-full bg-slate-50 dark:bg-gray-950 no-scrollbar overflow-x-hidden transition-colors duration-500">
@@ -47,7 +47,7 @@ export default function HomePage() {
             x: [0, 30, 0],
             y: [0, -20, 0] 
           }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 15, repeat: Infinity, ease: [0.4, 0, 0.2, 1] }}
           className="absolute top-[-10%] left-[-10%] w-[80%] sm:w-[45%] h-[40%] rounded-full bg-indigo-500/10 dark:bg-indigo-500/20 blur-[100px] sm:blur-[120px]" 
         />
         <motion.div 
@@ -56,7 +56,7 @@ export default function HomePage() {
             x: [0, -30, 0],
             y: [0, 40, 0] 
           }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 18, repeat: Infinity, ease: [0.4, 0, 0.2, 1] }}
           className="absolute bottom-[-10%] right-[-10%] w-[80%] sm:w-[45%] h-[40%] rounded-full bg-purple-500/10 dark:bg-purple-500/20 blur-[100px] sm:blur-[120px]" 
         />
       </div>

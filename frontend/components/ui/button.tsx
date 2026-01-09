@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
-import { motion, HTMLMotionProps } from "framer-motion"
+import { motion } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 
@@ -43,29 +43,30 @@ const buttonVariants = cva(
   }
 )
 
-// We merge motion props with standard button props
-type ButtonElementProps = HTMLMotionProps<"button"> & VariantProps<typeof buttonVariants> & {
+type ButtonElementProps = VariantProps<typeof buttonVariants> & {
   asChild?: boolean
-}
+} & Omit<React.ComponentProps<"button">, "ref">
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonElementProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, children, disabled, type, ...props }, ref) => {
     // If asChild is used (usually for Links), we can't use motion directly on it easily
     // so we handle standard button logic
     if (asChild) {
-      const { whileHover, whileTap, transition, ...slotProps } = props as any
       return (
         <Slot
           className={cn(buttonVariants({ variant, size, className }))}
           ref={ref}
-          {...slotProps}
-        />
+          {...props}
+        >
+          {children}
+        </Slot>
       )
     }
 
     return (
       <motion.button
-        ref={ref}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ref={ref as any}
         /* MOTION LOGIC:
            - whileHover: Subtle scale up with spring physics
            - whileTap: Haptic 'sink' effect (active state)
@@ -73,13 +74,16 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonElementProps>(
         whileHover={{ scale: 1.015 }}
         whileTap={{ scale: 0.97 }}
         transition={{ type: "spring", stiffness: 400, damping: 17 }}
-        
+
         data-slot="button"
         data-variant={variant}
         data-size={size}
         className={cn(buttonVariants({ variant, size, className }))}
-        {...props}
-      />
+        disabled={disabled}
+        type={type}
+      >
+        {children}
+      </motion.button>
     )
   }
 )

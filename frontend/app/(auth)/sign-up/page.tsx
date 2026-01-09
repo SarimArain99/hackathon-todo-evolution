@@ -33,10 +33,10 @@ export default function SignUpPage() {
       transition: {
         duration: 0.8,
         staggerChildren: 0.1,
-        ease: [0.22, 1, 0.36, 1], // Premium easing
+        ease: [0.22, 1, 0.36, 1] as const, // Premium easing
       },
     },
-  };
+  } as const;
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -85,7 +85,7 @@ export default function SignUpPage() {
             x: [0, 40, 0],
             y: [0, -20, 0],
           }}
-          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 14, repeat: Infinity, ease: [0.4, 0, 0.2, 1] }}
           className="absolute top-[-5%] left-[-10%] w-[70%] sm:w-[50%] h-[40%] rounded-full bg-blue-400/20 blur-[80px] sm:blur-[120px]" 
         />
         <motion.div 
@@ -94,7 +94,7 @@ export default function SignUpPage() {
             x: [0, -50, 0],
             y: [0, 30, 0],
           }}
-          transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 16, repeat: Infinity, ease: [0.4, 0, 0.2, 1] }}
           className="absolute bottom-[-5%] right-[-10%] w-[70%] sm:w-[50%] h-[40%] rounded-full bg-indigo-400/20 blur-[80px] sm:blur-[120px]" 
         />
       </div>

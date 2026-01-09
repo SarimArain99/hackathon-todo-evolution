@@ -31,10 +31,10 @@ export default function SignInPage() {
       transition: {
         duration: 0.8,
         staggerChildren: 0.12,
-        ease: "easeInOut",
+        ease: [0.4, 0, 0.2, 1] as const,
       },
     },
-  };
+  } as const;
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -73,17 +73,17 @@ export default function SignInPage() {
             y: [0, -30, 0],
             rotate: [0, 10, 0]
           }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[-5%] right-[-10%] w-[80%] sm:w-[50%] h-[50%] rounded-full bg-indigo-500/20 blur-[100px] sm:blur-[140px]" 
+          transition={{ duration: 15, repeat: Infinity, ease: [0.4, 0, 0.2, 1] }}
+          className="absolute top-[-5%] right-[-10%] w-[80%] sm:w-[50%] h-[50%] rounded-full bg-indigo-500/20 blur-[100px] sm:blur-[140px]"
         />
-        <motion.div 
-          animate={{ 
+        <motion.div
+          animate={{
             scale: [1, 1.3, 1],
             x: [0, -60, 0],
             y: [0, 40, 0],
             rotate: [0, -10, 0]
           }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 18, repeat: Infinity, ease: [0.4, 0, 0.2, 1] }}
           className="absolute bottom-[-10%] left-[-15%] w-[80%] sm:w-[50%] h-[50%] rounded-full bg-purple-500/20 blur-[100px] sm:blur-[140px]" 
         />
       </div>

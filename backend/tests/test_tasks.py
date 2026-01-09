@@ -10,14 +10,14 @@ from datetime import datetime, timezone
 
 import pytest
 import pytest_asyncio
-from jose import jwt
 from httpx import AsyncClient, ASGITransport
 
 # Set test environment variable to use SQLite BEFORE importing the app
 os.environ["DATABASE_URL"] = "sqlite:///./test.db"
 
 from app.main import app
-from app.auth import SECRET_KEY, ALGORITHM
+# Better Auth uses Ed25519 (EdDSA) - no SECRET_KEY/ALGORITHM in auth.py
+# Tests create mock JWT tokens directly
 from app.database import async_engine
 from app.models import User, Task
 from sqlmodel import SQLModel
@@ -63,14 +63,29 @@ async def client(setup_database):
 @pytest.fixture
 def auth_headers():
     """Create mock JWT headers for testing."""
-    # In production, this would be a real JWT from Better Auth
-    # For now, we use a mock token
+    # For testing, create a mock JWT payload without signature verification
+    # The backend's decode_jwt_payload function will extract the user info
+    import base64
     payload = {
         "sub": "test-user-id",
         "email": "test@example.com",
+        "name": "Test User",
         "exp": datetime.now(timezone.utc).timestamp() + 3600,  # 1 hour from now
     }
-    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    # Create a mock JWT (header.payload.signature)
+    header_json = json.dumps({"alg": "HS256", "typ": "JWT"})
+    payload_json = json.dumps(payload)
+
+    # Base64URL encode
+    def base64url_encode(data):
+        return base64.urlsafe_b64encode(data).rstrip(b'=').decode('utf-8')
+
+    header_encoded = base64url_encode(header_json.encode())
+    payload_encoded = base64url_encode(payload_json.encode())
+    # Mock signature
+    signature_encoded = base64url_encode(b'mock_signature')
+
+    token = f"{header_encoded}.{payload_encoded}.{signature_encoded}"
     return {"Authorization": f"Bearer {token}"}
 
 
