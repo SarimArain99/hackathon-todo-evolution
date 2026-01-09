@@ -10,6 +10,8 @@ dist/
 downloads/
 eggs/
 .eggs/
+# Keep frontend/lib/ for the frontend project
+!frontend/lib/
 lib/
 lib64/
 parts/
