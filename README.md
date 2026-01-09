@@ -1,20 +1,24 @@
-# hackathon-todo-evolution
+# Zenith - Todo Evolution
 
 <p align="center">
   <img src="https://img.shields.io/badge/Phase-I%20Console%20App-1000%20pts-blue" alt="Phase I">
-  <img src="https://img.shields.io/badge/Python-3.13+-green" alt="Python">
+  <img src="https://img.shields.io/badge/Phase-II%20Web%20App-150%20pts-green" alt="Phase II">
   <img src="https://img.shields.io/badge/Spec-Driven%20Development-SDD-yellow" alt="SDD">
 </p>
 
 > A 5-phase spec-driven development hackathon project that evolves a simple in-memory Todo console application into a fully-featured, cloud-native AI-powered chatbot deployed on Kubernetes.
 
+**Current Version**: Fullstack web application with FastAPI backend + Next.js 16 frontend
+
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Features](#features)
 - [Quick Start](#quick-start)
 - [Project Structure](#project-structure)
+- [Frontend Documentation](#frontend-documentation)
+- [Backend Documentation](#backend-documentation)
 - [Usage](#usage)
 - [Phases](#phases)
 - [Development](#development)
@@ -22,33 +26,31 @@
 
 ---
 
-## ✨ Features
+## Features
 
 ### Phase I - Console Application (Completed ✅)
+- Add, list, update, delete tasks
+- Search, filter, sort tasks
+- Calendar views and reminders
+- Recurring tasks and progress tracking
 
-| Feature | Description |
-|---------|-------------|
-| ✅ Add Tasks | Create tasks with title, description, priority, due date |
-| ✅ List Tasks | View all tasks in a rich table format |
-| ✅ Update Tasks | Edit task titles and details |
-| ✅ Delete Tasks | Remove tasks with confirmation |
-| ✅ Complete Tasks | Mark tasks as complete/incomplete |
-| ✅ Search | Search tasks by ID or keyword |
-| ✅ Filter | Filter by status, priority, due date |
-| ✅ Sort | Sort by priority, due date, created date |
-| ✅ Calendar Views | Daily and weekly task views |
-| ✅ Reminders | Set reminder notifications for tasks |
-| ✅ Recurring Tasks | Automatic task recurrence (daily, weekly, monthly) |
-| ✅ Progress Tracking | Visual progress percentage |
+### Phase II - Web Application (In Progress 🔄)
+- **Backend**: FastAPI REST API with JWT authentication
+- **Frontend**: Next.js 16 + React 19 with TypeScript
+- **Authentication**: Better Auth integration
+- **Theme System**: Light/Dark/System theme switching
+- **Animations**: Smooth Framer Motion transitions
+- **Notifications**: Sonner toast system
+- **Components**: shadcn/ui component library
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
-- Python 3.13+
-- UV package manager
+- **Backend**: Python 3.13+, UV package manager
+- **Frontend**: Node.js 20+, npm
 
 ### Installation
 
@@ -56,117 +58,242 @@
 # Clone the repository
 git clone https://github.com/SarimArain99/hackathon-todo-evolution.git
 cd hackathon-todo-evolution
+```
+
+### Backend Setup
+
+```bash
+cd backend
 
 # Install dependencies
 uv pip install -e .
+
+# Run the backend server
+uvicorn app.main:app --reload
 ```
 
-### Run the CLI
+Backend runs on: `http://localhost:8000`
+
+API Documentation: `http://localhost:8000/docs`
+
+### Frontend Setup
 
 ```bash
-# Option 1: Using the console script
-todo-cli
+cd frontend
 
-# Option 2: Run as module
-cd /home/sarimarain99/Dev/hackathon_2
-PYTHONPATH=/home/sarimarain99/Dev/hackathon_2 .venv/bin/python -m src.cli.main
+# Install dependencies
+npm install
 
-# Option 3: Direct execution
-cd /home/sarimarain99/Dev/hackathon_2
-PYTHONPATH=/home/sarimarain99/Dev/hackathon_2 .venv/bin/python src/cli/main.py
+# Run development server
+npm run dev
 ```
 
-### Run Tests
+Frontend runs on: `http://localhost:3000`
+
+---
+
+## Project Structure
+
+```
+hackathon-todo-evolution/
+├── backend/                 # FastAPI Backend
+│   ├── app/
+│   │   ├── routes/         # API routes
+│   │   ├── services/       # Business logic
+│   │   ├── models.py       # SQLAlchemy models
+│   │   ├── auth.py         # JWT authentication
+│   │   └── database.py     # Database connection
+│   ├── tests/              # Backend tests
+│   └── pyproject.toml      # Python dependencies
+│
+├── frontend/               # Next.js Frontend
+│   ├── app/
+│   │   ├── (auth)/        # Auth pages (sign-in, sign-up)
+│   │   ├── (protected)/   # Protected dashboard
+│   │   ├── api/           # API routes
+│   │   └── globals.css    # Global styles
+│   ├── components/        # React components
+│   │   ├── ui/           # shadcn/ui components
+│   │   ├── motion/       # Framer Motion animations
+│   │   ├── theme-provider.tsx
+│   │   ├── theme-toggle.tsx
+│   │   ├── task-list.tsx
+│   │   ├── task-item.tsx
+│   │   └── task-form.tsx
+│   ├── lib/
+│   │   ├── api.ts        # API client
+│   │   ├── toast.ts      # Toast helpers
+│   │   └── theme.ts      # Theme utilities
+│   └── package.json      # Node dependencies
+│
+├── specs/                 # Spec-driven artifacts
+│   ├── 001-hackathon-todo-evolution/
+│   └── 002-ui-ux-enhancement/
+│
+├── history/               # Prompt history & ADRs
+├── .specify/              # Spec-Kit Plus config
+└── README.md
+```
+
+---
+
+## Frontend Documentation
+
+### Tech Stack
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Next.js | 16.1.1 | React framework |
+| React | 19.2.3 | UI library |
+| TypeScript | 5+ | Type safety |
+| Tailwind CSS | 4 | Styling |
+| next-themes | 0.4.6 | Theme management |
+| Framer Motion | 12.24.12 | Animations |
+| Sonner | 2.0.7 | Toast notifications |
+| shadcn/ui | - | Component library |
+| Better Auth | 1.4.10 | Authentication |
+
+### Theme System
+
+The application supports three themes:
+- **Light**: Clean, bright interface
+- **Dark**: Easy on the eyes in low light
+- **System**: Follows OS preference
+
+**Usage**:
+```tsx
+import { useTheme } from "next-themes"
+
+function MyComponent() {
+  const { theme, setTheme } = useTheme()
+  return <button onClick={() => setTheme("dark")}>Dark Mode</button>
+}
+```
+
+### Animations
+
+Framer Motion provides smooth transitions throughout the app:
+
+```tsx
+import { motion } from "framer-motion"
+
+<motion.div
+  initial={{ opacity: 0, y: -10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.2 }}
+>
+  Content
+</motion.div>
+```
+
+### Toast Notifications
+
+Use the toast helpers for user feedback:
+
+```tsx
+import { taskToasts } from "@/lib/toast"
+
+// Success toast
+taskToasts.created("Task name")
+
+// Error toast
+taskToasts.error("create task", "Something went wrong")
+```
+
+### Components
+
+Available shadcn/ui components:
+- Button, Input, Card, Dialog, Sonner (Toaster)
+
+Custom components:
+- `TaskList` - Main task list with filters
+- `TaskItem` - Individual task card
+- `TaskForm` - Create/edit task form
+- `ThemeToggle` - Theme selector dropdown
+- `LogoutButton` - User logout
+
+---
+
+## Backend Documentation
+
+### Tech Stack
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| FastAPI | 0.115+ | Web framework |
+| Uvicorn | 0.32+ | ASGI server |
+| SQLModel | 0.0.22+ | ORM |
+| Pydantic | 2.10+ | Data validation |
+| python-jose | 3.3+ | JWT tokens |
+| aiosqlite | 0.20+ | Async SQLite |
+| Pytest | 8.0+ | Testing |
+
+### API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/tasks` | List all tasks |
+| POST | `/api/tasks` | Create new task |
+| GET | `/api/tasks/{id}` | Get task by ID |
+| PUT | `/api/tasks/{id}` | Update task |
+| DELETE | `/api/tasks/{id}` | Delete task |
+| POST | `/api/tasks/{id}/complete` | Mark task complete |
+| POST | `/api/tasks/{id}/uncomplete` | Mark task incomplete |
+
+### Authentication
+
+JWT-based authentication with EdDSA algorithm:
+
+```python
+# Login endpoint
+POST /api/auth/login
+{
+  "email": "user@example.com",
+  "password": "password"
+}
+
+# Returns JWT token
+{
+  "access_token": "eyJ...",
+  "token_type": "bearer"
+}
+```
+
+### Running Tests
 
 ```bash
+cd backend
 uv run pytest
 ```
 
 ---
 
-## 📁 Project Structure
+## Usage
 
-```
-hackathon-todo-evolution/
-├── src/
-│   ├── __init__.py          # Package metadata
-│   ├── cli/
-│   │   ├── __init__.py      # CLI exports
-│   │   └── main.py          # Main CLI application
-│   ├── models/
-│   │   ├── __init__.py      # Model exports
-│   │   └── task.py          # Task, Priority, TaskStatus, etc.
-│   └── services/
-│       ├── __init__.py      # Service exports
-│       └── task_store.py    # In-memory task storage
-├── tests/
-│   ├── unit/                # Unit tests
-│   └── integration/         # Integration tests
-├── specs/
-│   └── 001-hackathon-todo-evolution/  # Spec-driven artifacts
-│       ├── spec.md          # Feature specification
-│       ├── plan.md          # Technical plan
-│       ├── tasks.md         # Implementation tasks
-│       ├── data-model.md    # Entity definitions
-│       ├── quickstart.md    # Integration scenarios
-│       ├── research.md      # Technical decisions
-│       └── checklists/      # Quality checklists
-├── history/
-│   ├── prompts/             # Prompt History Records (PHRs)
-│   └── adr/                 # Architecture Decision Records
-├── .specify/                # Spec-Kit Plus configuration
-│   ├── templates/           # SDD templates
-│   └── scripts/             # Automation scripts
-├── CLAUDE.md                # Project rules
-├── pyproject.toml           # Python project config
-└── uv.lock                  # Dependency lock file
+### Web Application
+
+1. Navigate to `http://localhost:3000`
+2. Sign up for a new account
+3. Create tasks using the form
+4. Filter by status, priority, or search
+5. Toggle between light/dark themes
+
+### API Usage
+
+```bash
+# Get all tasks
+curl http://localhost:8000/api/tasks
+
+# Create a task
+curl -X POST http://localhost:8000/api/tasks \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Buy groceries", "priority": "medium"}'
 ```
 
 ---
 
-## 🎮 Usage
-
-### Main Menu Options
-
-```
-TASK OPERATIONS
-1  Add New Task        4  Delete Task
-2  List All Tasks      5  Complete Task
-3  Update Task         6  Mark In Progress
-
-VIEW & ORGANIZE
-7  Search Tasks        c  Calendar Views
-8  Filter Tasks        r  Reminders
-9  Sort Tasks
-
-0  Exit Application
-```
-
-### Example Workflow
-
-```
-# Add a task
-1 → "Buy groceries" → "Milk and bread" → medium → 2025-01-15
-
-# List tasks
-2 → View all tasks in table format
-
-# Complete a task
-5 → Enter task ID → Mark as complete
-
-# Search for a task
-7 → 1 → Search by ID
-7 → 2 → Search by keyword
-
-# Filter tasks
-8 → 1 → Filter by status (Pending/In Progress/Completed)
-8 → 2 → Filter by priority (Low/Medium/High)
-8 → 3 → Filter by due date (Today/This Week/Overdue)
-```
-
----
-
-## 📊 Phases
+## Phases
 
 | Phase | Description | Status | Points |
 |-------|-------------|--------|--------|
@@ -180,67 +307,66 @@ VIEW & ORGANIZE
 
 ---
 
-## 🛠️ Development
+## Development
 
 ### Spec-Driven Development Workflow
 
-This project follows the Spec-Driven Development (SDD) methodology:
-
-1. **Specify** → `/sp.specify` - Create feature specification
-2. **Clarify** → `/sp.clarify` - Resolve ambiguities
-3. **Plan** → `/sp.plan` - Generate technical plan
-4. **Tasks** → `/sp.tasks` - Break down into tasks
-5. **Implement** → `/sp.implement` - Execute tasks (TDD)
-6. **Analyze** → `/sp.analyze` - Validate artifacts
+1. **Specify** → Create feature specification
+2. **Clarify** → Resolve ambiguities
+3. **Plan** → Generate technical plan
+4. **Tasks** → Break down into executable tasks
+5. **Implement** → Execute tasks (TDD)
+6. **Analyze** → Validate artifacts
 
 ### Available Slash Commands
 
 | Command | Description |
 |---------|-------------|
-| `/sp.specify` | Create a new feature specification |
+| `/sp.specify` | Create feature specification |
 | `/sp.plan` | Generate implementation plan |
-| `/sp.tasks` | Break down into executable tasks |
+| `/sp.tasks` | Break down into tasks |
 | `/sp.implement` | Execute implementation |
-| `/sp.analyze` | Analyze artifacts for quality |
-| `/sp.clarify` | Resolve specification ambiguities |
-| `/sp.phr` | Record Prompt History Record |
+| `/sp.analyze` | Analyze artifacts |
 | `/sp.adr` | Create Architecture Decision Record |
+| `/sp.git.commit_pr` | Commit and create PR |
 
 ---
 
-## 🏗️ Tech Stack
+## Tech Stack
 
-### Current (Phase I)
+### Backend
 
 | Technology | Purpose |
 |------------|---------|
 | Python 3.13+ | Core language |
-| Rich | Terminal UI framework |
-| UV | Package manager |
-| Pytest | Testing framework |
+| FastAPI | Web framework |
+| SQLModel | ORM |
+| Uvicorn | ASGI server |
+| Pytest | Testing |
 
-### Upcoming (Phase II-V)
+### Frontend
 
 | Technology | Purpose |
 |------------|---------|
-| FastAPI | Web framework |
-| Next.js | Frontend framework |
+| Next.js 16 | React framework |
+| React 19 | UI library |
+| TypeScript | Type safety |
+| Tailwind CSS 4 | Styling |
+| next-themes | Theme management |
+| Framer Motion | Animations |
+| Sonner | Notifications |
+| shadcn/ui | Components |
 | Better Auth | Authentication |
-| Neon DB | Serverless PostgreSQL |
-| OpenAI | AI/Chatbot |
-| Dapr | Distributed runtime |
-| Kafka | Event streaming |
-| Kubernetes | Container orchestration |
 
 ---
 
-## 📝 License
+## License
 
 MIT License
 
 ---
 
-## 👤 Author
+## Author
 
 **SarimArain99**
 
