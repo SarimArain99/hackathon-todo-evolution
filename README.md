@@ -1,379 +1,105 @@
-# Zenith - Todo Evolution
+---
+title: Hackathon Todo Evolution
+emoji: ✅
+colorFrom: blue
+colorTo: cyan
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+---
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Phase-I%20Console%20App-1000%20pts-blue" alt="Phase I">
-  <img src="https://img.shields.io/badge/Phase-II%20Web%20App-150%20pts-green" alt="Phase II">
-  <img src="https://img.shields.io/badge/Spec-Driven%20Development-SDD-yellow" alt="SDD">
-</p>
+# ✅ Hackathon Todo Evolution
 
-> A 5-phase spec-driven development hackathon project that evolves a simple in-memory Todo console application into a fully-featured, cloud-native AI-powered chatbot deployed on Kubernetes.
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Next.js](https://img.shields.io/badge/Frontend-Next.js%2016-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 
-**Current Version**: Fullstack web application with FastAPI backend + Next.js 16 frontend
+A 5-phase spec-driven development (SDD) hackathon project building a modern task management application with full-stack TypeScript, React 19, and FastAPI.
 
 ---
 
-## Table of Contents
+## 🚀 Deployment Architecture
 
-- [Features](#features)
-- [Quick Start](#quick-start)
-- [Project Structure](#project-structure)
-- [Frontend Documentation](#frontend-documentation)
-- [Backend Documentation](#backend-documentation)
-- [Usage](#usage)
-- [Phases](#phases)
-- [Development](#development)
-- [Tech Stack](#tech-stack)
+The application uses a distributed architecture for scalability:
+
+- **Frontend**: Deployed on [Vercel](https://vercel.com) for edge-optimized delivery.
+- **Backend API**: Hugging Face Docker Space (containerized FastAPI).
+- **Database**: SQLite (local), configurable for PostgreSQL/Neon.
 
 ---
 
-## Features
+## 🛠️ Tech Stack
 
-### Phase I - Console Application (Completed ✅)
-- Add, list, update, delete tasks
-- Search, filter, sort tasks
-- Calendar views and reminders
-- Recurring tasks and progress tracking
+### Backend
+- **FastAPI**: High-performance async Python framework
+- **Docker**: Multi-stage production builds
+- **SQLModel**: Modern data validation and ORM
+- **JWT Authentication**: Better Auth compatible
 
-### Phase II - Web Application (In Progress 🔄)
-- **Backend**: FastAPI REST API with JWT authentication
-- **Frontend**: Next.js 16 + React 19 with TypeScript
-- **Authentication**: Better Auth integration
-- **Theme System**: Light/Dark/System theme switching
-- **Animations**: Smooth Framer Motion transitions
-- **Notifications**: Sonner toast system
-- **Components**: shadcn/ui component library
+### Frontend
+- **Next.js 16**: React 19 with App Router
+- **Tailwind CSS 4**: Utility-first styling
+- **Framer Motion**: UI animations
+- **Better Auth**: Authentication library
+- **shadcn/ui**: Component library
 
 ---
 
-## Quick Start
+## 📂 Project Structure
 
-### Prerequisites
-
-- **Backend**: Python 3.13+, UV package manager
-- **Frontend**: Node.js 20+, npm
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/SarimArain99/hackathon-todo-evolution.git
-cd hackathon-todo-evolution
-```
-
-### Backend Setup
-
-```bash
-cd backend
-
-# Install dependencies
-uv pip install -e .
-
-# Run the backend server
-uvicorn app.main:app --reload
-```
-
-Backend runs on: `http://localhost:8000`
-
-API Documentation: `http://localhost:8000/docs`
-
-### Frontend Setup
-
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Run development server
-npm run dev
-```
-
-Frontend runs on: `http://localhost:3000`
-
----
-
-## Project Structure
-
-```
-hackathon-todo-evolution/
-├── backend/                 # FastAPI Backend
-│   ├── app/
-│   │   ├── routes/         # API routes
-│   │   ├── services/       # Business logic
-│   │   ├── models.py       # SQLAlchemy models
-│   │   ├── auth.py         # JWT authentication
-│   │   └── database.py     # Database connection
+```text
+.
+├── backend/                # FastAPI Dockerized Backend
+│   ├── app/                # Application logic & routes
 │   ├── tests/              # Backend tests
+│   ├── Dockerfile          # Production Dockerfile
 │   └── pyproject.toml      # Python dependencies
-│
-├── frontend/               # Next.js Frontend
-│   ├── app/
-│   │   ├── (auth)/        # Auth pages (sign-in, sign-up)
-│   │   ├── (protected)/   # Protected dashboard
-│   │   ├── api/           # API routes
-│   │   └── globals.css    # Global styles
-│   ├── components/        # React components
-│   │   ├── ui/           # shadcn/ui components
-│   │   ├── motion/       # Framer Motion animations
-│   │   ├── theme-provider.tsx
-│   │   ├── theme-toggle.tsx
-│   │   ├── task-list.tsx
-│   │   ├── task-item.tsx
-│   │   └── task-form.tsx
-│   ├── lib/
-│   │   ├── api.ts        # API client
-│   │   ├── toast.ts      # Toast helpers
-│   │   └── theme.ts      # Theme utilities
-│   └── package.json      # Node dependencies
-│
-├── specs/                 # Spec-driven artifacts
-│   ├── 001-hackathon-todo-evolution/
-│   └── 002-ui-ux-enhancement/
-│
-├── history/               # Prompt history & ADRs
-├── .specify/              # Spec-Kit Plus config
+├── frontend/               # Next.js 16 Application
+│   ├── app/                # App router (pages & API)
+│   ├── components/         # UI components
+│   └── lib/                # Utilities & auth
+├── .github/workflows/      # CI/CD
+│   └── sync_to_hf.yml      # Sync to Hugging Face
 └── README.md
 ```
 
 ---
 
-## Frontend Documentation
-
-### Tech Stack
-
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Next.js | 16.1.1 | React framework |
-| React | 19.2.3 | UI library |
-| TypeScript | 5+ | Type safety |
-| Tailwind CSS | 4 | Styling |
-| next-themes | 0.4.6 | Theme management |
-| Framer Motion | 12.24.12 | Animations |
-| Sonner | 2.0.7 | Toast notifications |
-| shadcn/ui | - | Component library |
-| Better Auth | 1.4.10 | Authentication |
-
-### Theme System
-
-The application supports three themes:
-- **Light**: Clean, bright interface
-- **Dark**: Easy on the eyes in low light
-- **System**: Follows OS preference
-
-**Usage**:
-```tsx
-import { useTheme } from "next-themes"
-
-function MyComponent() {
-  const { theme, setTheme } = useTheme()
-  return <button onClick={() => setTheme("dark")}>Dark Mode</button>
-}
-```
-
-### Animations
-
-Framer Motion provides smooth transitions throughout the app:
-
-```tsx
-import { motion } from "framer-motion"
-
-<motion.div
-  initial={{ opacity: 0, y: -10 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.2 }}
->
-  Content
-</motion.div>
-```
-
-### Toast Notifications
-
-Use the toast helpers for user feedback:
-
-```tsx
-import { taskToasts } from "@/lib/toast"
-
-// Success toast
-taskToasts.created("Task name")
-
-// Error toast
-taskToasts.error("create task", "Something went wrong")
-```
-
-### Components
-
-Available shadcn/ui components:
-- Button, Input, Card, Dialog, Sonner (Toaster)
-
-Custom components:
-- `TaskList` - Main task list with filters
-- `TaskItem` - Individual task card
-- `TaskForm` - Create/edit task form
-- `ThemeToggle` - Theme selector dropdown
-- `LogoutButton` - User logout
-
----
-
-## Backend Documentation
-
-### Tech Stack
-
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| FastAPI | 0.115+ | Web framework |
-| Uvicorn | 0.32+ | ASGI server |
-| SQLModel | 0.0.22+ | ORM |
-| Pydantic | 2.10+ | Data validation |
-| python-jose | 3.3+ | JWT tokens |
-| aiosqlite | 0.20+ | Async SQLite |
-| Pytest | 8.0+ | Testing |
-
-### API Endpoints
+## 📡 API Endpoints
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/tasks` | List all tasks |
-| POST | `/api/tasks` | Create new task |
-| GET | `/api/tasks/{id}` | Get task by ID |
-| PUT | `/api/tasks/{id}` | Update task |
-| DELETE | `/api/tasks/{id}` | Delete task |
-| POST | `/api/tasks/{id}/complete` | Mark task complete |
-| POST | `/api/tasks/{id}/uncomplete` | Mark task incomplete |
+| --- | --- | --- |
+| `GET` | `/health` | Health check |
+| `GET` | `/health/with-db` | Health with DB verification |
+| `GET` | `/api/tasks` | List all tasks (auth) |
+| `POST` | `/api/tasks` | Create a task (auth) |
+| `GET` | `/api/tasks/{id}` | Get specific task (auth) |
+| `PUT` | `/api/tasks/{id}` | Update task (auth) |
+| `DELETE` | `/api/tasks/{id}` | Delete task (auth) |
+| `POST` | `/api/tasks/{id}/complete` | Mark complete (auth) |
 
-### Authentication
-
-JWT-based authentication with EdDSA algorithm:
-
-```python
-# Login endpoint
-POST /api/auth/login
-{
-  "email": "user@example.com",
-  "password": "password"
-}
-
-# Returns JWT token
-{
-  "access_token": "eyJ...",
-  "token_type": "bearer"
-}
-```
-
-### Running Tests
-
-```bash
-cd backend
-uv run pytest
-```
+Interactive docs: `/docs` (Swagger) or `/redoc`
 
 ---
 
-## Usage
-
-### Web Application
-
-1. Navigate to `http://localhost:3000`
-2. Sign up for a new account
-3. Create tasks using the form
-4. Filter by status, priority, or search
-5. Toggle between light/dark themes
-
-### API Usage
-
-```bash
-# Get all tasks
-curl http://localhost:8000/api/tasks
-
-# Create a task
-curl -X POST http://localhost:8000/api/tasks \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"title": "Buy groceries", "priority": "medium"}'
-```
-
----
-
-## Phases
+## 🏆 Hackathon Roadmap
 
 | Phase | Description | Status | Points |
-|-------|-------------|--------|--------|
-| I | Console Application | ✅ Complete | 100 |
-| II | Web Application | 🔄 In Progress | 150 |
-| III | AI Chatbot | 📋 Planned | 200 |
-| IV | Local Kubernetes | 📋 Planned | 250 |
-| V | Cloud Deployment | 📋 Planned | 300 |
-
-**Total Points: 1000** (+700 bonus available)
+| --- | --- | --- | --- |
+| **I** | Console Application | ✅ Complete | 100 |
+| **II** | Web Application (Fullstack) | 🚀 In Progress | 150 |
+| **III** | AI Productivity Agent | 📋 Planned | 200 |
+| **IV** | Kubernetes | 📋 Planned | 250 |
+| **V** | Cloud Native | 📋 Planned | 300 |
 
 ---
 
-## Development
+## 📄 License
 
-### Spec-Driven Development Workflow
-
-1. **Specify** → Create feature specification
-2. **Clarify** → Resolve ambiguities
-3. **Plan** → Generate technical plan
-4. **Tasks** → Break down into executable tasks
-5. **Implement** → Execute tasks (TDD)
-6. **Analyze** → Validate artifacts
-
-### Available Slash Commands
-
-| Command | Description |
-|---------|-------------|
-| `/sp.specify` | Create feature specification |
-| `/sp.plan` | Generate implementation plan |
-| `/sp.tasks` | Break down into tasks |
-| `/sp.implement` | Execute implementation |
-| `/sp.analyze` | Analyze artifacts |
-| `/sp.adr` | Create Architecture Decision Record |
-| `/sp.git.commit_pr` | Commit and create PR |
-
----
-
-## Tech Stack
-
-### Backend
-
-| Technology | Purpose |
-|------------|---------|
-| Python 3.13+ | Core language |
-| FastAPI | Web framework |
-| SQLModel | ORM |
-| Uvicorn | ASGI server |
-| Pytest | Testing |
-
-### Frontend
-
-| Technology | Purpose |
-|------------|---------|
-| Next.js 16 | React framework |
-| React 19 | UI library |
-| TypeScript | Type safety |
-| Tailwind CSS 4 | Styling |
-| next-themes | Theme management |
-| Framer Motion | Animations |
-| Sonner | Notifications |
-| shadcn/ui | Components |
-| Better Auth | Authentication |
-
----
-
-## License
-
-MIT License
-
----
-
-## Author
-
-**SarimArain99**
-
-- GitHub: [@SarimArain99](https://github.com/SarimArain99)
+MIT License - see LICENSE file for details.
 
 ---
 
 <p align="center">
-  Built with Spec-Driven Development using Claude Code & Spec-Kit Plus
+Built with ❤️ by <b>SarimArain99</b> using Spec-Driven Development.
 </p>
