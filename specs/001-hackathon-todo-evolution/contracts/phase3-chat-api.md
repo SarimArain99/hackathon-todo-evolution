@@ -221,6 +221,8 @@ Response 200:
 }
 ```
 
+> **Note**: The `set_reminder` tool is defined here for API contract completeness, but implementation is deferred to Phase V (T125) when Dapr Jobs infrastructure is available. In Phase III, the AI will respond: "Reminders will be available in the cloud deployment phase."
+
 ## Example Conversations
 
 ### Adding a Task

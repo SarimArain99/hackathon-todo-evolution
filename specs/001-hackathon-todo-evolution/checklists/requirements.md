@@ -43,6 +43,14 @@
 | Requirement Completeness | PASS | All items satisfied |
 | Feature Readiness | PASS | Ready for planning phase |
 
+## Recent Improvements (2025-01-08)
+
+- ✅ Edge cases now reference specific contract error formats (phase2-rest-api.md, phase5-events.md)
+- ✅ Timeline changed to relative "Target Days" instead of calendar dates
+- ✅ AI accuracy test task added (T090-B) with test methodology
+- ✅ Demo video task added (T151) to address SC-009
+- ✅ set_reminder tool clarified as Phase V-deferred in contract
+
 ## Overall Status: READY FOR PLANNING
 
 The specification is complete and validated. Proceed with:

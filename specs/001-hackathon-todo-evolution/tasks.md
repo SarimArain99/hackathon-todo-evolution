@@ -76,47 +76,47 @@
 
 ### Backend Setup
 
-- [ ] T027 [US2] Create backend/ directory and initialize with UV (backend/pyproject.toml)
-- [ ] T028 [US2] Add FastAPI, SQLModel, Pydantic, python-jose, httpx dependencies in backend/pyproject.toml
-- [ ] T029 [P] [US2] Create backend/.env.example with DATABASE_URL, BETTER_AUTH_SECRET
-- [ ] T030 [US2] Create database connection module with Neon async engine in backend/app/database.py
-- [ ] T031 [US2] Create SQLModel User entity (reference only, Better Auth manages) in backend/app/models.py
-- [ ] T032 [US2] Create SQLModel Task entity with user_id foreign key in backend/app/models.py
-- [ ] T033 [US2] Create TaskCreate, TaskUpdate, TaskRead Pydantic schemas in backend/app/models.py
-- [ ] T034 [US2] Implement JWT verification middleware (verify Better Auth tokens) in backend/app/auth.py
-- [ ] T035 [US2] Implement get_current_user dependency in backend/app/auth.py
-- [ ] T036 [US2] Implement TaskService with CRUD operations in backend/app/services/task_service.py
-- [ ] T037 [US2] Implement user isolation in TaskService (filter by user_id) in backend/app/services/task_service.py
-- [ ] T038 [US2] Create health check endpoint GET /health in backend/app/main.py
-- [ ] T039 [US2] Create tasks router with GET /api/tasks endpoint in backend/app/routes/tasks.py
-- [ ] T040 [US2] Implement GET /api/tasks/{task_id} endpoint in backend/app/routes/tasks.py
-- [ ] T041 [US2] Implement POST /api/tasks endpoint in backend/app/routes/tasks.py
-- [ ] T042 [US2] Implement PATCH /api/tasks/{task_id} endpoint in backend/app/routes/tasks.py
-- [ ] T043 [US2] Implement DELETE /api/tasks/{task_id} endpoint in backend/app/routes/tasks.py
-- [ ] T044 [US2] Implement POST /api/tasks/{task_id}/complete endpoint in backend/app/routes/tasks.py
-- [ ] T045 [US2] Implement POST /api/tasks/{task_id}/uncomplete endpoint in backend/app/routes/tasks.py
-- [ ] T046 [US2] Configure CORS middleware for localhost:3000 in backend/app/main.py
-- [ ] T047 [US2] Register routes and configure FastAPI app in backend/app/main.py
-- [ ] T048 [P] [US2] Write backend API tests in backend/tests/test_tasks.py
+- [x] T027 [US2] Create backend/ directory and initialize with UV (backend/pyproject.toml)
+- [x] T028 [US2] Add FastAPI, SQLModel, Pydantic, python-jose, httpx dependencies in backend/pyproject.toml
+- [x] T029 [P] [US2] Create backend/.env.example with DATABASE_URL, BETTER_AUTH_SECRET
+- [x] T030 [US2] Create database connection module with Neon async engine in backend/app/database.py
+- [x] T031 [US2] Create SQLModel User entity (reference only, Better Auth manages) in backend/app/models.py
+- [x] T032 [US2] Create SQLModel Task entity with user_id foreign key in backend/app/models.py
+- [x] T033 [US2] Create TaskCreate, TaskUpdate, TaskRead Pydantic schemas in backend/app/models.py
+- [x] T034 [US2] Implement JWT verification middleware (verify Better Auth tokens) in backend/app/auth.py
+- [x] T035 [US2] Implement get_current_user dependency in backend/app/auth.py
+- [x] T036 [US2] Implement TaskService with CRUD operations in backend/app/services/task_service.py
+- [x] T037 [US2] Implement user isolation in TaskService (filter by user_id) in backend/app/services/task_service.py
+- [x] T038 [US2] Create health check endpoint GET /health in backend/app/main.py
+- [x] T039 [US2] Create tasks router with GET /api/tasks endpoint in backend/app/routes/tasks.py
+- [x] T040 [US2] Implement GET /api/tasks/{task_id} endpoint in backend/app/routes/tasks.py
+- [x] T041 [US2] Implement POST /api/tasks endpoint in backend/app/routes/tasks.py
+- [x] T042 [US2] Implement PATCH /api/tasks/{task_id} endpoint in backend/app/routes/tasks.py
+- [x] T043 [US2] Implement DELETE /api/tasks/{task_id} endpoint in backend/app/routes/tasks.py
+- [x] T044 [US2] Implement POST /api/tasks/{task_id}/complete endpoint in backend/app/routes/tasks.py
+- [x] T045 [US2] Implement POST /api/tasks/{task_id}/uncomplete endpoint in backend/app/routes/tasks.py
+- [x] T046 [US2] Configure CORS middleware for localhost:3000 in backend/app/main.py
+- [x] T047 [US2] Register routes and configure FastAPI app in backend/app/main.py
+- [x] T048 [P] [US2] Write backend API tests in backend/tests/test_tasks.py
 
 ### Frontend Setup
 
-- [ ] T049 [US2] Create frontend/ with Next.js 15 App Router (npx create-next-app@latest)
-- [ ] T050 [US2] Install Better Auth and @better-auth/jwt dependencies in frontend/package.json
-- [ ] T051 [P] [US2] Create frontend/.env.local.example with BETTER_AUTH_SECRET, API_URL
-- [ ] T052 [US2] Configure Better Auth with JWT plugin in frontend/lib/auth.ts
-- [ ] T053 [US2] Create auth API route handler in frontend/app/api/auth/[...all]/route.ts
-- [ ] T054 [US2] Create API client with JWT token injection in frontend/lib/api.ts
-- [ ] T055 [US2] Create sign-in page in frontend/app/(auth)/sign-in/page.tsx
-- [ ] T056 [US2] Create sign-up page in frontend/app/(auth)/sign-up/page.tsx
-- [ ] T057 [US2] Create protected layout with auth check in frontend/app/(protected)/layout.tsx
-- [ ] T058 [US2] Create TaskList component in frontend/components/task-list.tsx
-- [ ] T059 [US2] Create TaskForm component in frontend/components/task-form.tsx
-- [ ] T060 [US2] Create TaskItem component with complete/delete actions in frontend/components/task-item.tsx
-- [ ] T061 [US2] Create dashboard page with task list in frontend/app/(protected)/dashboard/page.tsx
-- [ ] T062 [US2] Create landing page with auth links in frontend/app/page.tsx
-- [ ] T063 [US2] Apply Tailwind CSS styling across components
-- [ ] T064 [US2] Create root layout with global styles in frontend/app/layout.tsx
+- [x] T049 [US2] Create frontend/ with Next.js 15 App Router (npx create-next-app@latest)
+- [x] T050 [US2] Install Better Auth and @better-auth/jwt dependencies in frontend/package.json
+- [x] T051 [P] [US2] Create frontend/.env.local.example with BETTER_AUTH_SECRET, API_URL
+- [x] T052 [US2] Configure Better Auth with JWT plugin in frontend/lib/auth.ts
+- [x] T053 [US2] Create auth API route handler in frontend/app/api/auth/[...all]/route.ts
+- [x] T054 [US2] Create API client with JWT token injection in frontend/lib/api.ts
+- [x] T055 [US2] Create sign-in page in frontend/app/(auth)/sign-in/page.tsx
+- [x] T056 [US2] Create sign-up page in frontend/app/(auth)/sign-up/page.tsx
+- [x] T057 [US2] Create protected layout with auth check in frontend/app/(protected)/layout.tsx
+- [x] T058 [US2] Create TaskList component in frontend/components/task-list.tsx
+- [x] T059 [US2] Create TaskForm component in frontend/components/task-form.tsx
+- [x] T060 [US2] Create TaskItem component with complete/delete actions in frontend/components/task-item.tsx
+- [x] T061 [US2] Create dashboard page with task list in frontend/app/(protected)/dashboard/page.tsx
+- [x] T062 [US2] Create landing page with auth links in frontend/app/page.tsx
+- [x] T063 [US2] Apply Tailwind CSS styling across components
+- [x] T064 [US2] Create root layout with global styles in frontend/app/layout.tsx
 
 **Checkpoint**: Phase II complete (150 pts). Full-stack web app with auth and persistence working.
 
@@ -165,6 +165,7 @@
 - [ ] T088 [US3] Create chat page with ChatKit integration in frontend/app/(protected)/chat/page.tsx
 - [ ] T089 [US3] Add chat navigation link to dashboard in frontend/app/(protected)/layout.tsx
 - [ ] T090 [P] [US3] Write chat API integration tests in backend/tests/test_chat.py
+- [ ] T090-B [P] [US3] Define AI accuracy test suite with 100 representative natural language commands (add, list, complete, delete, update variations) and document pass/fail evaluation methodology in backend/tests/test_ai_accuracy.py
 
 **Checkpoint**: Phase III complete (200 pts). AI chatbot operational with natural language task management.
 
@@ -289,6 +290,7 @@
 - [ ] T148 [BONUS] Add voice input button to ChatInput in frontend/components/chat-input.tsx
 - [ ] T149 [BONUS] Implement speech-to-text for task commands
 - [ ] T150 [BONUS] Test voice command flow end-to-end
+- [ ] T151 [BONUS] Create 90-second demo video showcasing: console app CRUD → web signup/login → chatbot "Add task" → K8s deployment in docs/demo-video.md
 
 ---
 
@@ -388,7 +390,7 @@ Tasks T039-T047: All route implementations can be parallel after TaskService exi
 | Bonus     | Urdu           | T144-T146 | +100   | 1500       |
 | Bonus     | Voice          | T147-T150 | +200   | 1700       |
 
-**Total Tasks**: 150
+**Total Tasks**: 152
 **Total Points**: 1700 (1000 base + 700 bonus)
 **Parallel Opportunities**: ~40 tasks marked [P]
 **MVP Scope**: T001-T026 (Phase I Console App = 100 pts)

@@ -210,4 +210,9 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
 
 ## Recent Changes
+- 002-ui-ux-enhancement: Added TypeScript 5+, React 19, Next.js 16.1.1
 - 002-console-enhanced-features: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+
+## Active Technologies
+- TypeScript 5+, React 19, Next.js 16.1.1 (002-ui-ux-enhancement)
+- localStorage (client-side theme preference) (002-ui-ux-enhancement)
