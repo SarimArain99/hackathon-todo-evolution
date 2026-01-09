@@ -10,7 +10,6 @@ import { jwt } from "better-auth/plugins/jwt";
 import { nextCookies } from "better-auth/next-js";
 import Database from "better-sqlite3";
 import path from "path";
-import { fileURLToPath } from "url";
 
 // Initialize SQLite database
 // Store the database file in the project root for persistence
@@ -25,10 +24,23 @@ const getDbPath = () => {
 };
 
 const dbPath = getDbPath();
-const db = new Database(dbPath);
 
-// Enable WAL mode for better concurrent access
-db.pragma("journal_mode = WAL");
+// Initialize database with error handling
+let db: Database.Database;
+
+try {
+  db = new Database(dbPath);
+  // Enable WAL mode for better concurrent access
+  db.pragma("journal_mode = WAL");
+} catch (error) {
+  console.error("Failed to initialize SQLite database:", error);
+  // Throw a more descriptive error for debugging
+  throw new Error(
+    `Database initialization failed at ${dbPath}. ` +
+    `This may be due to better-sqlite3 native module not being properly built. ` +
+    `Error: ${error instanceof Error ? error.message : String(error)}`
+  );
+}
 
 export const auth = betterAuth({
   // Base URL for the application
