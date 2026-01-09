@@ -15,7 +15,4 @@ import { toNextJsHandler } from "better-auth/next-js";
 // Vercel edge runtime configuration
 export const runtime = "nodejs";
 
-export const { GET, POST } = toNextJsHandler(auth.handler, {
-  // Disable default batching for Vercel
-  disableBodyParsing: false,
-});
+export const { GET, POST } = toNextJsHandler(auth.handler);
