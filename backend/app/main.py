@@ -45,9 +45,25 @@ app = FastAPI(
 # Get allowed origins from environment or default to localhost
 frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
+# Hugging Face Spaces proxy URL (for development/testing)
+hf_proxy_url = os.getenv("HF_PROXY_URL", "")
+
+# List of allowed origins including Vercel deployment and local development
+allowed_origins = [
+    frontend_url,
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    # Add your Vercel frontend URL here
+    # "https://your-app.vercel.app",
+]
+
+# Add Hugging Face proxy URL if configured
+if hf_proxy_url:
+    allowed_origins.append(hf_proxy_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[frontend_url, "http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -128,9 +144,12 @@ async def root() -> dict[str, str]:
 if __name__ == "__main__":
     import uvicorn
 
+    # Use PORT from environment (Hugging Face Spaces uses 7860)
+    port = int(os.getenv("PORT", 8000))
+
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
-        port=8000,
-        reload=True,
+        port=port,
+        reload=False,  # Disable reload in production (Docker)
     )

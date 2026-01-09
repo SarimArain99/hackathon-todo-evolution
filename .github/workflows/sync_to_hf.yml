@@ -1,0 +1,47 @@
+name: Sync to Hugging Face
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  sync-to-huggingface:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Sync to Hugging Face
+        env:
+          # This URL is specific to your sarimarain/zenith-mind Space
+          HF_REPO: https://sarimarain:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/sarimarain/zenith-mind
+        run: |
+          # 1. Clone the current state of the HF Space
+          git clone $HF_REPO temp_hf_sync
+
+          # 2. Clean the HF Space folder but keep the .git history
+          rm -rf temp_hf_sync/*
+
+          # 3. Copy your local backend files into the sync folder
+          # NOTE: This assumes your FastAPI code is in a folder named 'backend'
+          cp -r backend/* temp_hf_sync/
+
+          # 4. Copy root README if it contains your Space metadata
+          if [ -f README.md ]; then
+            cp README.md temp_hf_sync/
+          fi
+
+          # 5. Commit and Push to Hugging Face
+          cd temp_hf_sync
+          git add .
+          # Only commit if there are actual changes
+          git diff --quiet && git diff --staged --quiet || git commit -m "Sync from GitHub: $(date +'%Y-%m-%d %H:%M:%S')"
+          git push origin main
