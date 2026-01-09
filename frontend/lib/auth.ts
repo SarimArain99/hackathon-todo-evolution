@@ -10,10 +10,21 @@ import { jwt } from "better-auth/plugins/jwt";
 import { nextCookies } from "better-auth/next-js";
 import Database from "better-sqlite3";
 import path from "path";
+import { fileURLToPath } from "url";
 
 // Initialize SQLite database
 // Store the database file in the project root for persistence
-const dbPath = path.join(process.cwd(), "todo-app.db");
+// In Vercel serverless, we use /tmp for writable storage
+const getDbPath = () => {
+  // Vercel serverless functions use /tmp for writable storage
+  if (process.env.VERCEL) {
+    return "/tmp/todo-app.db";
+  }
+  // Local development
+  return path.join(process.cwd(), "todo-app.db");
+};
+
+const dbPath = getDbPath();
 const db = new Database(dbPath);
 
 // Enable WAL mode for better concurrent access
@@ -21,7 +32,10 @@ db.pragma("journal_mode = WAL");
 
 export const auth = betterAuth({
   // Base URL for the application
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  // Must be set correctly for production (Vercel)
+  baseURL: process.env.BETTER_AUTH_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
+
   // Secret key for signing JWT tokens (should match backend)
   secret: process.env.BETTER_AUTH_SECRET || "change-this-secret-in-production",
 
