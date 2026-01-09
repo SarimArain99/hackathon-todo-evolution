@@ -36,6 +36,14 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
 
+  // Trusted origins for CSRF protection
+  // Include localhost, Vercel deployment, and custom domain if applicable
+  trustedOrigins: [
+    "http://localhost:3000",
+    "https://zenith-flow-zeta.vercel.app",
+    // Add custom domain here when ready: "https://your-custom-domain.com"
+  ],
+
   // Secret key for signing JWT tokens (should match backend)
   secret: process.env.BETTER_AUTH_SECRET || "change-this-secret-in-production",
 
