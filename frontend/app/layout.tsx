@@ -1,6 +1,7 @@
 /**
  * Zenith Root Layout
  * Features: Optimized SEO Metadata, OpenGraph support, and Theme Integration.
+ * Performance: Font preloading for faster LCP
  */
 
 import type { Metadata } from "next";
@@ -13,11 +14,15 @@ import { Analytics } from "@vercel/analytics/next";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap", // Optimize font loading
+  preload: true, // Preload critical font
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
+  preload: false, // Don't preload monospace - used less frequently
 });
 
 // --- SEO OPTIMIZED METADATA ---
@@ -30,11 +35,11 @@ export const metadata: Metadata = {
   keywords: ["Task Management", "Productivity Tool", "Zenith App", "Workflow Optimization", "AI Todo List", "Flow State", "Modern Task Evolution"],
   authors: [{ name: "Zenith Team" }],
   creator: "Zenith Productivity",
-  metadataBase: new URL("https://your-zenith-app.com"), // Update with your real domain
+  metadataBase: new URL("https://zenith-flow-zeta.vercel.app"),
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://your-zenith-app.com",
+    url: "https://zenith-flow-zeta.vercel.app",
     title: "Zenith | Task Evolution",
     description: "Evolve your productivity with Zenith's advanced workflow management.",
     siteName: "Zenith",

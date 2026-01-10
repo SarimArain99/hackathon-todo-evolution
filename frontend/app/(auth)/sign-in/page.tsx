@@ -118,7 +118,7 @@ export default function SignInPage() {
         {/* The Glass Card */}
         <motion.div 
           variants={itemVariants}
-          className="bg-white/40 dark:bg-gray-900/40 backdrop-blur-3xl border border-white/20 dark:border-gray-800/50 rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] p-6 sm:p-10"
+          className="bg-white/40 dark:bg-gray-900/40 backdrop-blur-3xl border border-white/20 dark:border-gray-800/50 rounded-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] p-6 sm:p-10"
         >
           {/* Card Header */}
           <div className="text-center mb-8 sm:mb-10">

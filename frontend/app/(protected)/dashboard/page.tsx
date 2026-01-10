@@ -82,7 +82,7 @@ export default async function DashboardPage() {
         </section>
 
         {/* DASHBOARD CLIENT FEED */}
-        <div className="bg-white/30 dark:bg-gray-900/40 backdrop-blur-md border border-white/20 dark:border-gray-800/50 rounded-[2rem] sm:rounded-4xl shadow-2xl p-4 sm:p-8">
+        <div className="bg-white/30 dark:bg-gray-900/40 backdrop-blur-md border border-white/20 dark:border-gray-800/50 rounded-3xl sm:rounded-4xl shadow-2xl p-4 sm:p-8">
             <DashboardClient />
         </div>
       </div>

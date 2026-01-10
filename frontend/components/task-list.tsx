@@ -1,10 +1,11 @@
 /**
  * Zenith TaskList - Master Motion Version
- * Features: 
+ * Features:
  * - Staggered entrance with index-based delays
  * - popLayout for smooth list reordering
  * - Adaptive Filter Strip with Glassmorphism
  * - Nuclear Scrollbar Suppression
+ * - Skeleton loading state
  */
 
 "use client";
@@ -12,6 +13,7 @@
 import { useEffect, useState, useRef } from "react";
 import { tasksApi, type Task } from "@/lib/api";
 import TaskItem from "./task-item";
+import TaskSkeleton from "./task-skeleton";
 import { AnimatePresence, motion } from "framer-motion";
 
 interface TaskListProps {
@@ -92,6 +94,7 @@ export default function TaskList({ initialTasks = [], refreshTrigger }: TaskList
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="flex-1 md:flex-none appearance-none px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white outline-none font-bold text-xs uppercase tracking-widest cursor-pointer"
+            aria-label="Filter by status"
           >
             <option value="all">Status</option>
             <option value="active">Active</option>
@@ -102,6 +105,7 @@ export default function TaskList({ initialTasks = [], refreshTrigger }: TaskList
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
             className="flex-1 md:flex-none appearance-none px-5 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white outline-none font-bold text-xs uppercase tracking-widest cursor-pointer"
+            aria-label="Filter by priority"
           >
             <option value="all">Priority</option>
             <option value="high">Critical</option>
@@ -112,24 +116,27 @@ export default function TaskList({ initialTasks = [], refreshTrigger }: TaskList
       </motion.div>
 
       {/* LIST AREA */}
-      <div className="relative min-h-75">
+      <div className="relative min-h-[18.75rem]">
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-24 space-y-4">
-            <motion.div 
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full" 
-            />
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest animate-pulse">Syncing Workspace...</p>
-          </div>
+          <ul className="grid grid-cols-1 gap-4">
+            <TaskSkeleton />
+            <TaskSkeleton />
+            <TaskSkeleton />
+          </ul>
         ) : tasks.length === 0 ? (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-24 bg-white/20 dark:bg-gray-900/20 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-[2.5rem] backdrop-blur-sm px-6"
+            className="text-center py-24 bg-white/20 dark:bg-gray-900/20 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-3xl backdrop-blur-sm px-6"
           >
+            <div className="inline-flex p-4 bg-indigo-500/10 rounded-2xl mb-6">
+              <svg className="w-8 h-8 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+            </div>
             <p className="text-xl font-bold text-gray-500 dark:text-gray-400">Workspace Clear</p>
-            <p className="mt-2 text-sm text-gray-400">All objectives are currently synchronized.</p>
+            <p className="mt-2 text-sm text-gray-400">All objectives are synchronized.</p>
+            <p className="mt-4 text-xs text-gray-500 dark:text-gray-500">Use the form to define new objectives.</p>
           </motion.div>
         ) : (
           <ul className="grid grid-cols-1 gap-4">

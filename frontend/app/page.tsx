@@ -1,105 +1,109 @@
+"use client";
+
 /**
- * Zenith Landing Page - Final Master Version
- * Features: 
+ * Zenith Landing Page - Performance Optimized
+ * Features:
  * - Zero Horizontal Scroll (Fixed Background Isolation)
  * - Staggered Framer Motion Animations
  * - Fluid Typography (4xl -> 8xl)
  * - Fully Responsive Grid Architecture
+ * - LCP Optimized: Reduced animation delays, smaller blur values
  */
-
-"use client";
 
 import Link from "next/link";
 import { motion } from "framer-motion";
 
+function AnimatedBackground() {
+  return (
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+      <motion.div
+        animate={{
+          scale: [1, 1.1, 1],
+          x: [0, 30, 0],
+          y: [0, -20, 0]
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: [0.4, 0, 0.2, 1] }}
+        className="absolute top-[-10%] left-[-10%] w-[80%] sm:w-[45%] h-[40%] rounded-full bg-indigo-500/10 dark:bg-indigo-500/20 blur-[60px] sm:blur-[80px]"
+      />
+      <motion.div
+        animate={{
+          scale: [1, 1.2, 1],
+          x: [0, -30, 0],
+          y: [0, 40, 0]
+        }}
+        transition={{ duration: 18, repeat: Infinity, ease: [0.4, 0, 0.2, 1] }}
+        className="absolute bottom-[-10%] right-[-10%] w-[80%] sm:w-[45%] h-[40%] rounded-full bg-purple-500/10 dark:bg-purple-500/20 blur-[60px] sm:blur-[80px]"
+      />
+    </div>
+  );
+}
+
 export default function HomePage() {
-  // Animation Variants
-  const containerVariants = {
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 15 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
+    },
+  } as const;
+
+  const staggerContainer = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.15,
-        delayChildren: 0.3,
+        staggerChildren: 0.1,
+        delayChildren: 0.1, // Reduced from 0.3 for faster LCP
       },
-    },
-  };
-
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as const },
     },
   } as const;
 
   return (
     <main className="relative min-h-screen w-full bg-slate-50 dark:bg-gray-950 no-scrollbar overflow-x-hidden transition-colors duration-500">
-      
-      {/* BACKGROUND ARCHITECTURE 
-        Isolated in fixed container to prevent blobs from expanding viewport width on mobile.
-      */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.1, 1],
-            x: [0, 30, 0],
-            y: [0, -20, 0] 
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: [0.4, 0, 0.2, 1] }}
-          className="absolute top-[-10%] left-[-10%] w-[80%] sm:w-[45%] h-[40%] rounded-full bg-indigo-500/10 dark:bg-indigo-500/20 blur-[100px] sm:blur-[120px]" 
-        />
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.2, 1],
-            x: [0, -30, 0],
-            y: [0, 40, 0] 
-          }}
-          transition={{ duration: 18, repeat: Infinity, ease: [0.4, 0, 0.2, 1] }}
-          className="absolute bottom-[-10%] right-[-10%] w-[80%] sm:w-[45%] h-[40%] rounded-full bg-purple-500/10 dark:bg-purple-500/20 blur-[100px] sm:blur-[120px]" 
-        />
-      </div>
 
-      <motion.div 
+      {/* BACKGROUND ARCHITECTURE - Optimized blur values */}
+      <AnimatedBackground />
+
+      <motion.div
         initial="hidden"
         animate="visible"
-        variants={containerVariants}
+        variants={staggerContainer}
         className="relative z-10 max-w-6xl mx-auto px-6 lg:px-8 py-16 sm:py-24 lg:py-32"
       >
-        
+
         {/* HERO SECTION */}
         <section className="text-center">
-          <motion.span 
+          <motion.span
             variants={fadeInUp}
             className="inline-block px-4 py-1.5 mb-8 text-[10px] sm:text-xs font-black tracking-[0.2em] text-indigo-600 dark:text-indigo-400 uppercase bg-white/50 dark:bg-white/5 backdrop-blur-md border border-white dark:border-white/10 rounded-full shadow-sm"
           >
             Next-Gen Productivity System
           </motion.span>
-          
-          <motion.h1 
+
+          <motion.h1
             variants={fadeInUp}
             className="text-4xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-gray-900 dark:text-white mb-8 leading-[1.05]"
           >
-            Master Your Workflow with <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-purple-600">Zenith</span>
+            Master Your Workflow with <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Zenith</span>
           </motion.h1>
 
-          <motion.p 
+          <motion.p
             variants={fadeInUp}
             className="text-lg sm:text-xl lg:text-2xl text-gray-600 dark:text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed"
           >
-            The ultimate smart task management solution for high-achievers. 
+            The ultimate smart task management solution for high-achievers.
             Organize, prioritize, and execute your goals with a minimalist interface built for deep work.
           </motion.p>
 
           {/* CTA Group: Adaptive stacking for mobile */}
-          <motion.div 
+          <motion.div
             variants={fadeInUp}
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
             <Link
               href="/sign-up"
-              className="w-full sm:w-auto px-10 py-4 text-lg font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-2xl shadow-xl shadow-indigo-500/25 transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] text-center"
+              className="w-full sm:w-auto px-10 py-4 text-lg font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-2xl shadow-xl shadow-indigo-500/25 transition-all duration-300 hover:scale-1.01 active:scale-[0.98] text-center"
             >
               Start Free Journey
             </Link>
@@ -113,8 +117,8 @@ export default function HomePage() {
         </section>
 
         {/* FEATURES GRID: 1 Column on Mobile -> 3 Columns on Medium screens */}
-        
-        <motion.section 
+
+        <motion.section
           variants={fadeInUp}
           className="mt-24 sm:mt-40 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 lg:gap-10"
         >
@@ -131,7 +135,7 @@ export default function HomePage() {
           <FeatureCard
             icon="M13 10V3L4 14h7v7l9-11h-7z"
             title="Zenith Velocity"
-            description="Engineered on Next.js 15 for sub-second responses. A tool that moves as fast as your thoughts."
+            description="Engineered on Next.js 16 for sub-second responses. A tool that moves as fast as your thoughts."
           />
         </motion.section>
 
@@ -141,9 +145,9 @@ export default function HomePage() {
             Built with Modern Architecture
           </h2>
           <div className="flex flex-wrap justify-center gap-3 sm:gap-4 px-4">
-            {["Next.js 15", "TypeScript", "Better Auth", "FastAPI", "Tailwind v4"].map((tech) => (
-              <span 
-                key={tech} 
+            {["Next.js 16", "TypeScript", "Better Auth", "FastAPI", "Tailwind v4"].map((tech) => (
+              <span
+                key={tech}
                 className="px-6 py-2.5 bg-white/40 dark:bg-white/5 backdrop-blur-xl border border-white dark:border-white/10 rounded-full text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 shadow-sm hover:shadow-indigo-500/10 transition-all cursor-default"
               >
                 {tech}
@@ -168,9 +172,9 @@ export default function HomePage() {
  */
 function FeatureCard({ icon, title, description }: { icon: string, title: string, description: string }) {
   return (
-    <motion.div 
+    <motion.div
       whileHover={{ y: -8 }}
-      className="group p-8 sm:p-10 bg-white/40 dark:bg-gray-900/40 backdrop-blur-2xl border border-white/20 dark:border-white/5 rounded-[2.5rem] shadow-xl hover:border-indigo-500/50 transition-all duration-500"
+      className="group p-8 sm:p-10 bg-white/40 dark:bg-gray-900/40 backdrop-blur-2xl border border-white/20 dark:border-white/5 rounded-3xl shadow-xl hover:border-indigo-500/50 transition-all duration-500"
     >
       <div className="inline-flex p-4 bg-indigo-600/10 rounded-2xl mb-8 group-hover:bg-indigo-600 transition-colors duration-500">
         <svg className="w-8 h-8 text-indigo-600 group-hover:text-white transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

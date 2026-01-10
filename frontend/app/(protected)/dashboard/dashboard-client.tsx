@@ -95,7 +95,7 @@ export default function DashboardClient() {
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
             transition={{ duration: 1, delay: 0.5, ease: "circOut" }}
-            className="hidden xs:block h-px flex-1 bg-linear-to-r from-transparent via-gray-200 dark:via-gray-800 to-transparent mx-4 origin-left" 
+            className="hidden xs:block h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-800 to-transparent mx-4 origin-left" 
           />
           
           <div className="text-[10px] font-bold text-indigo-500/50 uppercase tracking-widest hidden sm:block">

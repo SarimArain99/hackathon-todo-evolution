@@ -6,7 +6,7 @@
   /* Zenith Light Mode Palette */ /* Slate 50 */ /* Slate 900 */
 
   /* Brand Accents */
-  --primary: oklch(0.205 0 0);    /* Indigo 600 */
+  --primary: oklch(0.455 0.24 264);    /* Indigo 600 */
   --secondary: oklch(0.97 0 0);  /* Purple 600 */
 
   /* Glassmorphism Helpers */

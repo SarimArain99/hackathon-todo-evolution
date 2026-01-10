@@ -115,7 +115,7 @@ export default function SignUpPage() {
         {/* The Glass Card */}
         <motion.div 
           variants={itemVariants}
-          className="bg-white/40 dark:bg-gray-900/40 backdrop-blur-2xl border border-white/20 dark:border-gray-800/50 rounded-[2.5rem] sm:rounded-3xl shadow-2xl p-6 sm:p-10"
+          className="bg-white/40 dark:bg-gray-900/40 backdrop-blur-2xl border border-white/20 dark:border-gray-800/50 rounded-3xl shadow-2xl p-6 sm:p-10"
         >
           {/* Header Section */}
           <div className="text-center mb-6 sm:mb-8">

@@ -1,6 +1,6 @@
 /**
  * Zenith Logout Button Component
- * Features: Responsive touch-targets, Glassmorphism UI, 
+ * Features: Responsive touch-targets, Glassmorphism UI,
  * and state-aware animations.
  */
 
@@ -8,15 +8,17 @@
 
 import { signOut } from "@/lib/auth-client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LogoutButton() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const router = useRouter();
 
   async function handleLogout() {
     setIsLoggingOut(true);
     try {
       await signOut();
-      window.location.href = "/";
+      router.push("/");
     } catch (error) {
       console.error("Logout failed:", error);
       setIsLoggingOut(false);

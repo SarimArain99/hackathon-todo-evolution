@@ -87,9 +87,10 @@ export default function TaskForm({ onTaskCreated }: TaskFormProps) {
           >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">New Task</h3>
-              <button 
+              <button
                 onClick={() => setShowForm(false)}
                 className="p-1.5 rounded-xl bg-white/10 dark:bg-gray-800/50 text-gray-400 hover:text-rose-500 transition-colors"
+                aria-label="Close form"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />

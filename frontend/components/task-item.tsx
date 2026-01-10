@@ -10,6 +10,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { tasksApi, type Task } from "@/lib/api";
 import { taskToasts } from "@/lib/toast";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 interface TaskItemProps {
   task: Task;
@@ -28,6 +29,7 @@ export default function TaskItem({ task, onChange, onDelete }: TaskItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleToggleComplete = async () => {
     try {
@@ -46,10 +48,6 @@ export default function TaskItem({ task, onChange, onDelete }: TaskItemProps) {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to permanently delete this task?")) {
-      return;
-    }
-
     setIsDeleting(true);
     try {
       await tasksApi.delete(task.id);
@@ -93,7 +91,7 @@ export default function TaskItem({ task, onChange, onDelete }: TaskItemProps) {
     >
       {/* Overdue Glow Indicator */}
       {isOverdue && (
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-linear-to-b from-rose-500 to-orange-500" />
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-rose-500 to-orange-500" />
       )}
 
       <div className="p-4 sm:p-5">
@@ -187,15 +185,17 @@ export default function TaskItem({ task, onChange, onDelete }: TaskItemProps) {
               onClick={() => setIsEditing(true)}
               disabled={isDeleting || task.completed}
               className="p-2 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all disabled:opacity-30"
+              aria-label="Edit task"
             >
               <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
             </button>
             <button
-              onClick={handleDelete}
+              onClick={() => setShowDeleteDialog(true)}
               disabled={isDeleting}
               className="p-2 text-gray-400 hover:text-rose-600 transition-all disabled:opacity-30"
+              aria-label="Delete task"
             >
               {isDeleting ? (
                 <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
@@ -208,6 +208,17 @@ export default function TaskItem({ task, onChange, onDelete }: TaskItemProps) {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleDelete}
+        title="Delete Objective?"
+        message={`Are you sure you want to permanently delete "${task.title}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
+      />
     </motion.div>
   );
 }

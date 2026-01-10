@@ -23,7 +23,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="w-27 sm:w-33 h-9 sm:h-11 rounded-xl bg-white/10 dark:bg-gray-800/50 backdrop-blur-md border border-white/20 dark:border-gray-700/30" />
+      <div className="w-[108px] sm:w-[132px] h-9 sm:h-11 rounded-xl bg-white/10 dark:bg-gray-800/50 backdrop-blur-md border border-white/20 dark:border-gray-700/30" />
     )
   }
 
