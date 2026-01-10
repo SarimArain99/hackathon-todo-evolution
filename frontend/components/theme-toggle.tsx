@@ -14,7 +14,12 @@ import { motion } from 'framer-motion'
  */
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(true)
+  const [mounted, setMounted] = useState(false)
+
+  // useEffect only runs on client, preventing hydration mismatch
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   if (!mounted) {
     return (
