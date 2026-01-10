@@ -205,17 +205,46 @@ async def get_current_user(
     user = await session.get(User, user_id)
 
     if user is None:
-        # Create user if not exists (this can happen on first login)
-        user = User(
-            id=user_id,
-            email=email or f"{user_id}@unknown.com",
-            name=name,
-            created_at=datetime.now(UTC)
-        )
-        session.add(user)
-        await session.commit()
-        await session.refresh(user)
-        print(f"Created new user in database: {user_id}")
+        # Check if a user with this email already exists (may have different ID)
+        # This can happen when Better Auth issues different user IDs for same user
+        if email:
+            from sqlalchemy import select
+            stmt = select(User).where(User.email == email)
+            result = await session.execute(stmt)
+            existing_user = result.scalar_one_or_none()
+
+            if existing_user:
+                # User exists with same email but different ID - update the ID
+                print(f"Found existing user with email {email}, updating ID from {existing_user.id} to {user_id}")
+                existing_user.id = user_id
+                existing_user.name = name or existing_user.name
+                await session.commit()
+                await session.refresh(existing_user)
+                user = existing_user
+            else:
+                # Create new user (first login)
+                user = User(
+                    id=user_id,
+                    email=email,
+                    name=name,
+                    created_at=datetime.now(UTC)
+                )
+                session.add(user)
+                await session.commit()
+                await session.refresh(user)
+                print(f"Created new user in database: {user_id}")
+        else:
+            # No email - create user with unknown email
+            user = User(
+                id=user_id,
+                email=f"{user_id}@unknown.com",
+                name=name,
+                created_at=datetime.now(UTC)
+            )
+            session.add(user)
+            await session.commit()
+            await session.refresh(user)
+            print(f"Created new user in database: {user_id}")
 
     return UserRead(
         id=user.id,
