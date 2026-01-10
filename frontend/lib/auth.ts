@@ -6,11 +6,18 @@
  *
  * Uses STATELESS mode for Vercel serverless compatibility - no database required.
  * All user and session data is stored in secure JWT cookies.
+ *
+ * Email OTP plugin enables password reset via one-time passwords sent to email.
  */
 
 import { betterAuth } from "better-auth";
 import { jwt } from "better-auth/plugins/jwt";
 import { nextCookies } from "better-auth/next-js";
+import { emailOTP } from "better-auth/plugins/email-otp";
+
+// Simple in-memory OTP storage for stateless mode
+// In production, you'd want to use Redis or a similar service
+const otpStore = new Map<string, { otp: string; expiresAt: number }>();
 
 export const auth = betterAuth({
   // Base URL for the application
@@ -61,6 +68,34 @@ export const auth = betterAuth({
     }),
     // Next.js cookies plugin for server actions
     nextCookies(),
+    // Email OTP plugin for password reset
+    emailOTP({
+      otpLength: 6,
+      expiresIn: 600, // 10 minutes
+      sendVerificationOTP: async ({ email, otp, type }) => {
+        // For development, log the OTP to console
+        // In production, you'd send an email using Resend, SendGrid, etc.
+        console.log(`[${type.toUpperCase()}] OTP for ${email}: ${otp}`);
+
+        // TODO: Implement actual email sending
+        // Example using Resend:
+        // await resend.emails.send({
+        //   from: 'noreply@yourdomain.com',
+        //   to: email,
+        //   subject: type === 'forget-password'
+        //     ? 'Reset your password'
+        //     : 'Your verification code',
+        //   html: `Your code is: <strong>${otp}</strong>`,
+        // });
+
+        // Store OTP in memory for stateless mode
+        // In production, use Redis or similar
+        otpStore.set(`${type}:${email}`, {
+          otp,
+          expiresAt: Date.now() + 600 * 1000, // 10 minutes
+        });
+      },
+    }),
   ],
 
   // Email & password authentication

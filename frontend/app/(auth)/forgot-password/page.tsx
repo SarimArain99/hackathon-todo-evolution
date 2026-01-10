@@ -1,0 +1,252 @@
+/**
+ * Zenith Forgot Password Page
+ *
+ * Allows users to request a password reset via email OTP.
+ * In development, the OTP is logged to the console.
+ * In production, an email service (Resend, SendGrid) should be configured.
+ */
+
+"use client";
+
+import { useState } from "react";
+import { authClient } from "@/lib/auth-client";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Mail, CheckCircle } from "lucide-react";
+
+export default function ForgotPasswordPage() {
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Animation Variants
+  const containerVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.8,
+        staggerChildren: 0.12,
+        ease: [0.4, 0, 0.2, 1] as const,
+      },
+    },
+  } as const;
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      // Request password reset OTP using email OTP
+      const result = await authClient.forgetPassword.emailOTP({
+        email,
+        redirectTo: "/reset-password",
+      });
+
+      console.log("Forget password result:", result);
+
+      if (result.error) {
+        setError(result.error.message || "Failed to send reset code. Please try again.");
+      } else {
+        setSuccess(true);
+        // In development, the OTP is logged to the server console
+        console.log(
+          `\n📧 PASSWORD RESET OTP (for ${email}):\nCheck your server console for the OTP code.\n`
+        );
+      }
+    } catch (err) {
+      console.error("Forget password error:", err);
+      setError("A connection error occurred. Please check your network.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <main className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-gray-950 px-4 py-8 no-scrollbar">
+
+      {/* ANIMATED BACKGROUND BLOBS */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            x: [0, 50, 0],
+            y: [0, -30, 0],
+            rotate: [0, 10, 0]
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: [0.4, 0, 0.2, 1] }}
+          className="absolute top-[-5%] right-[-10%] w-[80%] sm:w-[50%] h-[50%] rounded-full bg-indigo-500/20 blur-[100px] sm:blur-[140px]"
+        />
+        <motion.div
+          animate={{
+            scale: [1, 1.3, 1],
+            x: [0, -60, 0],
+            y: [0, 40, 0],
+            rotate: [0, -10, 0]
+          }}
+          transition={{ duration: 18, repeat: Infinity, ease: [0.4, 0, 0.2, 1] }}
+          className="absolute bottom-[-10%] left-[-15%] w-[80%] sm:w-[50%] h-[50%] rounded-full bg-purple-500/20 blur-[100px] sm:blur-[140px]"
+        />
+      </div>
+
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+        className="relative z-10 w-full max-w-md"
+      >
+        {/* Branding */}
+        <motion.div variants={itemVariants} className="text-center mb-5">
+          <Link href="/" className="text-3xl font-black tracking-tighter text-indigo-600 dark:text-indigo-400 hover:opacity-80 transition inline-block">
+            ZENITH
+          </Link>
+        </motion.div>
+
+        {/* The Glass Card */}
+        <motion.div
+          variants={itemVariants}
+          className="bg-white/40 dark:bg-gray-900/40 backdrop-blur-3xl border border-white/20 dark:border-gray-800/50 rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] p-6 sm:p-10"
+        >
+          {/* Card Header */}
+          <div className="text-center mb-8 sm:mb-10">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                <Mail className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+              </div>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+              Forgot Password?
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-3 font-medium">
+              No worries! Enter your email and we'll send you a reset code.
+            </p>
+          </div>
+
+          {/* Error Message */}
+          <AnimatePresence mode="wait">
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                animate={{ opacity: 1, height: "auto", scale: 1 }}
+                exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                className="mb-6 overflow-hidden"
+              >
+                <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl backdrop-blur-md">
+                  <p className="text-xs sm:text-sm text-rose-600 dark:text-rose-400 text-center font-bold tracking-tight">
+                    {error}
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Success Message */}
+          <AnimatePresence mode="wait">
+            {success && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                animate={{ opacity: 1, height: "auto", scale: 1 }}
+                exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                className="mb-6 overflow-hidden"
+              >
+                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl backdrop-blur-md">
+                  <div className="flex items-center justify-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <p className="text-xs sm:text-sm text-emerald-600 dark:text-emerald-400 text-center font-bold tracking-tight">
+                      Reset code sent! Check your email and server console.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Form Content */}
+          {!success ? (
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+              <motion.div variants={itemVariants}>
+                <label htmlFor="email" className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 ml-1">
+                  Email Address
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all placeholder:text-gray-400 text-sm sm:text-base"
+                  placeholder="name@company.com"
+                />
+              </motion.div>
+
+              <motion.button
+                variants={itemVariants}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-4 px-6 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/25 transition-all flex items-center justify-center mt-8 text-sm sm:text-base"
+              >
+                {isLoading ? (
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full mr-3"
+                  />
+                ) : null}
+                {isLoading ? "Sending..." : "Send Reset Code"}
+              </motion.button>
+            </form>
+          ) : (
+            <motion.div
+              variants={itemVariants}
+              className="text-center py-4"
+            >
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                Didn't receive the code? Check your spam folder or try again.
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  setSuccess(false);
+                  handleSubmit(new Event("submit") as any);
+                }}
+                className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline text-sm"
+              >
+                Resend Code
+              </motion.button>
+            </motion.div>
+          )}
+
+          {/* Footer Navigation */}
+          <motion.div variants={itemVariants} className="mt-8 text-center border-t border-gray-200/20 pt-8">
+            <Link
+              href="/sign-in"
+              className="inline-flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Sign In
+            </Link>
+          </motion.div>
+        </motion.div>
+
+        {/* Security Info */}
+        <motion.p
+          variants={itemVariants}
+          className="mt-3 text-center text-[10px] text-gray-400 dark:text-gray-600 uppercase tracking-[0.2em] font-bold"
+        >
+          Secure OTP Verification
+        </motion.p>
+      </motion.div>
+    </main>
+  );
+}
