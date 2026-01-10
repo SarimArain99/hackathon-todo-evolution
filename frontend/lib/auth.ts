@@ -24,12 +24,11 @@ export const auth = betterAuth({
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
 
   // Trusted origins for CSRF protection
-  // Include localhost, Vercel deployment, and preview deployments
+  // Include localhost and Vercel deployment
+  // Note: disableOriginCheck is set to true below, so this array is not actively enforced
   trustedOrigins: [
     "http://localhost:3000",
     "https://zenith-flow-zeta.vercel.app",
-    // Allow all Vercel preview deployments
-    /.+\.vercel\.app$/,
   ],
 
   // Secret key for signing JWT tokens

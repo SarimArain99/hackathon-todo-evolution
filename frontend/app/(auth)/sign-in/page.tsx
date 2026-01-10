@@ -51,8 +51,9 @@ export default function SignInPage() {
       // Debug logging
       console.log("Sign-in result:", result);
 
-      // Check if sign-in was successful (has session data)
-      if (result.data?.session || result.data?.user) {
+      // Check if sign-in was successful (has user or token)
+      // In stateless JWT mode, response contains user and token, not session
+      if (result.data?.user || result.data?.token) {
         // Sign-in successful - redirect
         router.push("/dashboard");
         router.refresh();
