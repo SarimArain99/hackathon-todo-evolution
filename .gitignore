@@ -11,8 +11,7 @@ downloads/
 eggs/
 .eggs/
 # Keep frontend/lib/ for the frontend project
-!frontend/lib/
-lib/
+# Note: Negation must come AFTER the pattern
 lib64/
 parts/
 sdist/

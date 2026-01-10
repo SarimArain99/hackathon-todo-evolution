@@ -48,13 +48,26 @@ export default function SignInPage() {
 
     try {
       const result = await signIn.email({ email, password });
+      // Debug logging
+      console.log("Sign-in result:", result);
+
+      // Check if sign-in was successful (has session data)
+      if (result.data?.session || result.data?.user) {
+        // Sign-in successful - redirect
+        router.push("/dashboard");
+        router.refresh();
+        return;
+      }
+
+      // Check if there's an error
       if (result.error) {
         setError(result.error.message || "Invalid credentials. Please try again.");
       } else {
-        router.push("/dashboard");
-        router.refresh();
+        // No error but also no session - unexpected state
+        setError("Sign-in completed but session not established. Please try again.");
       }
     } catch (err) {
+      console.error("Sign-in error:", err);
       setError("A connection error occurred. Please check your network.");
     } finally {
       setIsLoading(false);
