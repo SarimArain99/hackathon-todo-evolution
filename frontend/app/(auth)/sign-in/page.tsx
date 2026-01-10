@@ -169,9 +169,10 @@ export default function SignInPage() {
                 <label htmlFor="password" className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">
                   Password
                 </label>
-                <Link href="/forgot-password" className="text-[10px] sm:text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+                {/* Forgot password disabled - requires database */}
+                {/* <Link href="/forgot-password" className="text-[10px] sm:text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
                   Forgot?
-                </Link>
+                </Link> */}
               </div>
               <input
                 id="password"
