@@ -6,7 +6,7 @@ All operations are scoped to the current user's ID.
 """
 
 import json
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 
 from fastapi import HTTPException, status
@@ -158,7 +158,7 @@ class TaskService:
         for field, value in update_data.items():
             setattr(task, field, value)
 
-        task.updated_at = datetime.now(timezone.utc)
+        task.updated_at = datetime.utcnow()
         session.add(task)
         await session.commit()
         await session.refresh(task)
@@ -207,7 +207,7 @@ class TaskService:
         """
         task = await TaskService.get_task(session, task_id, user_id)
         task.completed = completed
-        task.updated_at = datetime.now(timezone.utc)
+        task.updated_at = datetime.utcnow()
 
         session.add(task)
         await session.commit()

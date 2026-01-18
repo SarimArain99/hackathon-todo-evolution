@@ -8,6 +8,7 @@
 import { getAuthToken } from "./auth-client";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const isDev = process.env.NODE_ENV === "development";
 
 // Task type definitions matching the backend
 export interface Task {
@@ -53,7 +54,7 @@ export interface TaskListResponse {
 /**
  * Make an authenticated API request to the backend
  */
-async function apiRequest<T>(
+export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
@@ -66,11 +67,13 @@ async function apiRequest<T>(
 
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
-  } else {
+  } else if (isDev) {
     console.warn("No auth token available");
   }
 
-  console.log(`API Request: ${options.method || "GET"} ${API_URL}${endpoint}`);
+  if (isDev) {
+    console.log(`API Request: ${options.method || "GET"} ${API_URL}${endpoint}`);
+  }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
@@ -79,7 +82,9 @@ async function apiRequest<T>(
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error(`API Error: ${response.status} - ${errorText}`);
+    if (isDev) {
+      console.error(`API Error: ${response.status} - ${errorText}`);
+    }
     let errorMessage = `API Error: ${response.status}`;
     try {
       const error = JSON.parse(errorText);
@@ -88,6 +93,11 @@ async function apiRequest<T>(
       errorMessage = errorText || errorMessage;
     }
     throw new Error(errorMessage);
+  }
+
+  // Handle 204 No Content responses (e.g., delete operations)
+  if (response.status === 204) {
+    return undefined as T;
   }
 
   return response.json();

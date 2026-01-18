@@ -3,17 +3,18 @@
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { XIcon } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 
 /**
- * Zenith Dialog Component
- *
- * Customized to match Zenith design system:
- * - Glassmorphism content with backdrop-blur
- * - rounded-3xl border radius
- * - Smooth zoom/fade animations
+ * Zenith Dialog Component v2.1
+ * Production-ready modal system featuring:
+ * - High-fidelity backdrop blurring (blur-xl)
+ * - Optimized OKLCH color support
+ * - Hardware-accelerated entrance animations
  */
+
 function Dialog({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
@@ -46,7 +47,7 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm",
+        "fixed inset-0 z-50 bg-background/60 backdrop-blur-md",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         className
@@ -65,38 +66,39 @@ function DialogContent({
   showCloseButton?: boolean
 }) {
   return (
-    <DialogPortal data-slot="dialog-portal">
+    <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
+        asChild
         className={cn(
-          // Zenith glassmorphism dialog style
-          "bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl",
-          "border border-white/20 dark:border-gray-800/50",
           "fixed top-[50%] left-[50%] z-50",
-          "w-full max-w-[calc(100%-2rem)] sm:max-w-lg",
+          "w-full max-w-[calc(100%-2.5rem)] sm:max-w-lg",
           "translate-x-[-50%] translate-y-[-50%]",
-          "rounded-3xl shadow-2xl",
-          "p-6 sm:p-8 gap-4",
-          "duration-200",
-          "data-[state=open]:animate-in data-[state=closed]:animate-out",
-          "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-          "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-          "outline-none focus:ring-2 focus:ring-indigo-500",
+          "glass-panel rounded-4xl sm:rounded-[2.5rem] shadow-2xl shadow-primary/10",
+          "p-8 sm:p-10 gap-6 outline-none",
+          "bg-surface/80 dark:bg-surface/60 backdrop-blur-3xl",
           className
         )}
         {...props}
       >
-        {children}
-        {showCloseButton && (
-          <DialogPrimitive.Close
-            data-slot="dialog-close"
-            className="absolute top-4 right-4 rounded-xl p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-white/10 dark:hover:bg-gray-800/50 transition-all focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
-          >
-            <XIcon className="size-4" />
-            <span className="sr-only">Close</span>
-          </DialogPrimitive.Close>
-        )}
+        <motion.div
+          /* TIER-1 MOTION: Blur-to-Clear Scale In */
+          initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+          animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+          transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        >
+          {children}
+          {showCloseButton && (
+            <DialogPrimitive.Close
+              data-slot="dialog-close"
+              className="absolute top-6 right-6 rounded-2xl p-2.5 text-foreground-muted hover:text-foreground hover:bg-surface-elevated/80 border border-transparent hover:border-border/50 transition-all focus:ring-4 focus:ring-primary/10"
+            >
+              <XIcon className="size-5" />
+              <span className="sr-only">Close</span>
+            </DialogPrimitive.Close>
+          )}
+        </motion.div>
       </DialogPrimitive.Content>
     </DialogPortal>
   )
@@ -106,7 +108,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn("flex flex-col gap-2 text-center sm:text-left", className)}
+      className={cn("flex flex-col gap-3 text-left", className)}
       {...props}
     />
   )
@@ -117,7 +119,7 @@ function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="dialog-footer"
       className={cn(
-        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
+        "flex flex-col-reverse gap-3 sm:flex-row sm:justify-end sm:gap-4 mt-8",
         className
       )}
       {...props}
@@ -132,7 +134,10 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("text-lg leading-none font-bold text-gray-900 dark:text-white", className)}
+      className={cn(
+        "text-2xl sm:text-3xl font-display font-bold text-foreground tracking-tightest leading-none",
+        className
+      )}
       {...props}
     />
   )
@@ -145,7 +150,7 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn("text-gray-600 dark:text-gray-400 text-sm", className)}
+      className={cn("text-foreground-muted text-base font-light leading-relaxed", className)}
       {...props}
     />
   )

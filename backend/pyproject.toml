@@ -17,6 +17,13 @@ dependencies = [
     "psycopg>=3.2.0",
     "psycopg[binary]>=3.2.0",
     "email-validator>=2.0.0",
+    "openai>=1.0.0",
+    "fastmcp>=0.1.0",
+    "slowapi>=0.1.9",  # Rate limiting
+    "structlog>=24.0.0",  # Structured logging
+    "alembic>=1.13.0",  # Database migrations
+    "qdrant-client>=1.12.0",  # Vector database for chat history embeddings
+    "sentence-transformers>=3.0.0",  # Embeddings for semantic search
 ]
 
 [build-system]

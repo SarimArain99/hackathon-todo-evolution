@@ -38,11 +38,19 @@ else:
             parsed.fragment,
         ))
 
-# Async engine for FastAPI
+# Async engine for FastAPI with connection pooling
 async_engine: AsyncEngine = create_async_engine(
     ASYNC_DATABASE_URL,
     echo=True if os.getenv("DEBUG") == "true" else False,
     future=True,
+    # Connection pool settings for production
+    pool_size=20 if ASYNC_DATABASE_URL.startswith("postgresql") else 5,
+    max_overflow=30 if ASYNC_DATABASE_URL.startswith("postgresql") else 10,
+    pool_pre_ping=True,  # Verify connections before use
+    pool_recycle=3600,  # Recycle connections after 1 hour
+    connect_args={
+        "check_same_thread": False  # SQLite: allow multiple threads
+    } if ASYNC_DATABASE_URL.startswith("sqlite") else {},
 )
 
 # Session factory
@@ -53,13 +61,32 @@ async_session_maker = async_sessionmaker(
 )
 
 
-# Sync engine for migrations/testing
-sync_engine = create_engine(
-    DATABASE_URL.replace("postgresql://", "postgresql+psycopg://").replace(
-        "sqlite+aiosqlite:///", "sqlite:///"
-    ),
-    echo=True if os.getenv("DEBUG") == "true" else False,
-)
+# Sync engine for migrations/testing (lazy initialization)
+# Note: This requires psycopg to be installed
+_sync_engine = None
+
+def get_sync_engine():
+    """
+    Get or create the sync engine (lazy initialization).
+
+    Raises ImportError if psycopg is not installed.
+    Install with: uv add psycopg[binary]
+    """
+    global _sync_engine
+    if _sync_engine is None:
+        _sync_engine = create_engine(
+            DATABASE_URL.replace("postgresql://", "postgresql+psycopg://").replace(
+                "sqlite+aiosqlite:///", "sqlite:///"
+            ),
+            echo=True if os.getenv("DEBUG") == "true" else False,
+        )
+    return _sync_engine
+
+# For backwards compatibility, expose sync_engine as a function call
+# Use: engine = get_sync_engine() instead of engine = sync_engine
+def sync_engine():
+    """Backwards compatibility wrapper."""
+    return get_sync_engine()
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
@@ -83,7 +110,7 @@ def init_db() -> None:
 async def init_async_db() -> None:
     """Async version of init_db. Use with async startup."""
     # Import models here to ensure they're registered
-    from app.models import Task, User  # noqa: F401
+    from app.models import Task, User, Conversation, Message  # noqa: F401
 
     async with async_engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
