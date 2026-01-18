@@ -1,0 +1,357 @@
+openapi: 3.0.3
+info:
+  title: Todo Chat API
+  description: AI-powered chatbot interface for todo management
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000
+    description: Local development
+  - url: https://api.example.com
+    description: Production
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CreateMessageRequest:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: User's natural language input
+          maxLength: 2000
+          example: "Add a task to buy groceries"
+        conversation_id:
+          type: integer
+          description: Existing conversation ID (omit for new conversation)
+          example: 5
+
+    ToolCall:
+      type: object
+      description: A tool invoked by the AI agent
+      properties:
+        tool:
+          type: string
+          enum: [add_task, list_tasks, complete_task, delete_task, update_task]
+          example: "add_task"
+        parameters:
+          type: object
+          description: Parameters passed to the tool
+          example:
+            user_id: "abc123"
+            title: "Buy groceries"
+        result:
+          type: object
+          description: Result returned by the tool
+          example:
+            task_id: 5
+            status: "created"
+            title: "Buy groceries"
+
+    ChatResponse:
+      type: object
+      properties:
+        conversation_id:
+          type: integer
+          description: The conversation ID
+          example: 5
+        message_id:
+          type: integer
+          description: The assistant's message ID
+          example: 42
+        response:
+          type: string
+          description: AI's text response
+          example: "I've created a task called 'Buy groceries'. Is there anything else you'd like to add?"
+        tool_calls:
+          type: array
+          description: Tools invoked during processing
+          items:
+            $ref: '#/components/schemas/ToolCall'
+        error:
+          type: string
+          description: Error message if processing failed
+
+    MessageResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 42
+        role:
+          type: string
+          enum: [user, assistant]
+          example: "assistant"
+        content:
+          type: string
+          example: "I've created a task called 'Buy groceries'."
+        tool_calls:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolCall'
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-01-14T12:00:00Z"
+
+    ConversationResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 5
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-01-14T10:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2026-01-14T12:00:00Z"
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageResponse'
+
+    ConversationListResponse:
+      type: object
+      properties:
+        conversations:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 5
+              created_at:
+                type: string
+                format: date-time
+              updated_at:
+                type: string
+                format: date-time
+              message_count:
+                type: integer
+                example: 12
+              preview:
+                type: string
+                description: First message content
+                example: "Add a task to buy groceries"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "AI service unavailable"
+        message:
+          type: string
+          example: "I'm having trouble connecting right now. Please try again."
+        retry:
+          type: boolean
+          example: true
+
+paths:
+  /api/chat:
+    post:
+      summary: Send chat message
+      description: |
+        Send a natural language message to the AI assistant and get a response.
+        The assistant may invoke task management tools (add, list, complete, delete, update).
+
+        If `conversation_id` is omitted, a new conversation is created.
+        The response includes the assistant's message and any tools that were invoked.
+      operationId: sendMessage
+      tags:
+        - Chat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMessageRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: AI service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/chat/conversations:
+    get:
+      summary: List conversations
+      description: Get all conversations for the authenticated user
+      operationId: listConversations
+      tags:
+        - Conversations
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of conversations to return
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          description: Number of conversations to skip
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/chat/conversations/{conversation_id}:
+    get:
+      summary: Get conversation details
+      description: Get a specific conversation with its messages
+      operationId: getConversation
+      tags:
+        - Conversations
+      parameters:
+        - name: conversation_id
+          in: path
+          required: true
+          description: Conversation ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Conversation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - conversation belongs to another user
+        '404':
+          description: Conversation not found
+
+    delete:
+      summary: Delete conversation
+      description: Delete a conversation and all its messages
+      operationId: deleteConversation
+      tags:
+        - Conversations
+      parameters:
+        - name: conversation_id
+          in: path
+          required: true
+          description: Conversation ID
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Conversation deleted
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - conversation belongs to another user
+        '404':
+          description: Conversation not found
+
+  /api/chat/conversations/{conversation_id}/messages:
+    get:
+      summary: Get conversation messages
+      description: Get all messages in a conversation
+      operationId: getMessages
+      tags:
+        - Messages
+      parameters:
+        - name: conversation_id
+          in: path
+          required: true
+          description: Conversation ID
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Maximum number of messages to return
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          description: Number of messages to skip
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MessageResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Conversation not found
+
+tags:
+  - name: Chat
+    description: Chat message operations
+  - name: Conversations
+    description: Conversation management
+  - name: Messages
+    description: Message history

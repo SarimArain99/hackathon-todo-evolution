@@ -11,7 +11,7 @@ import os
 import json
 import base64
 from typing import Optional
-from datetime import datetime, UTC
+from datetime import datetime
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -62,14 +62,9 @@ def decode_jwt_payload(token: str) -> Optional[dict]:
         header = json.loads(base64url_decode(header_encoded))
         payload = json.loads(base64url_decode(payload_encoded))
 
-        print(f"JWT header: {header}")
-        print(f"JWT payload: {payload}")
-
         return payload
-    except Exception as e:
-        print(f"Error decoding JWT: {e}")
-        import traceback
-        traceback.print_exc()
+    except Exception:
+        # Silently fail for production security - don't leak JWT errors
         return None
 
 
@@ -101,8 +96,8 @@ async def verify_jwt_with_better_auth(token: str) -> Optional[dict]:
                         "name": user.get("name", ""),
                     }
             return None
-    except Exception as e:
-        print(f"Error verifying with Better Auth: {e}")
+    except Exception:
+        # Silently fail for production security
         return None
 
 
@@ -130,17 +125,15 @@ async def verify_jwt_token(token: str) -> Optional[dict]:
     # Check expiration
     exp = payload.get("exp")
     if exp:
-        exp_datetime = datetime.fromtimestamp(exp, UTC)
-        if datetime.now(UTC) > exp_datetime:
-            print(f"JWT expired at {exp_datetime}")
+        exp_datetime = datetime.utcfromtimestamp(exp)
+        if datetime.utcnow() > exp_datetime:
             return None
 
     # Validate issuer (if specified)
     if JWT_ISSUER and payload.get("iss") != JWT_ISSUER:
-        print(f"JWT issuer mismatch: expected {JWT_ISSUER}, got {payload.get('iss')}")
         # For development, we might not have iss in the token
         # Uncomment the return None for strict validation
-        # return None
+        pass  # TODO: Enable strict validation in production
 
     # The JWT payload from Better Auth should contain:
     # - sub: user ID
@@ -174,13 +167,11 @@ async def get_current_user(
     )
 
     token = credentials.credentials
-    print(f"Received token: {token[:50] if token else 'None'}...")
 
     # Verify JWT
     payload = await verify_jwt_token(token)
 
     if payload is None:
-        print("Failed to verify JWT token")
         raise credentials_exception
 
     # Extract user ID from JWT payload
@@ -196,10 +187,7 @@ async def get_current_user(
     name = payload.get("name", "")
 
     if not user_id:
-        print("JWT payload missing user ID (sub)")
         raise credentials_exception
-
-    print(f"Verified user from JWT: id={user_id}, email={email}, name={name}")
 
     # Get or create user in our database
     user = await session.get(User, user_id)
@@ -215,7 +203,6 @@ async def get_current_user(
 
             if existing_user:
                 # User exists with same email but different ID - update the ID
-                print(f"Found existing user with email {email}, updating ID from {existing_user.id} to {user_id}")
                 existing_user.id = user_id
                 existing_user.name = name or existing_user.name
                 await session.commit()
@@ -227,24 +214,22 @@ async def get_current_user(
                     id=user_id,
                     email=email,
                     name=name,
-                    created_at=datetime.now(UTC)
+                    created_at=datetime.utcnow()
                 )
                 session.add(user)
                 await session.commit()
                 await session.refresh(user)
-                print(f"Created new user in database: {user_id}")
         else:
             # No email - create user with unknown email
             user = User(
                 id=user_id,
                 email=f"{user_id}@unknown.com",
                 name=name,
-                created_at=datetime.now(UTC)
+                created_at=datetime.utcnow()
             )
             session.add(user)
             await session.commit()
             await session.refresh(user)
-            print(f"Created new user in database: {user_id}")
 
     return UserRead(
         id=user.id,

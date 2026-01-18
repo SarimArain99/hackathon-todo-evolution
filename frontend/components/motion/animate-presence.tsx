@@ -4,90 +4,103 @@ import { motion, AnimatePresence, type Variants } from 'framer-motion'
 import { prefersReducedMotion } from '@/lib/theme'
 
 /**
+ * PRODUCTION-GRADE MOTION TOKENS
+ * Aligned with Zenith Design System v2.1
+ */
+const EXPO_OUT = [0.16, 1, 0.3, 1] as const;
+const SPRING_PHYSICS = { type: "spring", damping: 25, stiffness: 120 } as const;
+
+/**
  * Fade In Animation Variants
  */
 export const fadeInVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1 },
-  exit: { opacity: 0 },
+  hidden: { opacity: 0, filter: 'blur(4px)' },
+  visible: { 
+    opacity: 1, 
+    filter: 'blur(0px)',
+    transition: { duration: 0.5, ease: EXPO_OUT } 
+  },
+  exit: { opacity: 0, filter: 'blur(4px)', transition: { duration: 0.3 } },
 }
 
 /**
  * Slide In From Top Animation Variants
  */
 export const slideInFromTopVariants: Variants = {
-  hidden: { opacity: 0, y: -20 },
-  visible: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
+  hidden: { opacity: 0, y: -30 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: SPRING_PHYSICS
+  },
+  exit: { opacity: 0, y: -20, transition: { duration: 0.2 } },
 }
 
 /**
  * Slide In From Bottom Animation Variants
  */
 export const slideInFromBottomVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: SPRING_PHYSICS
+  },
+  exit: { opacity: 0, y: 20, transition: { duration: 0.2 } },
 }
 
 /**
- * Slide In From Left Animation Variants
- */
-export const slideInFromLeftVariants: Variants = {
-  hidden: { opacity: 0, x: -20 },
-  visible: { opacity: 1, x: 0 },
-  exit: { opacity: 0, x: -20 },
-}
-
-/**
- * Scale In Animation Variants
+ * Scale In Animation Variants (Used for Dialogs/Modals)
  */
 export const scaleInVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: { opacity: 1, scale: 1 },
-  exit: { opacity: 0, scale: 0.95 },
+  hidden: { opacity: 0, scale: 0.92, filter: 'blur(8px)' },
+  visible: { 
+    opacity: 1, 
+    scale: 1, 
+    filter: 'blur(0px)',
+    transition: {
+      opacity: { duration: 0.4, ease: EXPO_OUT },
+      scale: SPRING_PHYSICS
+    }
+  },
+  exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
 }
 
 /**
- * Stagger Children Animation Variants
+ * Stagger Container (Used for Task Lists)
  */
 export const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
+      staggerChildren: 0.08,
+      delayChildren: 0.05,
     },
   },
-  exit: { opacity: 0 },
 }
 
 export const staggerItem: Variants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -10 },
+  hidden: { opacity: 0, y: 15 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: SPRING_PHYSICS
+  },
 }
 
 /**
- * Default transition settings respecting reduced motion preference
+ * Default transition settings respecting reduced motion
  */
 export const defaultTransition = {
-  duration: prefersReducedMotion() ? 0 : 0.2,
-  ease: 'easeOut' as const,
+  duration: prefersReducedMotion() ? 0 : 0.4,
+  ease: EXPO_OUT,
 }
 
-/**
- * Page transition settings (slower for smoother feel)
- */
-export const pageTransition = {
-  duration: prefersReducedMotion() ? 0 : 0.3,
-  ease: 'easeOut' as const,
-}
+// --- REFINED ANIMATION WRAPPERS ---
 
 /**
  * Animated Presence Wrapper
- *
- * Wraps children with AnimatePresence for enter/exit animations
  */
 export function AnimatedPresence({
   children,
@@ -117,7 +130,7 @@ export function FadeIn({
       animate="visible"
       exit="exit"
       variants={fadeInVariants}
-      transition={{ ...defaultTransition, delay }}
+      transition={{ delay }}
       className={className}
     >
       {children}
@@ -126,7 +139,7 @@ export function FadeIn({
 }
 
 /**
- * Slide In Component (from bottom by default)
+ * Slide In Component
  */
 export function SlideIn({
   children,
@@ -142,12 +155,8 @@ export function SlideIn({
   const variants = {
     top: slideInFromTopVariants,
     bottom: slideInFromBottomVariants,
-    left: slideInFromLeftVariants,
-    right: {
-      hidden: { opacity: 0, x: 20 },
-      visible: { opacity: 1, x: 0 },
-      exit: { opacity: 0, x: 20 },
-    },
+    left: { hidden: { opacity: 0, x: -30 }, visible: { opacity: 1, x: 0 }, exit: { opacity: 0, x: -20 } },
+    right: { hidden: { opacity: 0, x: 30 }, visible: { opacity: 1, x: 0 }, exit: { opacity: 0, x: 20 } },
   }[direction]
 
   return (
@@ -156,7 +165,7 @@ export function SlideIn({
       animate="visible"
       exit="exit"
       variants={variants}
-      transition={{ ...defaultTransition, delay }}
+      transition={{ delay }}
       className={className}
     >
       {children}
@@ -165,24 +174,20 @@ export function SlideIn({
 }
 
 /**
- * Scale In Component
+ * List Stagger Wrapper (New Production Utility)
  */
-export function ScaleIn({
+export function StaggerContainer({
   children,
   className = '',
-  delay = 0,
 }: {
   children: React.ReactNode
   className?: string
-  delay?: number
 }) {
   return (
     <motion.div
       initial="hidden"
       animate="visible"
-      exit="exit"
-      variants={scaleInVariants}
-      transition={{ ...defaultTransition, delay }}
+      variants={staggerContainer}
       className={className}
     >
       {children}

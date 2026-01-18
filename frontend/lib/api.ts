@@ -54,7 +54,7 @@ export interface TaskListResponse {
 /**
  * Make an authenticated API request to the backend
  */
-async function apiRequest<T>(
+export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
@@ -93,6 +93,11 @@ async function apiRequest<T>(
       errorMessage = errorText || errorMessage;
     }
     throw new Error(errorMessage);
+  }
+
+  // Handle 204 No Content responses (e.g., delete operations)
+  if (response.status === 204) {
+    return undefined as T;
   }
 
   return response.json();

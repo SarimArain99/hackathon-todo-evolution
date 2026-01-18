@@ -141,13 +141,13 @@ This document defines actionable, dependency-ordered tasks for implementing UI/U
 - [X] [T064] [P3] [US4] Add shadcn input component (`npx shadcn@latest add input`)
 - [X] [T065] [P3] [US4] Add shadcn card component (`npx shadcn@latest add card`)
 - [X] [T066] [P3] [US4] Add shadcn dialog component (`npx shadcn@latest add dialog`)
-- [ ] [T067] [P3] [US4] Add shadcn dropdown-menu component (`npx shadcn@latest add dropdown-menu`)
+- [X] [T067] [P3] [US4] Add shadcn dropdown-menu component (`npx shadcn@latest add dropdown-menu`)
 
 ### 6.2 Form Components
-- [ ] [T068] [P3] [US4] Add shadcn label component (`npx shadcn@latest add label`)
-- [ ] [T069] [P3] [US4] Add shadcn textarea component (`npx shadcn@latest add textarea`)
-- [ ] [T070] [P3] [US4] Add shadcn checkbox component (`npx shadcn@latest add checkbox`)
-- [ ] [T071] [P3] [US4] Add shadcn select component (`npx shadcn@latest add select`)
+- [X] [T068] [P3] [US4] Add shadcn label component (`npx shadcn@latest add label`)
+- [X] [T069] [P3] [US4] Add shadcn textarea component (`npx shadcn@latest add textarea`)
+- [X] [T070] [P3] [US4] Add shadcn checkbox component (`npx shadcn@latest add checkbox`)
+- [X] [T071] [P3] [US4] Add shadcn select component (`npx shadcn@latest add select`)
 
 ### 6.3 Component Refactoring
 - [ ] [T072] [P3] [US4] Update `frontend/components/task-form.tsx` to use shadcn Input, Textarea, Label, Button (Note: Uses custom Zenith styling)

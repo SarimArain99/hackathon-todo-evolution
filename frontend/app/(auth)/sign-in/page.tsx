@@ -1,19 +1,26 @@
-/**
- * Zenith Sign In Page - Master Edition
- * Features: 
- * - Advanced Framer Motion Staggering
- * - Breathing Background Blobs (No horizontal scroll)
- * - Nuclear Scrollbar Removal
- * - Fully Responsive Logic
- */
-
 "use client";
 
 import { useState } from "react";
 import { signIn } from "@/lib/auth-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
+import { Mail, Lock, Loader2, ArrowRight, ShieldCheck } from "lucide-react";
+
+function EtherealBackground() {
+  return (
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+      <div 
+        className="absolute top-[-10%] right-[-5%] w-[60%] h-[50%] rounded-full opacity-[0.15] blur-[120px]"
+        style={{ background: 'var(--primary)', willChange: 'transform' }}
+      />
+      <div 
+        className="absolute bottom-[-10%] left-[-5%] w-[60%] h-[50%] rounded-full opacity-[0.1] blur-[120px]"
+        style={{ background: 'var(--accent)', willChange: 'transform' }}
+      />
+    </div>
+  );
+}
 
 export default function SignInPage() {
   const router = useRouter();
@@ -22,22 +29,16 @@ export default function SignInPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Animation Variants
-  const containerVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.8,
-        staggerChildren: 0.12,
-        ease: [0.4, 0, 0.2, 1] as const,
-      },
-    },
-  } as const;
-
-  const itemVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1, y: 0,
+      transition: { duration: 0.8, staggerChildren: 0.1, ease: [0.16, 1, 0.3, 1] },
+    },
+  };
+
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 10 },
     visible: { opacity: 1, y: 0 },
   };
 
@@ -45,184 +46,111 @@ export default function SignInPage() {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
-
     try {
       const result = await signIn.email({ email, password });
-      // Debug logging
-      console.log("Sign-in result:", result);
-
-      // Check if sign-in was successful (has user or token)
-      // In stateless JWT mode, response contains user and token, not session
       if (result.data?.user || result.data?.token) {
-        // Sign-in successful - redirect
         router.push("/dashboard");
         router.refresh();
         return;
       }
-
-      // Check if there's an error
-      if (result.error) {
-        setError(result.error.message || "Invalid credentials. Please try again.");
-      } else {
-        // No error but also no session - unexpected state
-        setError("Sign-in completed but session not established. Please try again.");
-      }
+      setError(result.error?.message || "Invalid credentials.");
     } catch (err) {
-      console.error("Sign-in error:", err);
-      setError("A connection error occurred. Please check your network.");
+      setError("Connection error occurred.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <main className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-gray-950 px-4 py-8 no-scrollbar">
-      
-      {/* ANIMATED BACKGROUND BLOBS: Isolated to prevent layout shifting */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.2, 1],
-            x: [0, 50, 0],
-            y: [0, -30, 0],
-            rotate: [0, 10, 0]
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: [0.4, 0, 0.2, 1] }}
-          className="absolute top-[-5%] right-[-10%] w-[80%] sm:w-[50%] h-[50%] rounded-full bg-indigo-500/20 blur-[100px] sm:blur-[140px]"
-        />
-        <motion.div
-          animate={{
-            scale: [1, 1.3, 1],
-            x: [0, -60, 0],
-            y: [0, 40, 0],
-            rotate: [0, -10, 0]
-          }}
-          transition={{ duration: 18, repeat: Infinity, ease: [0.4, 0, 0.2, 1] }}
-          className="absolute bottom-[-10%] left-[-15%] w-[80%] sm:w-[50%] h-[50%] rounded-full bg-purple-500/20 blur-[100px] sm:blur-[140px]" 
-        />
-      </div>
+    <main className="relative min-h-dvh flex items-center justify-center overflow-hidden bg-background px-4 py-8">
+      <EtherealBackground />
 
-      <motion.div 
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="relative z-10 w-full max-w-md"
+      <motion.div
+        initial="hidden" animate="visible" variants={containerVariants}
+        className="relative z-10 w-full max-w-110"
       >
-        {/* Branding */}
-        <motion.div variants={itemVariants} className="text-center mb-5">
-          <Link href="/" className="text-3xl font-black tracking-tighter text-indigo-600 dark:text-indigo-400 hover:opacity-80 transition inline-block">
-            ZENITH
+        <motion.div variants={itemVariants} className="text-center mb-10">
+          <Link href="/" className="inline-flex flex-col items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-xl shadow-primary/20">
+               <div className="w-5 h-5 bg-primary-foreground rounded-sm rotate-45" />
+            </div>
+            <span className="text-3xl font-bold tracking-tighter gradient-text-ethereal">
+              ZENITH
+            </span>
           </Link>
         </motion.div>
 
-        {/* The Glass Card */}
-        <motion.div 
+        <motion.div
           variants={itemVariants}
-          className="bg-white/40 dark:bg-gray-900/40 backdrop-blur-3xl border border-white/20 dark:border-gray-800/50 rounded-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] p-6 sm:p-10"
+          className="glass-panel rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden"
         >
-          {/* Card Header */}
-          <div className="text-center mb-8 sm:mb-10">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
-              Welcome Back
-            </h1>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-2 font-medium">
-              Access your optimized workflow
-            </p>
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
+            <p className="text-foreground-muted text-sm mt-2 font-light">Access your Zenith Workspace</p>
           </div>
 
-          {/* Error Message with Layout Animation */}
           <AnimatePresence mode="wait">
             {error && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0, scale: 0.95 }}
-                animate={{ opacity: 1, height: "auto", scale: 1 }}
-                exit={{ opacity: 0, height: 0, scale: 0.95 }}
-                className="mb-6 overflow-hidden"
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                className="mb-6 p-4 rounded-2xl bg-danger/10 border border-danger/20 flex items-center gap-3"
               >
-                <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl backdrop-blur-md">
-                  <p className="text-xs sm:text-sm text-rose-600 dark:text-rose-400 text-center font-bold tracking-tight">
-                    {error}
-                  </p>
-                </div>
+                <p className="text-xs text-danger font-medium">{error}</p>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Form Content */}
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-            <motion.div variants={itemVariants}>
-              <label htmlFor="email" className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 ml-1">
-                Work Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all placeholder:text-gray-400 text-sm sm:text-base"
-                placeholder="name@company.com"
-              />
-            </motion.div>
-
-            <motion.div variants={itemVariants}>
-              <div className="flex justify-between items-center mb-2 ml-1">
-                <label htmlFor="password" className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Password
-                </label>
-                {/* Forgot password disabled - requires database */}
-                {/* <Link href="/forgot-password" className="text-[10px] sm:text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
-                  Forgot?
-                </Link> */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-foreground-muted ml-1">Email</label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted/40" />
+                <input
+                  type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
+                  placeholder="name@example.com"
+                  className="w-full pl-12 pr-4 py-4 bg-background/50 border border-border rounded-2xl text-sm focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all"
+                />
               </div>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all placeholder:text-gray-400 text-sm sm:text-base"
-                placeholder="••••••••"
-              />
-            </motion.div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between items-center px-1">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-foreground-muted">Password</label>
+                <button type="button" className="text-[10px] text-primary font-bold uppercase">Forgot?</button>
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted/40" />
+                <input
+                  type="password" value={password} onChange={(e) => setPassword(e.target.value)} required
+                  placeholder="••••••••"
+                  className="w-full pl-12 pr-4 py-4 bg-background/50 border border-border rounded-2xl text-sm focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all"
+                />
+              </div>
+            </div>
 
             <motion.button
-              variants={itemVariants}
-              whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
-              type="submit"
               disabled={isLoading}
-              className="w-full py-4 px-6 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/25 transition-all flex items-center justify-center mt-8 text-sm sm:text-base"
+              className="w-full py-4 bg-primary text-primary-foreground font-bold text-sm rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.01] transition-all flex items-center justify-center gap-3 mt-6 button-shine disabled:opacity-50"
             >
-              {isLoading ? (
-                <motion.div 
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full mr-3"
-                />
-              ) : null}
-              {isLoading ? "Authenticating..." : "Sign In to Zenith"}
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                <><span>Sign In</span><ArrowRight className="w-4 h-4" /></>
+              )}
             </motion.button>
           </form>
 
-          {/* Footer Navigation */}
-          <motion.div variants={itemVariants} className="mt-8 text-center border-t border-gray-200/20 pt-8">
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
-              New to Zenith?{" "}
-              <Link href="/sign-up" className="font-bold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 transition-colors">
-                Create an account
-              </Link>
+          <div className="mt-8 text-center pt-8 border-t border-border/50">
+            <p className="text-sm text-foreground-muted font-light">
+              Don&apos;t have an account?{" "}
+              <Link href="/sign-up" className="font-semibold text-primary">Join Zenith</Link>
             </p>
-          </motion.div>
+          </div>
         </motion.div>
 
-        {/* Security Info */}
-        <motion.p 
-          variants={itemVariants}
-          className="mt-3 text-center text-[10px] text-gray-400 dark:text-gray-600 uppercase tracking-[0.2em] font-bold"
-        >
-          AES-256 Cloud Encryption Active
-        </motion.p>
+        <motion.div variants={itemVariants} className="mt-8 flex justify-center items-center gap-2 opacity-30">
+          <ShieldCheck className="w-4 h-4" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Secure Session</span>
+        </motion.div>
       </motion.div>
     </main>
   );

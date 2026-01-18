@@ -23,9 +23,9 @@ Frontend web application structure: `frontend/app/`, `frontend/components/`, `fr
 
 **Purpose**: Verify development environment and create backup point
 
-- [ ] T001 Verify development server starts in `frontend/` (run `npm run dev`)
-- [ ] T002 Run TypeScript type check in `frontend/` (run `npx tsc --noEmit`)
-- [ ] T003 Create backup branch before making changes (run `git checkout -b backup-before-improvements`)
+- [X] T001 Verify development server starts in `frontend/` (run `npm run dev`)
+- [X] T002 Run TypeScript type check in `frontend/` (run `npx tsc --noEmit`)
+- [X] T003 Create backup branch before making changes (run `git checkout -b backup-before-improvements`)
 
 **Checkpoint**: Development environment verified, backup created
 
@@ -37,8 +37,8 @@ Frontend web application structure: `frontend/app/`, `frontend/components/`, `fr
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 [P] Create Skeleton component in `frontend/components/task-skeleton.tsx`
-- [ ] T005 [P] Create ConfirmDialog component in `frontend/components/confirm-dialog.tsx`
+- [X] T004 [P] Create Skeleton component in `frontend/components/task-skeleton.tsx`
+- [X] T005 [P] Create ConfirmDialog component in `frontend/components/confirm-dialog.tsx`
 
 **Checkpoint**: Shared components ready - user story implementation can now begin in parallel
 
@@ -52,12 +52,12 @@ Frontend web application structure: `frontend/app/`, `frontend/components/`, `fr
 
 ### Implementation for User Story 1
 
-- [ ] T006 [P] [US1] Fix gradient text class in `frontend/app/page.tsx` line 84 (`bg-linear-to-r` → `bg-gradient-to-r`)
-- [ ] T007 [P] [US1] Fix separator gradient in `frontend/app/(protected)/dashboard/dashboard-client.tsx` line 98 (`bg-linear-to-r` → `bg-gradient-to-r`)
-- [ ] T008 [P] [US1] Fix overdue indicator gradient in `frontend/components/task-item.tsx` line 96 (`bg-linear-to-b` → `bg-gradient-to-b`)
-- [ ] T009 [P] [US1] Fix min-height in `frontend/components/task-list.tsx` line 115 (`min-h-75` → `min-h-[18.75rem]`)
-- [ ] T010 [P] [US1] Fix theme toggle width in `frontend/components/theme-toggle.tsx` line 26 (`w-27` → `w-[108px]`)
-- [ ] T011 [US1] Fix Indigo 600 OKLCH color in `frontend/app/globals.css` line 9 (add chroma value)
+- [X] T006 [P] [US1] Fix gradient text class in `frontend/app/page.tsx` line 84 (`bg-linear-to-r` → `bg-gradient-to-r`)
+- [X] T007 [P] [US1] Fix separator gradient in `frontend/app/(protected)/dashboard/dashboard-client.tsx` line 98 (`bg-linear-to-r` → `bg-gradient-to-r`)
+- [X] T008 [P] [US1] Fix overdue indicator gradient in `frontend/components/task-item.tsx` line 96 (`bg-linear-to-b` → `bg-gradient-to-b`)
+- [X] T009 [P] [US1] Fix min-height in `frontend/components/task-list.tsx` line 115 (`min-h-75` → `min-h-[18.75rem]`)
+- [X] T010 [P] [US1] Fix theme toggle width in `frontend/components/theme-toggle.tsx` line 26 (`w-27` → `w-[108px]`)
+- [X] T011 [US1] Fix Indigo 600 OKLCH color in `frontend/app/globals.css` line 9 (add chroma value)
 
 **Checkpoint**: Visual elements render correctly - gradients display, sizing is correct, colors are accurate
 
@@ -71,13 +71,13 @@ Frontend web application structure: `frontend/app/`, `frontend/components/`, `fr
 
 ### Implementation for User Story 2
 
-- [ ] T012 [P] [US2] Add aria-label to edit button in `frontend/components/task-item.tsx`
-- [ ] T013 [P] [US2] Add aria-label to delete button in `frontend/components/task-item.tsx`
-- [ ] T014 [P] [US2] Add aria-label to close form button in `frontend/components/task-form.tsx`
-- [ ] T015 [P] [US2] Add aria-label to theme toggle buttons in `frontend/components/theme-toggle.tsx`
-- [ ] T016 [P] [US2] Add aria-pressed to active theme button in `frontend/components/theme-toggle.tsx`
-- [ ] T017 [P] [US2] Add aria-label to filter dropdowns in `frontend/components/task-list.tsx`
-- [ ] T018 [US2] Verify focus states are visible on all interactive elements in `frontend/app/(auth)/sign-in/page.tsx`
+- [X] T012 [P] [US2] Add aria-label to edit button in `frontend/components/task-item.tsx`
+- [X] T013 [P] [US2] Add aria-label to delete button in `frontend/components/task-item.tsx`
+- [X] T014 [P] [US2] Add aria-label to close form button in `frontend/components/task-form.tsx`
+- [X] T015 [P] [US2] Add aria-label to theme toggle buttons in `frontend/components/theme-toggle.tsx`
+- [X] T016 [P] [US2] Add aria-pressed to active theme button in `frontend/components/theme-toggle.tsx`
+- [X] T017 [P] [US2] Add aria-label to filter dropdowns in `frontend/components/task-list.tsx`
+- [X] T018 [US2] Verify focus states are visible on all interactive elements in `frontend/app/(auth)/sign-in/page.tsx`
 
 **Checkpoint**: Screen reader announces all interactive elements; keyboard navigation works with visible focus indicators
 
@@ -91,13 +91,13 @@ Frontend web application structure: `frontend/app/`, `frontend/components/`, `fr
 
 ### Implementation for User Story 3
 
-- [ ] T019 [P] [US3] Replace `rounded-[2.5rem]` with `rounded-3xl` in `frontend/app/page.tsx`
-- [ ] T020 [P] [US3] Replace `rounded-[2.5rem]` with `rounded-3xl` in `frontend/app/(auth)/sign-in/page.tsx`
-- [ ] T021 [P] [US3] Replace `rounded-[2.5rem]` with `rounded-3xl` in `frontend/app/(auth)/sign-up/page.tsx`
-- [ ] T022 [P] [US3] Replace `rounded-[2.5rem]` with `rounded-3xl` in `frontend/app/(protected)/dashboard/page.tsx`
-- [ ] T023 [P] [US3] Replace `rounded-[2.5rem]` with `rounded-3xl` in `frontend/components/task-form.tsx`
-- [ ] T024 [P] [US3] Replace `rounded-[2.5rem]` with `rounded-3xl` in `frontend/components/task-list.tsx`
-- [ ] T025 [P] [US3] Standardize button hover scale to `scale-1.01` in `frontend/app/page.tsx` (currently `scale-[1.03]`)
+- [X] T019 [P] [US3] Replace `rounded-[2.5rem]` with `rounded-3xl` in `frontend/app/page.tsx`
+- [X] T020 [P] [US3] Replace `rounded-[2.5rem]` with `rounded-3xl` in `frontend/app/(auth)/sign-in/page.tsx`
+- [X] T021 [P] [US3] Replace `rounded-[2.5rem]` with `rounded-3xl` in `frontend/app/(auth)/sign-up/page.tsx`
+- [X] T022 [P] [US3] Replace `rounded-[2.5rem]` with `rounded-3xl` in `frontend/app/(protected)/dashboard/page.tsx`
+- [X] T023 [P] [US3] Replace `rounded-[2.5rem]` with `rounded-3xl` in `frontend/components/task-form.tsx`
+- [X] T024 [P] [US3] Replace `rounded-[2.5rem]` with `rounded-3xl` in `frontend/components/task-list.tsx`
+- [X] T025 [P] [US3] Standardize button hover scale to `scale-1.01` in `frontend/app/page.tsx` (currently `scale-[1.03]`)
 
 **Checkpoint**: All border radii use standard scale; all hover animations use consistent scale
 
@@ -111,8 +111,8 @@ Frontend web application structure: `frontend/app/`, `frontend/components/`, `fr
 
 ### Implementation for User Story 4
 
-- [ ] T026 [US4] Replace `window.confirm()` with ConfirmDialog in `frontend/components/task-item.tsx`
-- [ ] T027 [US4] Replace `window.location.href` with `router.push()` in `frontend/components/logout-button.tsx`
+- [X] T026 [US4] Replace `window.confirm()` with ConfirmDialog in `frontend/components/task-item.tsx`
+- [X] T027 [US4] Replace `window.location.href` with `router.push()` in `frontend/components/logout-button.tsx`
 
 **Checkpoint**: Delete confirmation uses styled modal; logout uses smooth router navigation
 
@@ -126,8 +126,8 @@ Frontend web application structure: `frontend/app/`, `frontend/components/`, `fr
 
 ### Implementation for User Story 5
 
-- [ ] T028 [P] [US5] Add skeleton loading display to `frontend/components/task-list.tsx` (use TaskSkeleton component)
-- [ ] T029 [US5] Enhance empty state message in `frontend/components/task-list.tsx` (add helpful guidance text)
+- [X] T028 [P] [US5] Add skeleton loading display to `frontend/components/task-list.tsx` (use TaskSkeleton component)
+- [X] T029 [US5] Enhance empty state message in `frontend/components/task-list.tsx` (add helpful guidance text)
 
 **Checkpoint**: Loading shows skeleton animation; empty list shows helpful message
 
@@ -141,8 +141,8 @@ Frontend web application structure: `frontend/app/`, `frontend/components/`, `fr
 
 ### Implementation for User Story 6
 
-- [ ] T030 [P] [US6] Update `metadataBase` URL in `frontend/app/layout.tsx` (replace placeholder with actual Vercel URL)
-- [ ] T031 [P] [US6] Update tech stack claim from "Next.js 15" to "Next.js 16" in `frontend/app/page.tsx`
+- [X] T030 [P] [US6] Update `metadataBase` URL in `frontend/app/layout.tsx` (replace placeholder with actual Vercel URL)
+- [X] T031 [P] [US6] Update tech stack claim from "Next.js 15" to "Next.js 16" in `frontend/app/page.tsx`
 
 **Checkpoint**: Metadata contains production URLs; tech stack claims are accurate
 
@@ -152,10 +152,10 @@ Frontend web application structure: `frontend/app/`, `frontend/components/`, `fr
 
 **Purpose**: Code quality improvements and validation
 
-- [ ] T032 [P] Wrap console logs in development check in `frontend/lib/api.ts`
-- [ ] T033 Run TypeScript type check in `frontend/` (run `npx tsc --noEmit`)
-- [ ] T034 Run production build in `frontend/` (run `npm run build`)
-- [ ] T035 Run quickstart.md validation checklist
+- [X] T032 [P] Wrap console logs in development check in `frontend/lib/api.ts`
+- [X] T033 Run TypeScript type check in `frontend/` (run `npx tsc --noEmit`)
+- [X] T034 Run production build in `frontend/` (run `npm run build`)
+- [X] T035 Run quickstart.md validation checklist
 
 ---
 
