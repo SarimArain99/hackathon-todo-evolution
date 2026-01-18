@@ -2,6 +2,11 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "overrides": {
+    "@emoji-mart/react": {
+      "react": "^19.2.3"
+    }
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
