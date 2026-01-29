@@ -1,9 +1,10 @@
 # --- Stage 1: Build ---
-FROM python:3.13-slim as builder
+FROM python:3.13-slim AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    PATH="/opt/venv/bin:$PATH"
 
 WORKDIR /app
 
@@ -13,22 +14,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Use a virtualenv for cleaner path copying
+# Create and use virtualenv
 RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
 
-COPY pyproject.toml requirements.txt* ./
-# Install dependencies into the virtualenv
-RUN pip install --no-cache-dir -r requirements.txt || pip install --no-cache-dir .
+# Install UV for faster dependency resolution
+RUN pip install uv
+
+# Copy dependency files
+COPY pyproject.toml ./
+
+# Install dependencies using UV (falls back to pip if needed)
+RUN uv pip install --system -e . || pip install -e .
 
 # --- Stage 2: Runtime ---
 FROM python:3.13-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PORT=7860 \
-    # IMPORTANT: Move DB to /data if you upgrade to persistent storage later
-    DATABASE_URL=sqlite:///./todo.db \
+    PORT=8000 \
     PATH="/opt/venv/bin:$PATH"
 
 WORKDIR /app
@@ -37,19 +40,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
-# Create HF-compatible user (UID 1000)
+# Create non-root user (UID 1000) for security (NFR-004)
 RUN useradd -m -u 1000 appuser && \
     chown -R appuser:appuser /app
-    
+
 # Copy the virtualenv from the builder
 COPY --from=builder /opt/venv /opt/venv
 COPY --chown=appuser:appuser . .
 
 USER appuser
 
-EXPOSE 7860
+EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:7860/health').read()"
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

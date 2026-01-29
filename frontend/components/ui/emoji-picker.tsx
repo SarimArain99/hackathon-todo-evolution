@@ -44,7 +44,7 @@ export function EmojiPicker({ onEmojiSelect, className }: EmojiPickerProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [isOpen])
 
-  const handleEmojiSelect = (emoji: any) => {
+  const handleEmojiSelect = (emoji: { native: string }) => {
     onEmojiSelect(emoji.native)
     setIsOpen(false)
   }
