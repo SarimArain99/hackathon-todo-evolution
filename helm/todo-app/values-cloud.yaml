@@ -1,0 +1,31 @@
+# Cloud deployment values for Phase V
+# This file extends values.yaml with cloud-specific configurations
+# Use during Phase V for cloud deployment (DOKS/AKS/GKE)
+
+# Enable Dapr for cloud deployment (Phase V)
+dapr:
+  enabled: true
+
+# Override backend image registry for cloud deployment
+backend:
+  image:
+    # Set your cloud registry (e.g., ghcr.io, docker.io)
+    repository: ghcr.io/your-org/todo-backend
+    tag: latest
+
+# Override frontend image registry for cloud deployment
+frontend:
+  image:
+    # Set your cloud registry (e.g., ghcr.io, docker.io)
+    repository: ghcr.io/your-org/todo-frontend
+    tag: latest
+
+# Cloud-specific ingress configuration
+ingress:
+  # Cloud provider may require different ingress class
+  className: nginx
+  # Use actual domain name for cloud deployment
+  host: todo.your-domain.com
+  annotations:
+    # Cloud provider-specific annotations
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"

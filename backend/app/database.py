@@ -38,19 +38,33 @@ else:
             parsed.fragment,
         ))
 
+# Build engine arguments based on database type
+# SQLite doesn't support connection pooling - only apply pool settings to PostgreSQL
+is_postgres = ASYNC_DATABASE_URL.startswith("postgresql")
+is_sqlite = ASYNC_DATABASE_URL.startswith("sqlite")
+
+engine_kwargs = {
+    "echo": os.getenv("DEBUG") == "true",
+    "future": True,
+}
+
+# Pool settings only for PostgreSQL
+if is_postgres:
+    engine_kwargs.update({
+        "pool_size": 20,
+        "max_overflow": 30,
+        "pool_pre_ping": True,  # Verify connections before use
+        "pool_recycle": 3600,  # Recycle connections after 1 hour
+    })
+
+# SQLite-specific connect args
+if is_sqlite:
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+
 # Async engine for FastAPI with connection pooling
 async_engine: AsyncEngine = create_async_engine(
     ASYNC_DATABASE_URL,
-    echo=True if os.getenv("DEBUG") == "true" else False,
-    future=True,
-    # Connection pool settings for production
-    pool_size=20 if ASYNC_DATABASE_URL.startswith("postgresql") else 5,
-    max_overflow=30 if ASYNC_DATABASE_URL.startswith("postgresql") else 10,
-    pool_pre_ping=True,  # Verify connections before use
-    pool_recycle=3600,  # Recycle connections after 1 hour
-    connect_args={
-        "check_same_thread": False  # SQLite: allow multiple threads
-    } if ASYNC_DATABASE_URL.startswith("sqlite") else {},
+    **engine_kwargs,
 )
 
 # Session factory

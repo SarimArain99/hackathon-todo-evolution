@@ -1,8 +1,8 @@
 """
 JWT Authentication module for Hackathon Todo Evolution.
 
-Verifies JWT tokens issued by Better Auth by extracting the payload
-and optionally validating with Better Auth.
+Verifies JWT tokens issued by Better Auth with signature verification
+using JWKS (JSON Web Key Set) endpoint.
 
 Better Auth uses Ed25519 (EdDSA) for JWT signing by default.
 """
@@ -12,13 +12,21 @@ import json
 import base64
 from typing import Optional
 from datetime import datetime
+from functools import lru_cache
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import httpx
+import jwt
+from jwt import PyJWKClient
+from cryptography.hazmat.primitives.serialization import load_pem_public_key
+from cryptography.hazmat.backends import default_backend
 
 from app.database import get_session
 from app.models import User, UserRead
+from app.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 # Security scheme for Bearer tokens
 security = HTTPBearer()
@@ -27,6 +35,25 @@ security = HTTPBearer()
 API_URL = os.getenv("NEXT_PUBLIC_API_URL", "http://localhost:3000")
 JWT_ISSUER = os.getenv("JWT_ISSUER", API_URL)
 JWT_AUDIENCE = os.getenv("JWT_AUDIENCE", API_URL)
+JWKS_URL = os.getenv("JWKS_URL", f"{API_URL}/api/auth/jwks")
+
+# Enable strict JWT verification in production
+STRICT_JWT_VERIFICATION = os.getenv("STRICT_JWT_VERIFICATION", "false").lower() == "true"
+
+
+@lru_cache()
+def get_jwks_client() -> PyJWKClient:
+    """
+    Cached JWKS client for JWT signature verification.
+
+    The cache ensures we don't create a new client on every request.
+    Returns None if JWKS_URL is not configured (development mode).
+    """
+    try:
+        return PyJWKClient(JWKS_URL)
+    except Exception as e:
+        logger.warning("jwks_client_init_failed", url=JWKS_URL, error=str(e))
+        return None
 
 
 def base64url_decode(input: str) -> bytes:
@@ -106,9 +133,10 @@ async def verify_jwt_token(token: str) -> Optional[dict]:
     Verify a JWT token from Better Auth.
 
     This function:
-    1. Decodes the JWT to extract user claims
-    2. Validates the token structure and expiration
-    3. Optionally validates with Better Auth (in production)
+    1. Verifies the JWT signature using JWKS (in strict mode)
+    2. Decodes the JWT to extract user claims
+    3. Validates the token structure and expiration
+    4. Validates issuer claim (in strict mode)
 
     Args:
         token: The JWT token string
@@ -116,7 +144,38 @@ async def verify_jwt_token(token: str) -> Optional[dict]:
     Returns:
         dict: The user claims from the JWT if valid, None otherwise
     """
-    # First decode the JWT to get the payload
+    # In strict mode, verify signature using JWKS
+    if STRICT_JWT_VERIFICATION:
+        jwks_client = get_jwks_client()
+        if jwks_client is not None:
+            try:
+                # Decode with signature verification
+                # Better Auth uses Ed25519 (EdDSA) algorithm
+                data = jwt.decode(
+                    token,
+                    key=jwks_client.get_signing_key_from_jwt(token).key,
+                    algorithms=["EdDSA", "RS256", "ES256"],
+                    audience=JWT_AUDIENCE,
+                    issuer=JWT_ISSUER,
+                    options={
+                        "verify_aud": bool(JWT_AUDIENCE),
+                        "verify_iss": bool(JWT_ISSUER),
+                    }
+                )
+                logger.debug("jwt_verified_with_jwks", user_id=data.get("sub"))
+                return data
+            except jwt.ExpiredSignatureError:
+                logger.warning("jwt_expired", aud=JWT_AUDIENCE)
+                return None
+            except jwt.InvalidTokenError as e:
+                logger.warning("jwt_verification_failed", error=str(e))
+                return None
+            except Exception as e:
+                logger.error("jwt_verification_error", error=str(e))
+                return None
+
+    # Fallback: Decode without signature verification (development mode only)
+    # WARNING: This is NOT secure for production use
     payload = decode_jwt_payload(token)
 
     if payload is None:
@@ -127,19 +186,19 @@ async def verify_jwt_token(token: str) -> Optional[dict]:
     if exp:
         exp_datetime = datetime.utcfromtimestamp(exp)
         if datetime.utcnow() > exp_datetime:
+            logger.warning("jwt_expired", aud=JWT_AUDIENCE)
             return None
 
-    # Validate issuer (if specified)
-    if JWT_ISSUER and payload.get("iss") != JWT_ISSUER:
-        # For development, we might not have iss in the token
-        # Uncomment the return None for strict validation
-        pass  # TODO: Enable strict validation in production
+    # Validate issuer (if specified and in strict mode)
+    if STRICT_JWT_VERIFICATION and JWT_ISSUER:
+        if payload.get("iss") != JWT_ISSUER:
+            logger.warning("jwt_issuer_mismatch", expected=JWT_ISSUER, got=payload.get("iss"))
+            return None
 
     # The JWT payload from Better Auth should contain:
     # - sub: user ID
     # - email: user email
     # - name: user name
-    # Or we can extract from the payload directly
     return payload
 
 
@@ -202,9 +261,11 @@ async def get_current_user(
             existing_user = result.scalar_one_or_none()
 
             if existing_user:
-                # User exists with same email but different ID - update the ID
-                existing_user.id = user_id
-                existing_user.name = name or existing_user.name
+                # User exists with same email but different ID
+                # DO NOT update the ID - it's the primary key and would violate foreign keys
+                # Just update the name if provided, and use the existing user
+                if name:
+                    existing_user.name = name
                 await session.commit()
                 await session.refresh(existing_user)
                 user = existing_user

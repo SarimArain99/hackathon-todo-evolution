@@ -24,16 +24,21 @@ export const auth = betterAuth({
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
 
   // Trusted origins for CSRF protection
-  // Include localhost and Vercel deployment
-  // Note: disableOriginCheck is set to true below, so this array is not actively enforced
-  trustedOrigins: [
-    "http://localhost:3000",
-    "https://zenith-flow-zeta.vercel.app",
-  ],
+  // Configurable via environment variable for production deployments
+  trustedOrigins: (
+    process.env.BETTER_AUTH_TRUSTED_ORIGINS ||
+    "http://localhost:3000,https://zenith-flow-zeta.vercel.app"
+  ).split(","),
 
   // Secret key for signing JWT tokens
-  // IMPORTANT: Set BETTER_AUTH_SECRET environment variable in production!
-  secret: process.env.BETTER_AUTH_SECRET || "change-this-secret-in-production",
+  // IMPORTANT: BETTER_AUTH_SECRET environment variable is REQUIRED
+  // Application will fail to start if not set (production security requirement)
+  secret: process.env.BETTER_AUTH_SECRET || (() => {
+    throw new Error(
+      "BETTER_AUTH_SECRET environment variable is required. " +
+      "Generate a secure random string (32+ characters) and set it in .env or deployment environment."
+    );
+  })(),
 
   // Advanced configuration
   advanced: {
@@ -42,9 +47,9 @@ export const auth = betterAuth({
     crossSubDomainCookies: {
       enabled: false,
     },
-    // Disable CSRF origin check for Vercel serverless deployment
-    // Note: In production with a custom domain, you should use trustedOrigins instead
-    disableOriginCheck: true,
+    // CSRF protection enabled - only requests from trustedOrigins allowed
+    // For development with localhost, ensure your localhost port is in trustedOrigins
+    disableOriginCheck: false,
     // Use secure cookies (HTTPS only)
     useSecureCookies: process.env.NODE_ENV === "production",
   },
@@ -70,7 +75,8 @@ export const auth = betterAuth({
   // Email & password authentication
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false, // Set to true in production
+    // Email verification requirement - configurable via environment
+    requireEmailVerification: process.env.REQUIRE_EMAIL_VERIFICATION === "true",
   },
 
   // STATELESS SESSION CONFIGURATION

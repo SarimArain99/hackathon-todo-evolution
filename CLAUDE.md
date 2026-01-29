@@ -212,8 +212,5 @@ See `.specify/memory/constitution.md` for code quality, testing, performance, se
 ## Recent Changes
 - 001-frontend-design-improvements: Added TypeScript 5+ (Next.js 16.1.1) + Next.js 16+, Tailwind CSS v4, Framer Motion, lucide-react, Better Auth, Sonner
 - 002-ui-ux-enhancement: Added TypeScript 5+, React 19, Next.js 16.1.1
-- 002-console-enhanced-features: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
 ## Active Technologies
-- TypeScript 5+ (Next.js 16.1.1) + Next.js 16+, Tailwind CSS v4, Framer Motion, lucide-react, Better Auth, Sonner (001-frontend-design-improvements)
-- N/A (no database changes) (001-frontend-design-improvements)

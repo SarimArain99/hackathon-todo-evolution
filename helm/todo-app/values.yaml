@@ -1,0 +1,129 @@
+# Default values for todo-app Helm chart
+# This is a YAML-formatted file that declares variables to be passed into templates.
+# Reference: https://helm.sh/docs/chart_best_practices/values/
+
+#=============================================================================
+# Global Configuration
+#=============================================================================
+global:
+  # Kubernetes namespace for all resources
+  namespace: todo-app
+
+#=============================================================================
+# Backend Configuration (FastAPI)
+#=============================================================================
+backend:
+  # Deployment metadata
+  name: backend
+
+  # Container image specification (FR-001, FR-004)
+  image:
+    repository: todo-backend
+    tag: latest
+    pullPolicy: IfNotPresent  # Options: Always, IfNotPresent, Never
+
+  # Replica count for horizontal scaling (FR-008)
+  replicas: 1
+
+  # Container port (FR-016, FR-017 - health check endpoint)
+  port: 8000
+
+  # Resource limits and requests (FR-007, NFR-003)
+  # m = millicore (100m = 0.1 CPU), Mi = Mebibyte
+  resources:
+    limits:
+      cpu: 200m      # Maximum CPU usage
+      memory: 256Mi  # Maximum memory usage
+    requests:
+      cpu: 100m      # Guaranteed CPU allocation
+      memory: 128Mi  # Guaranteed memory allocation
+
+  # Environment variables (FR-009, FR-010)
+  # IMPORTANT: Sensitive values MUST be set via --set or values-cloud.yaml
+  # Example: --set backend.env.DATABASE_URL="sqlite:////app/data/todo.db"
+  env:
+    # Database connection string (SQLite for local, PostgreSQL for cloud)
+    DATABASE_URL: ""
+    # Secret key for Better Auth JWT signing
+    BETTER_AUTH_SECRET: ""
+    # OpenAI API key for AI chatbot features
+    OPENAI_API_KEY: ""
+
+#=============================================================================
+# Frontend Configuration (Next.js)
+#=============================================================================
+frontend:
+  # Deployment metadata
+  name: frontend
+
+  # Container image specification (FR-002, FR-004)
+  image:
+    repository: todo-frontend
+    tag: latest
+    pullPolicy: IfNotPresent  # Options: Always, IfNotPresent, Never
+
+  # Replica count for horizontal scaling (FR-008)
+  replicas: 1
+
+  # Container port (FR-018 - frontend health check)
+  port: 3000
+
+  # Resource limits and requests (FR-007, NFR-003)
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  # Environment variables (FR-009)
+  env:
+    # URL for backend API (internal cluster communication)
+    NEXT_PUBLIC_API_URL: "http://backend:8000"
+
+#=============================================================================
+# Ingress Configuration (FR-012 to FR-015)
+#=============================================================================
+ingress:
+  # Enable/disable ingress for external access (FR-012)
+  enabled: true
+
+  # Ingress class (Minikube uses "nginx")
+  className: nginx
+
+  # Hostname for local access (add to /etc/hosts)
+  host: todo.local
+
+  # Additional annotations (TLS, CORS, etc.)
+  # For local development, these are typically empty
+  annotations: {}
+
+#=============================================================================
+# Dapr Integration (Phase V Only)
+#=============================================================================
+dapr:
+  # Enable Dapr sidecar for distributed runtime (Phase V)
+  # Set to true in values-cloud.yaml for cloud deployment
+  enabled: false
+
+#=============================================================================
+# PostgreSQL Configuration (Production)
+#=============================================================================
+postgres:
+  # Enable PostgreSQL for production deployment (disabled by default for local SQLite)
+  enabled: false
+  # Database name
+  database: todo_db
+  # Storage size for persistent volume
+  storage: 1Gi
+  # Resource limits and requests
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  # Note: User and password should be set via --set or values-cloud.yaml
+  # Example: --set postgres.user=todo_user --set postgres.password=secure_password

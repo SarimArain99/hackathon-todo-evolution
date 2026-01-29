@@ -71,17 +71,36 @@ class SecurityHeadersMiddleware:
                 headers[b"api-version"] = b"0.1.0"
 
                 # Content Security Policy for XSS protection
-                # Default to same-origin for scripts, allow inline styles for development
-                csp_directives = [
-                    "default-src 'self'",
-                    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",  # unsafe-inline needed for Vite HMR in dev
-                    "style-src 'self' 'unsafe-inline'",
-                    "img-src 'self' data: https:",
-                    "font-src 'self' data:",
-                    "connect-src 'self' http://localhost:* http://127.0.0.1:* https:",
-                    "frame-ancestors 'none'",
-                    "form-action 'self'",
-                ]
+                # Environment-based CSP - strict for production, lenient for development
+                is_development = os.getenv("ENVIRONMENT", "development") == "development"
+
+                if is_development:
+                    # Development CSP - allows unsafe directives for Vite HMR
+                    csp_directives = [
+                        "default-src 'self'",
+                        "script-src 'self' 'unsafe-inline' 'unsafe-eval'",  # Required for Vite HMR
+                        "style-src 'self' 'unsafe-inline'",
+                        "img-src 'self' data: https:",
+                        "font-src 'self' data:",
+                        "connect-src 'self' http://localhost:* http://127.0.0.1:* https:",
+                        "frame-ancestors 'none'",
+                        "form-action 'self'",
+                    ]
+                else:
+                    # Production CSP - no unsafe directives for maximum security
+                    # Scripts must be from same origin or properly whitelisted CDN domains
+                    csp_directives = [
+                        "default-src 'self'",
+                        "script-src 'self'",  # No unsafe-inline in production
+                        "style-src 'self' 'unsafe-inline'",  # Style inline still needed for some components
+                        "img-src 'self' data: https:",
+                        "font-src 'self' data:",
+                        "connect-src 'self' https:",  # Only HTTPS in production
+                        "frame-ancestors 'none'",
+                        "form-action 'self'",
+                        "base-uri 'self'",
+                        "object-src 'none'",
+                    ]
                 headers[b"content-security-policy"] = "; ".join(csp_directives).encode()
 
                 # Other security headers
@@ -204,7 +223,7 @@ async def health_check_with_db() -> dict[str, str | int]:
         return {
             "status": "healthy",
             "database": "connected",
-            "database_response_time_ms": round(db_time, 2),
+            "database_response_time_ms": int(round(db_time)),
             "version": "0.1.0",
         }
     except Exception as e:

@@ -1,0 +1,17 @@
+apiVersion: v2
+name: todo-app
+description: A Helm chart for deploying the Todo Evolution application to Kubernetes
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - todo
+  - task-management
+  - kubernetes
+maintainers:
+  - name: Todo Evolution Team
+home: https://github.com/sarimarain99/hackathon_2
+icon: https://avatars.githubusercontent.com/u/12498763
+annotations:
+  createdAt: "2026-01-23"
+  phase: "IV - Local Kubernetes Deployment"
