@@ -18,13 +18,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN python -m venv /opt/venv
 
 # Install UV for faster dependency resolution
-RUN pip install uv
+RUN . /opt/venv/bin/activate && pip install uv
 
 # Copy dependency files
 COPY pyproject.toml ./
 
-# Install dependencies using UV (falls back to pip if needed)
-RUN uv pip install --system -e . || pip install -e .
+# Activate venv and install dependencies using UV
+# Using /opt/venv/bin/pip directly ensures packages install to venv
+RUN /opt/venv/bin/pip install uv && \
+    /opt/venv/bin/uv pip install -e .
 
 # --- Stage 2: Runtime ---
 FROM python:3.13-slim
