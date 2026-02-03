@@ -1,0 +1,417 @@
+openapi: 3.0.3
+info:
+  title: Task Management Enhancements API
+  description: API endpoints for task sorting, filtering, notifications, and recurrence
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000
+    description: Local development
+
+tags:
+  - name: Tasks
+    description: Task CRUD with sorting and filtering
+  - name: Notifications
+    description: In-app notification management
+
+paths:
+  /api/tasks:
+    get:
+      tags: [Tasks]
+      summary: List tasks with sorting and filtering
+      description: Retrieve user's tasks with optional sorting and date filtering
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sort_by
+          in: query
+          description: Sort field
+          schema:
+            type: string
+            enum: [due_date, priority, created_at, title]
+            default: created_at
+        - name: sort_order
+          in: query
+          description: Sort direction
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: filter_start
+          in: query
+          description: Filter tasks created after this date (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+            example: "2025-01-01"
+        - name: filter_end
+          in: query
+          description: Filter tasks created before this date (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+            example: "2025-01-31"
+        - name: preset_filter
+          in: query
+          description: Preset date filter
+          schema:
+            type: string
+            enum: [today, this_week, this_month]
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+                  total:
+                    type: integer
+                    description: Total count matching filter
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/tasks/{id}:
+    get:
+      tags: [Tasks]
+      summary: Get single task
+      description: Retrieve a specific task by ID (for edit form pre-population)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Task details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      tags: [Tasks]
+      summary: Update task
+      description: Update an existing task (supports edit mode)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpdate'
+      responses:
+        '200':
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/tasks/{id}/complete:
+    post:
+      tags: [Tasks]
+      summary: Complete task (with recurrence handling)
+      description: Mark task as complete; creates next instance if recurring
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                edit_scope:
+                  type: string
+                  enum: [this, all]
+                  description: For recurring tasks: "this" instance only or "all" future instances
+                  default: this
+      responses:
+        '200':
+          description: Task completed (and next instance created if applicable)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/Task'
+                  next_instance:
+                    description: Next recurring task instance, if applicable
+                    $ref: '#/components/schemas/Task'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/notifications:
+    get:
+      tags: [Notifications]
+      summary: List notifications
+      description: Retrieve user's notifications, newest first
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+        - name: unread_only
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+
+  /api/notifications/unread-count:
+    get:
+      tags: [Notifications]
+      summary: Get unread notification count
+      description: Returns count of unread notifications for badge display
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Unread count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: Number of unread notifications (caps at 99)
+                  display_count:
+                    type: string
+                    description: Display string (e.g., "99+" if > 99)
+
+  /api/notifications/{id}/read:
+    patch:
+      tags: [Notifications]
+      summary: Mark notification as read
+      description: Mark a specific notification as read
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/notifications/{id}:
+    delete:
+      tags: [Notifications]
+      summary: Dismiss notification
+      description: Delete a notification
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Notification deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user_id:
+          type: string
+          format: uuid
+          readOnly: true
+        parent_task_id:
+          type: integer
+          nullable: true
+          description: Parent task for recurring instances
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+        completed:
+          type: boolean
+          default: false
+        priority:
+          type: string
+          enum: [low, medium, high]
+          default: medium
+        tags:
+          type: array
+          items:
+            type: string
+        due_date:
+          type: string
+          format: date-time
+          nullable: true
+        recurrence_rule:
+          type: string
+          nullable: true
+          description: iCal RRULE format
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - id
+        - title
+        - user_id
+        - completed
+        - priority
+
+    TaskUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 1000
+        completed:
+          type: boolean
+        priority:
+          type: string
+          enum: [low, medium, high]
+        tags:
+          type: array
+          items:
+            type: string
+        due_date:
+          type: string
+          format: date-time
+        recurrence_rule:
+          type: string
+          nullable: true
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user_id:
+          type: string
+          format: uuid
+          readOnly: true
+        task_id:
+          type: integer
+          nullable: true
+        type:
+          type: string
+          enum: [due_date_reminder, task_completed]
+        title:
+          type: string
+          maxLength: 200
+        message:
+          type: string
+          maxLength: 500
+          nullable: true
+        read:
+          type: boolean
+          default: false
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - id
+        - user_id
+        - type
+        - title
+
+    Error:
+      type: object
+      properties:
+        detail:
+          type: string
+
+  responses:
+    Unauthorized:
+      description: Unauthorized - Invalid or missing authentication token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            detail: "Invalid authentication credentials"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            detail: "Task not found"
