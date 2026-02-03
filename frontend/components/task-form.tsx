@@ -1,7 +1,7 @@
 /**
- * Zenith Task Creation Engine v2.2
- * Features: OKLCH Semantic System, White-bordered Glass Inputs, 
- * and Spring-physics transitions.
+ * Zenith Task Creation Engine v2.3
+ * Features: OKLCH Semantic System, White-bordered Glass Inputs,
+ * Spring-physics transitions, and Recurrence support.
  */
 
 "use client";
@@ -10,10 +10,28 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { tasksApi, type TaskCreate, type Task } from "@/lib/api";
 import { taskToasts } from "@/lib/toast";
-import { Plus, X, Target, Calendar, BarChart3, Tag } from "lucide-react";
+import { Plus, X, Target, Calendar, BarChart3, Tag, Repeat } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { cn } from "@/lib/utils";
+
+const RECURRENCE_OPTIONS = [
+  { value: "", label: "No Recurrence" },
+  { value: "DAILY", label: "Daily" },
+  { value: "WEEKLY", label: "Weekly" },
+  { value: "MONTHLY", label: "Monthly" },
+  { value: "YEARLY", label: "Yearly" },
+] as const;
+
+const WEEKDAY_OPTIONS = [
+  { value: "MO", label: "Monday" },
+  { value: "TU", label: "Tuesday" },
+  { value: "WE", label: "Wednesday" },
+  { value: "TH", label: "Thursday" },
+  { value: "FR", label: "Friday" },
+  { value: "SA", label: "Saturday" },
+  { value: "SU", label: "Sunday" },
+] as const;
 
 interface TaskFormProps {
   onTaskCreated?: (task: Task) => void;
@@ -25,6 +43,9 @@ export default function TaskForm({ onTaskCreated }: TaskFormProps) {
   const [priority, setPriority] = useState<string>("medium");
   const [tags, setTags] = useState<string>("");
   const [dueDate, setDueDate] = useState<string>("");
+  const [recurrenceType, setRecurrenceType] = useState<string>("");
+  const [recurrenceInterval, setRecurrenceInterval] = useState<string>("1");
+  const [recurrenceWeekdays, setRecurrenceWeekdays] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showForm, setShowForm] = useState<boolean>(false);
 
@@ -33,12 +54,26 @@ export default function TaskForm({ onTaskCreated }: TaskFormProps) {
     setIsSubmitting(true);
 
     try {
+      // Generate RRULE from recurrence settings
+      let recurrenceRule: string | undefined = undefined;
+      if (recurrenceType) {
+        const interval = parseInt(recurrenceInterval) || 1;
+        const parts = [`FREQ=${recurrenceType}`, `INTERVAL=${interval}`];
+
+        if (recurrenceType === "WEEKLY" && recurrenceWeekdays.length > 0) {
+          parts.push(`BYDAY=${recurrenceWeekdays.join(",")}`);
+        }
+
+        recurrenceRule = parts.join(";");
+      }
+
       const taskData: TaskCreate = {
         title,
         description: description || undefined,
         priority: priority as "low" | "medium" | "high",
         tags: tags ? tags.split(",").map((t) => t.trim()).filter(Boolean) : undefined,
         due_date: dueDate || undefined,
+        recurrence_rule: recurrenceRule,
       };
 
       const newTask = await tasksApi.create(taskData);
@@ -47,6 +82,9 @@ export default function TaskForm({ onTaskCreated }: TaskFormProps) {
       setPriority("medium");
       setTags("");
       setDueDate("");
+      setRecurrenceType("");
+      setRecurrenceInterval("1");
+      setRecurrenceWeekdays([]);
       setShowForm(false);
 
       onTaskCreated?.(newTask);
@@ -57,6 +95,14 @@ export default function TaskForm({ onTaskCreated }: TaskFormProps) {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleWeekdayToggle = (day: string) => {
+    setRecurrenceWeekdays(prev =>
+      prev.includes(day)
+        ? prev.filter(d => d !== day)
+        : [...prev, day]
+    );
   };
 
   // Standardized White Border Utility
@@ -188,6 +234,80 @@ export default function TaskForm({ onTaskCreated }: TaskFormProps) {
                     placeholder="Work, Strategy, Personal (comma separated)"
                     className={inputClasses}
                   />
+              </div>
+
+              {/* Recurrence Section */}
+              <div className="space-y-4 pt-4 border-t border-white/10">
+                <div className="flex items-center gap-2 text-white/60">
+                  <Repeat className="w-4 h-4" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">Repeat Pattern</span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {RECURRENCE_OPTIONS.slice(0, 4).map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setRecurrenceType(opt.value)}
+                      className={cn(
+                        "px-3 py-2 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-all",
+                        recurrenceType === opt.value
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-white/5 border-white/10 text-white/60 hover:text-white hover:bg-white/10"
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
+                {recurrenceType && (
+                  <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                    {/* Interval */}
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-white/60 whitespace-nowrap">
+                        Repeat every
+                      </span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="99"
+                        value={recurrenceInterval}
+                        onChange={(e) => setRecurrenceInterval(e.target.value)}
+                        className={cn(
+                          "w-16 px-2 py-1.5 rounded-lg bg-surface/40 text-white text-sm font-bold text-center outline-none",
+                          inputClasses
+                        )}
+                      />
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-white/60">
+                        {recurrenceType === "DAILY" ? "day(s)" :
+                         recurrenceType === "WEEKLY" ? "week(s)" :
+                         recurrenceType === "MONTHLY" ? "month(s)" : "year(s)"}
+                      </span>
+                    </div>
+
+                    {/* Weekday selector for weekly recurrence */}
+                    {recurrenceType === "WEEKLY" && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {WEEKDAY_OPTIONS.map(day => (
+                          <button
+                            key={day.value}
+                            type="button"
+                            onClick={() => handleWeekdayToggle(day.value)}
+                            className={cn(
+                              "w-9 h-9 rounded-lg border text-[10px] font-bold uppercase transition-all",
+                              recurrenceWeekdays.includes(day.value)
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "bg-white/5 border-white/10 text-white/40 hover:text-white hover:bg-white/10"
+                            )}
+                          >
+                            {day.label.charAt(0)}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 pt-6">

@@ -25,6 +25,7 @@ dependencies = [
     "alembic>=1.13.0",  # Database migrations
     "qdrant-client>=1.12.0",  # Vector database for chat history embeddings
     "sentence-transformers>=3.0.0",  # Embeddings for semantic search
+    "python-dateutil>=2.8.0",  # RRULE parsing for recurring tasks
 ]
 
 [build-system]

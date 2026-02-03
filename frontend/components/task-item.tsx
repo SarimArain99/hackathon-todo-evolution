@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { tasksApi, type Task } from "@/lib/api";
 import { taskToasts } from "@/lib/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { TaskEditDialog } from "@/components/task-edit-dialog";
 
 interface TaskItemProps {
   task: Task;
@@ -27,6 +28,7 @@ const priorityColors = {
 export default function TaskItem({ task, onChange, onDelete }: TaskItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -182,7 +184,7 @@ export default function TaskItem({ task, onChange, onDelete }: TaskItemProps) {
           {/* Action Buttons: Always visible on mobile, lg:hover-only */}
           <div className="flex items-center gap-1 self-start opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity shrink-0">
             <button
-              onClick={() => setIsEditing(true)}
+              onClick={() => setShowEditDialog(true)}
               disabled={isDeleting || task.completed}
               className="p-2 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all disabled:opacity-30"
               aria-label="Edit task"
@@ -218,6 +220,13 @@ export default function TaskItem({ task, onChange, onDelete }: TaskItemProps) {
         confirmLabel="Delete"
         cancelLabel="Cancel"
         variant="danger"
+      />
+
+      <TaskEditDialog
+        task={task}
+        isOpen={showEditDialog}
+        onClose={() => setShowEditDialog(false)}
+        onTaskUpdated={(updatedTask) => onChange(task.id, updatedTask)}
       />
     </motion.div>
   );

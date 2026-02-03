@@ -4,137 +4,175 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================
-   ETHEREAL PRODUCTIVITY DESIGN SYSTEM v2.1
-   Refined for Production-Level UI/UX
+   ZENITH PRECISION SYSTEM v3.0
+   Design Language: Programmatic Glassmorphism
    ============================================ */
 
 :root {
-  /* Ethereal Base Palette */
-  --brand-lavender: oklch(0.75 0.08 280);
-  --brand-sage: oklch(0.70 0.08 150);
-  --brand-terracotta: oklch(0.65 0.12 45);
-  --brand-sky: oklch(0.75 0.10 230);
-  --brand-deep-blue: oklch(0.45 0.12 260);
-
-  /* Functional Colors */
-  --success: oklch(0.72 0.14 150);
-  --warning: oklch(0.78 0.12 80);
-  --danger: oklch(0.62 0.18 25);
-  --info: oklch(0.70 0.10 240);
-
-  /* Semantic Mapping */
-  --primary: var(--brand-deep-blue);
-  --primary-light: oklch(0.55 0.10 260);
-  --primary-foreground: oklch(0.99 0.005 85); /* Ensures white-ish text on dark blue buttons */
-  --secondary: var(--brand-sage);
-  --accent: var(--brand-terracotta);
-  --highlight: var(--brand-lavender);
-
-  /* Light Mode Surface */
-  --background: oklch(0.98 0.005 85);
-  --surface: oklch(0.99 0.005 85);
-  --surface-elevated: oklch(1 0 0);
-  --foreground: oklch(0.20 0.03 260);
-  --foreground-muted: oklch(0.50 0.02 260);
-
-  /* Glassmorphism - Light */
-  --glass-bg: rgba(255, 255, 255, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.4);
-  --glass-shadow: 0 12px 40px -12px rgba(120, 100, 160, 0.12);
-
-  /* UI Elements */
-  --card: var(--glass-bg);
-  --card-hover: rgba(255, 255, 255, 0.85);
-  --input-bg: oklch(0.96 0.01 85);
-  --input-border: oklch(0.90 0.02 260);
-  --border: oklch(0.92 0.01 260);
-  --border-strong: oklch(0.85 0.02 260);
-  --ring: oklch(0.65 0.12 260 / 0.4);
-
-  /* Transitions */
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --transition-all: all 0.4s var(--ease-out-expo);
+  /* Brand Palette - Calibrated OKLCH for "Engineered" Aesthetics */
+  --brand-main: oklch(25% 0.04 250);   /* Zenith Slate #1E2A38 */
+  --brand-accent: oklch(78% 0.18 155); /* Zenith Emerald #2ECC71 */
+  --brand-glow: oklch(85% 0.12 180);
+  
+  /* Semantic Tokens */
+  --background: oklch(98% 0.01 245);
+  --foreground: oklch(20% 0.05 245);
+  --foreground-muted: oklch(45% 0.03 245);
+  
+  /* Glass Refraction Logic (Light Mode) */
+  --glass-bg: rgba(255, 255, 255, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-edge: rgba(255, 255, 255, 0.8);
+  --glass-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05),
+                  0 0 1px 0 rgba(0, 0, 0, 0.1);
+  
+  /* Motion Constants */
+  --ease-expo: cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 .dark {
-  --background: oklch(0.14 0.03 265);
-  --surface: oklch(0.18 0.035 265);
-  --surface-elevated: oklch(0.22 0.04 265);
-  --foreground: oklch(0.98 0.005 265);
-  --foreground-muted: oklch(0.70 0.02 265);
+  --background: #1E2A38;
+  --foreground: oklch(98% 0.01 245);
+  --foreground-muted: oklch(75% 0.02 245);
 
-  /* Glassmorphism - Dark */
-  --glass-bg: rgba(20, 20, 35, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.5);
-
-  /* Colors Adjusted for Dark Mode */
-  --primary: oklch(0.70 0.12 280);
-  --primary-foreground: oklch(0.14 0.03 265); /* Ensures dark text on light blue buttons */
-  --accent: oklch(0.75 0.14 45);
-  --border: oklch(0.22 0.03 265);
-  --border-strong: oklch(0.30 0.04 265);
-  --ring: oklch(0.70 0.12 280 / 0.3);
+  /* Dark Refraction Logic - Simulated Depth */
+  --glass-bg: rgba(30, 42, 56, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-edge: rgba(255, 255, 255, 0.12); /* Essential for "Invented" look */
+  --glass-shadow: 0 25px 80px -20px rgba(0, 0, 0, 0.5),
+                  0 0 0 1px rgba(255, 255, 255, 0.03); /* Subtle Outer Stroke */
+  
+  --primary: var(--brand-accent);
+  --primary-foreground: var(--background);
 }
 
 @layer base {
   * {
-    border-color: var(--border);
+    border-color: var(--glass-border);
+    outline-color: var(--brand-accent);
   }
+
   body {
     background-color: var(--background);
     color: var(--foreground);
     font-family: 'Outfit', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
+    
+    /* Programmatic Engine Background */
     background-image: 
-      radial-gradient(at 0% 0%, oklch(var(--brand-lavender) / 0.05) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, oklch(var(--brand-sage) / 0.05) 0px, transparent 50%);
+      radial-gradient(circle at 2px 2px, rgba(255,255,255,0.03) 1px, transparent 0);
+    background-size: 32px 32px;
     background-attachment: fixed;
+  }
+
+  /* High-Performance Smooth Scroll */
+  html {
+    scroll-behavior: smooth;
+    scrollbar-gutter: stable;
   }
 }
 
 @layer utilities {
+  /* THE PRECISION GLASS COMPONENT */
   .glass-panel {
     background: var(--glass-bg);
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
-  }
-
-  .gradient-text-ethereal {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--highlight) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-  }
-
-  .button-shine {
+    
+    /* "Scrying" Edge Lighting - Mimics light hitting the top edge of glass */
     position: relative;
     overflow: hidden;
   }
 
-  .button-shine::after {
-    content: '';
+  .glass-panel::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      135deg, 
+      rgba(255, 255, 255, 0.1) 0%, 
+      transparent 40%, 
+      transparent 60%, 
+      rgba(255, 255, 255, 0.02) 100%
+    );
+  }
+
+  /* KINETIC MICRO-INTERACTION */
+  .button-shine {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .button-shine::before {
+    content: "";
     position: absolute;
     top: -50%;
-    left: -60%;
-    width: 20%;
+    left: -50%;
+    width: 200%;
     height: 200%;
-    background: rgba(255, 255, 255, 0.2);
-    transform: rotate(30deg);
-    transition: all 0.6s var(--ease-out-expo);
+    background: linear-gradient(
+      45deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
+    transform: rotate(45deg);
+    transition: 0.6s;
   }
 
-  .button-shine:hover::after {
-    left: 140%;
+  .button-shine:hover::before {
+    left: 100%;
   }
-}
 
-@theme inline {
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-border: var(--border);
+  /* TYPOGRAPHY SYSTEMS */
+  .text-glow {
+    background: linear-gradient(to bottom, #fff 20%, var(--brand-accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 15px oklch(var(--brand-accent) / 0.3));
+  }
+
+  .font-mono-system {
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    font-weight: 700;
+    opacity: 0.6;
+  }
+
+  /* GSAP LAYOUT HELPERS */
+  .reveal-stage {
+    visibility: hidden; /* Prevent FOUC before GSAP loads */
+  }
+
+  /* NOISE ARCHITECTURE */
+  .noise-overlay {
+    position: relative;
+  }
+  
+  .noise-overlay::after {
+    content: "";
+    position: fixed;
+    inset: -200%;
+    z-index: 9999;
+    opacity: 0.015;
+    pointer-events: none;
+    background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+    animation: grain 8s steps(10) infinite;
+  }
+
+  @keyframes grain {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-5%, -10%); }
+    30% { transform: translate(3%, -15%); }
+    50% { transform: translate(12%, 9%); }
+    70% { transform: translate(9%, 4%); }
+    90% { transform: translate(-1%, 7%); }
+  }
 }

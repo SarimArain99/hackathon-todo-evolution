@@ -6,7 +6,7 @@ All operations are scoped to the current user's ID.
 """
 
 import json
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from typing import Optional
 
 from fastapi import HTTPException, status
@@ -30,9 +30,14 @@ class TaskService:
         completed: Optional[bool] = None,
         priority: Optional[str] = None,
         search: Optional[str] = None,
+        sort_by: str = "created_at",
+        sort_order: str = "desc",
+        filter_start: Optional[date] = None,
+        filter_end: Optional[date] = None,
+        preset_filter: Optional[str] = None,
     ) -> list[Task]:
         """
-        List all tasks for the current user with optional filters.
+        List all tasks for the current user with optional filters and sorting.
 
         Args:
             session: Database session
@@ -40,18 +45,26 @@ class TaskService:
             completed: Filter by completion status
             priority: Filter by priority level
             search: Search in title/description
+            sort_by: Field to sort by (due_date, priority, created_at, title)
+            sort_order: Sort direction (asc, desc)
+            filter_start: Filter tasks created after this date
+            filter_end: Filter tasks created before this date
+            preset_filter: Quick date filter (today, this_week, this_month)
 
         Returns:
             List of tasks belonging to the user
         """
         query = select(Task).where(Task.user_id == user_id)
 
+        # Apply status filter
         if completed is not None:
             query = query.where(Task.completed == completed)
 
+        # Apply priority filter
         if priority is not None:
             query = query.where(Task.priority == priority)
 
+        # Apply search filter
         if search:
             search_pattern = f"%{search}%"
             query = query.where(
@@ -59,7 +72,44 @@ class TaskService:
                 (Task.description.icontains(search_pattern))
             )
 
-        query = query.order_by(Task.created_at.desc())
+        # Apply preset date filters
+        if preset_filter == "today":
+            today = date.today()
+            query = query.where(
+                Task.created_at >= datetime.combine(today, datetime.min.time()),
+                Task.created_at < datetime.combine(today + timedelta(days=1), datetime.min.time())
+            )
+        elif preset_filter == "this_week":
+            start_of_week = date.today() - timedelta(days=date.today().weekday())
+            query = query.where(Task.created_at >= datetime.combine(start_of_week, datetime.min.time()))
+        elif preset_filter == "this_month":
+            start_of_month = date.today().replace(day=1)
+            query = query.where(Task.created_at >= datetime.combine(start_of_month, datetime.min.time()))
+
+        # Apply custom date range filters
+        if filter_start:
+            query = query.where(Task.created_at >= datetime.combine(filter_start, datetime.min.time()))
+        if filter_end:
+            # Include the entire end day
+            query = query.where(Task.created_at < datetime.combine(filter_end + timedelta(days=1), datetime.min.time()))
+
+        # Apply sorting
+        sort_column = getattr(Task, sort_by, Task.created_at)
+
+        # Handle priority sorting (high=3, medium=2, low=1)
+        if sort_by == "priority":
+            # For priority, we want custom order: high > medium > low
+            # Use case expression for proper ordering
+            from sqlalchemy import case
+            priority_order = case(
+                (Task.priority == "high", 3),
+                (Task.priority == "medium", 2),
+                (Task.priority == "low", 1),
+                else_=0
+            )
+            query = query.order_by(priority_order.desc() if sort_order == "desc" else priority_order.asc())
+        else:
+            query = query.order_by(sort_column.desc() if sort_order == "desc" else sort_column.asc())
 
         results = await session.execute(query)
         return list(results.scalars().all())

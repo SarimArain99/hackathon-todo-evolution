@@ -24,19 +24,19 @@ class User(SQLModel, table=True):
     Better Auth manages the user table directly.
     This model is for reference and foreign key relationships.
 
-    Note: In production, Better Auth creates its own user table.
-    This model should match Better Auth's schema.
-    The password_hash is optional since Better Auth manages passwords
-    and we don't need to store it here for JWT-based auth.
+    Note: This model matches Better Auth's user table schema.
+    Better Auth uses camelCase column names.
     """
     __tablename__ = "user"
 
+    # Matches Better Auth user table schema (camelCase columns)
     id: str = Field(default=None, primary_key=True)  # UUID string
-    email: EmailStr = Field(unique=True, index=True)
+    email: str = Field(unique=True, index=True)
     name: str = Field(max_length=100)
-    password_hash: Optional[str] = Field(default=None, exclude=True)  # Optional - managed by Better Auth
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    emailVerified: bool = Field(default=False)
+    image: Optional[str] = Field(default=None)
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+    updatedAt: datetime = Field(default_factory=datetime.utcnow)
 
 
 class Task(SQLModel, table=True):
@@ -50,6 +50,13 @@ class Task(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: str = Field(foreign_key="user.id", index=True)
+
+    # Recurrence support - self-reference for recurring task instances
+    parent_task_id: Optional[int] = Field(
+        default=None,
+        foreign_key="task.id",
+        index=True
+    )
 
     # Core fields
     title: str = Field(min_length=1, max_length=200)
@@ -65,6 +72,31 @@ class Task(SQLModel, table=True):
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class Notification(SQLModel, table=True):
+    """
+    Notification entity for in-app alerts.
+
+    Each notification belongs to a user and optionally references a task.
+    Supports due date reminders and task completion notifications.
+    """
+    __tablename__ = "notification"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: str = Field(foreign_key="user.id", index=True)
+    task_id: Optional[int] = Field(default=None, foreign_key="task.id", index=True)
+
+    # Content
+    type: str = Field(max_length=50)  # due_date_reminder, task_completed
+    title: str = Field(max_length=200)
+    message: Optional[str] = Field(default=None, max_length=500)
+
+    # State
+    read: bool = Field(default=False, index=True)
+
+    # Timestamp
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
 class Conversation(SQLModel, table=True):
@@ -161,6 +193,53 @@ class TaskList(SQLModel):
     total: int
 
 
+class TaskReadExtended(TaskRead):
+    """Extended task read schema with parent_task_id for recurrence."""
+    parent_task_id: Optional[int] = None
+
+
+# =============================================================================
+# Notification Schemas
+# =============================================================================
+
+class NotificationBase(SQLModel):
+    """Base fields for Notification operations."""
+    type: str = Field(max_length=50)  # due_date_reminder, task_completed
+    title: str = Field(max_length=200)
+    message: Optional[str] = Field(default=None, max_length=500)
+
+
+class NotificationCreate(NotificationBase):
+    """Schema for internal notification creation."""
+    task_id: Optional[int] = None
+
+
+class NotificationUpdate(SQLModel):
+    """Schema for updating notification read status."""
+    read: bool
+
+
+class NotificationRead(NotificationBase):
+    """Schema for notification responses - includes id, user_id, timestamps."""
+    id: int
+    user_id: str
+    task_id: Optional[int] = None
+    read: bool
+    created_at: datetime
+
+
+class NotificationList(SQLModel):
+    """Schema for notification list responses."""
+    notifications: list[NotificationRead]
+    total: int
+
+
+class UnreadCountResponse(SQLModel):
+    """Schema for unread notification count response."""
+    count: int
+    display_count: str  # "99+" if count > 99, otherwise str(count)
+
+
 # =============================================================================
 # Auth Schemas
 # =============================================================================
@@ -173,11 +252,11 @@ class TokenPayload(BaseModel):
 
 
 class UserRead(SQLModel):
-    """Schema for user responses."""
+    """Schema for user responses - uses camelCase to match Better Auth."""
     id: str
     email: str
     name: str
-    created_at: datetime
+    createdAt: datetime
 
 
 class UserCreate(SQLModel):

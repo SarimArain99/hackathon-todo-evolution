@@ -210,7 +210,8 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
 
 ## Recent Changes
+- 011-task-management-enhancements: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+- 010-credential-persistence: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 001-frontend-design-improvements: Added TypeScript 5+ (Next.js 16.1.1) + Next.js 16+, Tailwind CSS v4, Framer Motion, lucide-react, Better Auth, Sonner
-- 002-ui-ux-enhancement: Added TypeScript 5+, React 19, Next.js 16.1.1
 
 ## Active Technologies

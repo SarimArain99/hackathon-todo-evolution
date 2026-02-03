@@ -26,7 +26,7 @@ from starlette.middleware.base import ASGIApp
 from app.auth import get_current_user, UserRead
 from app.database import async_engine, init_async_db, close_db
 from app.logging_config import get_logger
-from app.routes import tasks, chat
+from app.routes import tasks, chat, notifications
 
 
 # =============================================================================
@@ -128,6 +128,8 @@ async def lifespan(app: FastAPI):
     await init_async_db()
     yield
     # Shutdown
+    from app.auth import close_better_auth_pool
+    await close_better_auth_pool()
     await close_db()
     logger.info("application_shutdown")
 
@@ -253,6 +255,7 @@ async def get_me(current_user: UserRead = Depends(get_current_user)) -> UserRead
 
 app.include_router(tasks.router)
 app.include_router(chat.router)
+app.include_router(notifications.router)
 
 
 # =============================================================================
