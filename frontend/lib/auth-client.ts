@@ -4,22 +4,20 @@
  * Client-side authentication client using Better Auth's React integration.
  * Provides reactive hooks and methods for authentication operations.
  *
- * NOTE: Email OTP client removed - password reset requires a database.
- * To enable forgot password:
- * 1. Add a database adapter (Neon PostgreSQL recommended)
- * 2. Re-add emailOTPClient plugin
+ * Now includes database-backed password reset functionality.
  */
 
 import { createAuthClient } from "better-auth/react";
-import { jwtClient } from "better-auth/client/plugins";
+// JWT plugin temporarily disabled - see auth.ts for details
+// import { jwtClient } from "better-auth/client/plugins";
 
 export const authClient = createAuthClient({
   baseURL: typeof window !== "undefined"
     ? window.location.origin
     : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   plugins: [
-    // JWT client plugin for token-based authentication with backend
-    jwtClient(),
+    // JWT client plugin disabled - was causing "Invalid Base64 character: ." error
+    // jwtClient(),
   ],
 });
 
@@ -35,13 +33,51 @@ export const {
 } = authClient;
 
 /**
- * Get the current JWT token for API requests
+ * Password reset flow using Better Auth server endpoints
+ * These are handled via API routes, not the client plugin
  */
-export async function getAuthToken(): Promise<string | null> {
-  const result = await authClient.token();
-  if (result.error) {
-    console.error("Failed to get JWT token:", result.error);
-    return null;
+
+/**
+ * Initiate password reset by sending an email
+ */
+export async function forgotPassword(email: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch("/api/auth/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      return { success: false, error: data.error || "Failed to send reset email" };
+    }
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Network error. Please try again." };
   }
-  return result.data?.token ?? null;
 }
+
+/**
+ * Reset password with token
+ */
+export async function resetPassword(token: string, newPassword: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch(`/api/auth/reset-password/${token}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ newPassword }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      return { success: false, error: data.error || "Failed to reset password" };
+    }
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Network error. Please try again." };
+  }
+}
+

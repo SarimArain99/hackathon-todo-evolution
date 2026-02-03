@@ -25,6 +25,7 @@ export interface ChatMessage {
 }
 
 export interface Conversation {
+  title: string;
   id: number;
   user_id: string;
   created_at: string;

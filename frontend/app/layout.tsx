@@ -1,17 +1,16 @@
 /**
- * Zenith Root Layout
- * Production-ready architecture with smooth theme transitions and optimized SEO.
+ * Zenith Root Layout - V3.0 Precision Systems
+ * Enhanced with GSAP context and custom glassmorphism components.
  */
 
 import type { Metadata, Viewport } from "next";
-import { Outfit, JetBrains_Mono } from "next/font/google";
+import { Outfit, JetBrains_Mono, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/next";
 
 // --- FONT OPTIMIZATION ---
-// Using Outfit as the primary display/body font for that "Ethereal" look
 const outfit = Outfit({
   variable: "--font-outfit",
   subsets: ["latin"],
@@ -26,40 +25,48 @@ const jetbrainsMono = JetBrains_Mono({
   preload: false,
 });
 
+const dmSerif = DM_Serif_Display({
+  variable: "--font-display",
+  weight: ["400"],
+  subsets: ["latin"],
+  display: "swap",
+});
+
 // --- VIEWPORT CONFIGURATION ---
+// Updated to reflect your custom #1E2A38 background color
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
-    { media: "(prefers-color-scheme: dark)", color: "#0A0C10" },
+    { media: "(prefers-color-scheme: dark)", color: "#1E2A38" }, 
   ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  userScalable: false, // Prevents accidental zooming on mobile inputs for a more "App-like" feel
+  userScalable: false,
 };
 
 // --- SEO OPTIMIZED METADATA ---
 export const metadata: Metadata = {
   title: {
-    default: "Zenith | Next-Gen Productivity",
+    default: "Zenith | Precision Productivity",
     template: "%s | Zenith"
   },
-  description: "Master your productivity with Zenith. An advanced task management suite designed for flow-state focus.",
-  keywords: ["Task Management", "Productivity", "AI Workflow", "Flow State", "Zenith OS"],
-  authors: [{ name: "Zenith Team" }],
+  description: "A high-performance task management suite engineered for sub-second flow states.",
+  keywords: ["Task Management", "Productivity", "GSAP UI", "Glassmorphism", "Next.js 15"],
+  authors: [{ name: "Zenith Precision Systems" }],
   metadataBase: new URL("https://zenith-flow-zeta.vercel.app"),
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "https://zenith-flow-zeta.vercel.app",
-    title: "Zenith | Task Evolution",
-    description: "Evolve your productivity with Zenith's advanced workflow management.",
-    siteName: "Zenith",
+    title: "Zenith | Design Your Productivity",
+    description: "The ultimate programmatic interface for deep work.",
+    siteName: "Zenith OS",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Zenith | Next-Gen Productivity",
-    description: "The ultimate smart task management solution for high-achievers.",
+    title: "Zenith OS",
+    description: "Experience the next evolution of productivity tools.",
     creator: "@zenith_app",
   },
 };
@@ -80,42 +87,44 @@ export default function RootLayout({
         className={`
           ${outfit.variable} 
           ${jetbrainsMono.variable} 
+          ${dmSerif.variable}
           antialiased 
           bg-background 
           text-foreground 
-          selection:bg-primary/20 
-          selection:text-primary
+          selection:bg-accent/30 
+          selection:text-accent
           transition-colors 
-          duration-500
+          duration-700
+          noise-overlay
         `}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark" // Defaulting to dark to showcase your #1E2A38 theme
           enableSystem
-          disableTransitionOnChange={false} // Set to false to allow our custom smooth CSS transitions
+          disableTransitionOnChange={false}
         >
-          <div className="relative flex min-h-screen flex-col">
+          {/* Main Content Wrapper */}
+          <div className="relative flex min-h-screen flex-col overflow-hidden">
             {children}
           </div>
           
+          {/* Custom Sonner Toaster - Styled for Glassmorphism */}
           <Toaster 
-            position="top-center" 
-            expand={false}
+            position="bottom-right" 
+            expand={true}
             richColors 
             closeButton
             toastOptions={{
+              className: "glass-panel !bg-bg-glass !backdrop-blur-xl !border-white/10 !rounded-2xl !p-4 !shadow-2xl",
               style: {
-                background: 'var(--glass-bg)',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid var(--glass-border)',
+                fontFamily: 'var(--font-outfit)',
                 color: 'var(--foreground)',
-                borderRadius: 'var(--radius-xl)',
-                boxShadow: 'var(--glass-shadow)',
               },
             }}
           />
         </ThemeProvider>
+        
         <Analytics />
       </body>
     </html>
