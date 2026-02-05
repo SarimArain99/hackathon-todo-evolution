@@ -158,19 +158,15 @@ class TaskCreate(TaskBase):
 
     @field_validator('recurrence_rule')
     @classmethod
-    def validate_recurrence_rule(cls, v: Optional[str], info) -> Optional[str]:
-        """Validate RRULE format and ensure due_date is provided when recurrence is set."""
+    def validate_recurrence_rule(cls, v: Optional[str]) -> Optional[str]:
+        """Validate RRULE format."""
         if v:
             try:
                 # Try to parse the RRULE to verify it's valid
                 rrule.rrulestr(v)
-            except (ValueError, rrule.InvalidRule) as e:
-                raise ValueError(f"Invalid recurrence rule format: {e}")
-
-            # Ensure due_date is provided when recurrence_rule is set
-            if hasattr(info, 'data') and not info.data.get('due_date'):
-                raise ValueError("due_date is required when recurrence_rule is set")
-
+            except (ValueError, Exception) as e:
+                # Catch various errors from rrule parsing
+                raise ValueError(f"Invalid recurrence rule format: {str(e)}")
         return v
 
 
@@ -192,8 +188,8 @@ class TaskUpdate(SQLModel):
         if v:
             try:
                 rrule.rrulestr(v)
-            except (ValueError, rrule.InvalidRule) as e:
-                raise ValueError(f"Invalid recurrence rule format: {e}")
+            except (ValueError, Exception) as e:
+                raise ValueError(f"Invalid recurrence rule format: {str(e)}")
         return v
 
 
