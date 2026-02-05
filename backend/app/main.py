@@ -10,12 +10,15 @@ Features:
 - Structured logging
 - CSP headers for XSS protection
 - API versioning
+- Background jobs for due date reminders
 """
 
 import os
 import uuid
 from contextlib import asynccontextmanager
+from datetime import datetime
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -27,6 +30,7 @@ from app.auth import get_current_user, UserRead
 from app.database import async_engine, init_async_db, close_db
 from app.logging_config import get_logger
 from app.routes import tasks, chat, notifications
+from app.services.notification_service import NotificationService
 
 
 # =============================================================================
@@ -42,6 +46,32 @@ logger = get_logger(__name__)
 
 limiter = Limiter(key_func=get_remote_address)
 app_state = {"rate_limit_error": "Rate limit exceeded. Please try again later."}
+
+
+# =============================================================================
+# Background Scheduler for Due Date Reminders
+# =============================================================================
+
+scheduler = AsyncIOScheduler()
+
+
+async def due_date_reminder_job():
+    """
+    Background job that checks for tasks due in the next 24 hours
+    and creates reminder notifications.
+
+    Runs daily at midnight.
+    """
+    from app.database import get_session
+
+    logger.info("due_date_reminder_job_start")
+
+    try:
+        async with get_session() as session:
+            await NotificationService.check_due_date_reminders(session)
+            logger.info("due_date_reminder_job_complete")
+    except Exception as e:
+        logger.error("due_date_reminder_job_failed", error=str(e))
 
 
 # =============================================================================
@@ -122,12 +152,27 @@ class SecurityHeadersMiddleware:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan manager - handle database connections."""
+    """Application lifespan manager - handle database connections and background jobs."""
     logger.info("application_startup")
     # Startup
     await init_async_db()
+
+    # Start the scheduler for due date reminders
+    # Schedule daily at midnight (00:00)
+    scheduler.add_job(
+        due_date_reminder_job,
+        "cron",
+        hour=0,
+        minute=0,
+        id="due_date_reminder",
+    )
+    scheduler.start()
+    logger.info("scheduler_started", job="due_date_reminder", schedule="0 0 * * *")
+
     yield
     # Shutdown
+    scheduler.shutdown()
+    logger.info("scheduler_stopped")
     from app.auth import close_better_auth_pool
     await close_better_auth_pool()
     await close_db()

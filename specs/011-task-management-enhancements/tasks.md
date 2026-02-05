@@ -239,10 +239,10 @@ This is a web application with separate backend and frontend:
 
 ### Backend Notification Triggers
 
-- [ ] T039 [P] [US4] Integrate notification creation in task completion at backend/app/routes/tasks.py
+- [X] T039 [P] [US4] Integrate notification creation in task completion at backend/app/routes/tasks.py
   - POST /api/tasks/{id}/complete creates task_completed notification
   - Calls notification_service.create_notification()
-- [ ] T040 [P] [US4] Add due date check schedule in backend/app/main.py
+- [X] T040 [P] [US4] Add due date check schedule in backend/app/main.py
   - Register background job for check_due_date_reminders()
   - Run daily at midnight
 - [X] T041 [P] [US4] Implement check_due_date_reminders() in backend/app/services/notification_service.py
@@ -325,11 +325,11 @@ This is a web application with separate backend and frontend:
   - Calculate next date from task.due_date
   - Create new task with parent_task_id reference
   - Copy all fields except completed, due_date
-- [ ] T052 [P] [US6] Enhance POST /api/tasks/{id}/complete in backend/app/routes/tasks.py
+- [X] T052 [P] [US6] Enhance POST /api/tasks/{id}/complete in backend/app/routes/tasks.py
   - Add edit_scope param: "this" | "all"
   - If recurring and edit_scope="this": create next instance
   - If edit_scope="all": update all future instances (not implemented in v1)
-- [ ] T053 [P] [US6] Add recurrence validation in backend/app/routes/tasks.py
+- [X] T053 [P] [US6] Add recurrence validation in backend/app/routes/tasks.py
   - Validate RRULE format on create/update
   - Ensure due_date is required when recurrence_rule set
 
@@ -368,9 +368,9 @@ This is a web application with separate backend and frontend:
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T060 [P] Add error handling for concurrent edits (FR-001 edge case) in backend/app/routes/tasks.py
-- [ ] T061 [P] Add timezone handling for due dates in backend/app/services/notification_service.py
-- [ ] T062 [P] Document notification cleanup job setup in backend/README.md
+- [X] T060 [P] Add error handling for concurrent edits (FR-001 edge case) in backend/app/routes/tasks.py
+- [X] T061 [P] Add timezone handling for due dates in backend/app/services/notification_service.py
+- [X] T062 [P] Document notification cleanup job setup in backend/README.md
 - [X] T063 Run database migrations in development environment
 - [ ] T064 Test all user stories end-to-end in quickstart.md development workflow
 - [ ] T065 Verify all success criteria (SC-001 through SC-008) are met

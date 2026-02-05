@@ -16,6 +16,15 @@ from sqlmodel import select
 from app.models import Task, TaskCreate, TaskRead, TaskUpdate
 
 
+class ConcurrencyError(HTTPException):
+    """Raised when a task has been modified by another user/session."""
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This task was modified by another session. Please refresh and try again."
+        )
+
+
 class TaskService:
     """
     Service layer for Task operations.
@@ -200,11 +209,22 @@ class TaskService:
 
         Raises:
             HTTPException: 404 if task not found, 403 if not owned by user
+            ConcurrencyError: 409 if task was modified by another session
         """
         task = await TaskService.get_task(session, task_id, user_id)
 
+        # Optimistic locking: Check if task was modified by another session
+        if task_data.updated_at is not None:
+            # Convert to UTC for comparison (strip microseconds for precision matching)
+            client_updated_at = task_data.updated_at.replace(microsecond=0)
+            server_updated_at = task.updated_at.replace(microsecond=0)
+            if client_updated_at < server_updated_at:
+                raise ConcurrencyError()
+
         # Update only provided fields
         update_data = TaskService._task_data_to_dict(task_data)
+        # Exclude updated_at from the update data (we set it automatically)
+        update_data.pop("updated_at", None)
         for field, value in update_data.items():
             setattr(task, field, value)
 

@@ -9,7 +9,8 @@ import json
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, field_validator
+from dateutil import rrule
+from pydantic import BaseModel, EmailStr, field_validator, ValidationError
 from sqlmodel import Field, SQLModel
 
 
@@ -155,6 +156,23 @@ class TaskCreate(TaskBase):
     """Schema for creating a new task."""
     recurrence_rule: Optional[str] = None
 
+    @field_validator('recurrence_rule')
+    @classmethod
+    def validate_recurrence_rule(cls, v: Optional[str], info) -> Optional[str]:
+        """Validate RRULE format and ensure due_date is provided when recurrence is set."""
+        if v:
+            try:
+                # Try to parse the RRULE to verify it's valid
+                rrule.rrulestr(v)
+            except (ValueError, rrule.InvalidRule) as e:
+                raise ValueError(f"Invalid recurrence rule format: {e}")
+
+            # Ensure due_date is provided when recurrence_rule is set
+            if hasattr(info, 'data') and not info.data.get('due_date'):
+                raise ValueError("due_date is required when recurrence_rule is set")
+
+        return v
+
 
 class TaskUpdate(SQLModel):
     """Schema for updating a task - all fields optional."""
@@ -165,6 +183,18 @@ class TaskUpdate(SQLModel):
     due_date: Optional[datetime] = None
     tags: Optional[list[str]] = None
     recurrence_rule: Optional[str] = None
+    updated_at: Optional[datetime] = None  # For optimistic locking (concurrent edit detection)
+
+    @field_validator('recurrence_rule')
+    @classmethod
+    def validate_recurrence_rule_update(cls, v: Optional[str]) -> Optional[str]:
+        """Validate RRULE format on update."""
+        if v:
+            try:
+                rrule.rrulestr(v)
+            except (ValueError, rrule.InvalidRule) as e:
+                raise ValueError(f"Invalid recurrence rule format: {e}")
+        return v
 
 
 class TaskRead(TaskBase):
