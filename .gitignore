@@ -66,4 +66,4 @@ secrets/
 # UV
 .uv/
 uv.lock
-.env.example
+.env.example*.db
