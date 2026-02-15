@@ -1,0 +1,158 @@
+# Deploy to Oracle OKE
+# T150: Deploys the Todo application to Oracle Kubernetes Engine
+name: Deploy to Cloud
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: false
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  HELM_VERSION: v3.14.0
+  OKE_CLUSTER_NAME: todo-app-cluster
+  OKE_REGION: us-ashburn
+  OKE_COMPARTMENT_ID: ${{ secrets.OCI_COMPARTMENT_ID }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      deployments: write
+
+    environment: ${{ github.event.inputs.environment || 'production' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.28.2
+
+      - name: Configure kubectl for OKE
+        run: |
+          # Install OCI CLI
+          curl -L -o /tmp/oci-cli.zip https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh
+          bash /tmp/oci-cli.zip -i /tmp/oci-cli
+          export PATH=/tmp/oci-cli/bin:$PATH
+
+          # Create kubeconfig using OCI CLI
+          mkdir -p ~/.kube
+          oci ce cluster create-kubeconfig \
+            --cluster-id ${{ secrets.OKE_CLUSTER_ID }} \
+            --file ~/.kube/config \
+            --token-version 2.0
+
+          export KUBECONFIG=~/.kube/config
+
+          # Verify connectivity
+          kubectl get nodes
+
+      - name: Create namespace
+        run: |
+          kubectl create namespace todo-app --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Create Kubernetes secrets
+        run: |
+          kubectl create secret generic todo-secrets \
+            --from-literal=database-url="${{ secrets.DATABASE_URL }}" \
+            --from-literal=better-auth-secret="${{ secrets.BETTER_AUTH_SECRET }}" \
+            --from-literal=openai-api-key="${{ secrets.OPENAI_API_KEY }}" \
+            --namespace todo-app \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Apply Dapr components
+        run: |
+          kubectl apply -f dapr-components/ -n todo-app
+
+      - name: Install Redpanda if not exists
+        run: |
+          # Check if Redpanda is already installed
+          if ! kubectl get svc redpanda -n todo-app &> /dev/null; then
+            helm repo add redpanda https://charts.redpanda.com
+            helm repo update
+            helm upgrade --install redpanda redpanda/redpanda \
+              --namespace todo-app \
+              --set replicas=1 \
+              --set storage.persistentVolume.size=1Gi \
+              --wait
+          fi
+
+      - name: Deploy application with Helm
+        run: |
+          helm upgrade --install todo-app ./helm/todo-app \
+            --namespace todo-app \
+            --values ./helm/todo-app/values-cloud.yaml \
+            --set backend.image.tag=${{ github.sha }} \
+            --set frontend.image.tag=${{ github.sha }} \
+            --wait \
+            --timeout 5m \
+            --atomic
+
+      - name: Verify deployment
+        run: |
+          # Wait for deployments to be ready
+          kubectl wait \
+            --for=condition=available \
+            deployment/backend \
+            --namespace todo-app \
+            --timeout=5m
+
+          kubectl wait \
+            --for=condition=available \
+            deployment/frontend \
+            --namespace todo-app \
+            --timeout=5m
+
+          # Show pod status
+          kubectl get pods -n todo-app
+
+      - name: Run smoke tests
+        run: |
+          # Get frontend endpoint
+          FRONTEND_POD=$(kubectl get pod -n todo-app -l app=frontend -o jsonpath='{.items[0].metadata.name}')
+
+          # Test frontend health
+          kubectl exec -n todo-app "${FRONTEND_POD}" -- curl -f http://localhost:3000/ || exit 1
+
+          # Get backend endpoint
+          BACKEND_POD=$(kubectl get pod -n todo-app -l app=backend -o jsonpath='{.items[0].metadata.name}')
+
+          # Test backend health
+          kubectl exec -n todo-app "${BACKEND_POD}" -- curl -f http://localhost:8000/health || exit 1
+
+          echo "Smoke tests passed!"
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "Deployment failed. Rolling back..."
+          helm rollback todo-app -n todo-app
+
+      - name: Create GitHub Deployment
+        if: success()
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: '${{ github.token }}'
+          environment-url: https://${{ secrets.OKE_LOAD_BALANCER_IP }}
+          environment: ${{ github.event.inputs.environment || 'production' }}
+          description: 'Deployed to Oracle OKE'
+          log-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

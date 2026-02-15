@@ -68,6 +68,7 @@ class Task(SQLModel, table=True):
     priority: str = Field(default="medium", max_length=10)  # low, medium, high
     tags: Optional[str] = Field(default=None)  # JSON string array
     due_date: Optional[datetime] = None
+    reminder_at: Optional[datetime] = None  # When to send reminder notification
     recurrence_rule: Optional[str] = None  # iCal RRULE format
 
     # Timestamps
@@ -149,6 +150,7 @@ class TaskBase(SQLModel):
     completed: bool = Field(default=False)
     priority: str = Field(default="medium")
     due_date: Optional[datetime] = None
+    reminder_at: Optional[datetime] = None
     tags: list[str] = Field(default_factory=list)
 
 
@@ -169,6 +171,14 @@ class TaskCreate(TaskBase):
                 raise ValueError(f"Invalid recurrence rule format: {str(e)}")
         return v
 
+    @field_validator('reminder_at')
+    @classmethod
+    def validate_reminder_before_due(cls, v: Optional[datetime], info) -> Optional[datetime]:
+        """Validate reminder_at is before due_date."""
+        if v and info.data.get('due_date') and v >= info.data['due_date']:
+            raise ValueError("reminder_at must be before due_date")
+        return v
+
 
 class TaskUpdate(SQLModel):
     """Schema for updating a task - all fields optional."""
@@ -177,6 +187,7 @@ class TaskUpdate(SQLModel):
     completed: Optional[bool] = None
     priority: Optional[str] = None
     due_date: Optional[datetime] = None
+    reminder_at: Optional[datetime] = None
     tags: Optional[list[str]] = None
     recurrence_rule: Optional[str] = None
     updated_at: Optional[datetime] = None  # For optimistic locking (concurrent edit detection)
@@ -198,6 +209,7 @@ class TaskRead(TaskBase):
     id: int
     user_id: str
     recurrence_rule: Optional[str] = None
+    parent_task_id: Optional[int] = None
     created_at: datetime
     updated_at: datetime
 
@@ -217,6 +229,8 @@ class TaskList(SQLModel):
     """Schema for task list responses."""
     tasks: list[TaskRead]
     total: int
+    cursor: Optional[str] = Field(default=None, description="Cursor for next page")
+    page_size: Optional[int] = Field(default=50, description="Number of items per page")
 
 
 class TaskReadExtended(TaskRead):
@@ -356,3 +370,83 @@ class ConversationWithMessages(SQLModel):
     """Schema for conversation with its messages."""
     conversation: ConversationRead
     messages: list[MessageRead]
+
+
+# =============================================================================
+# Event Schemas (Phase V - Event-Driven Architecture)
+# =============================================================================
+
+class TaskEvent(SQLModel):
+    """
+    CloudEvents 1.0 formatted task event.
+
+    Published to Kafka via Dapr when tasks are created, updated, completed, or deleted.
+    Follows CloudEvents specification: https://github.com/cloudevents/spec
+    """
+    specversion: str = "1.0"
+    type: str  # "todo.task.created", "todo.task.updated", "todo.task.completed", "todo.task.deleted"
+    source: str = "/todo-backend"
+    id: str  # Unique event ID (UUID)
+    time: datetime  # ISO 8601 timestamp
+    datacontenttype: str = "application/json"
+    data: "TaskEventData"
+
+
+class TaskEventData(SQLModel):
+    """Task event data payload."""
+    task_id: int
+    user_id: str
+    operation: str  # "created", "updated", "completed", "deleted"
+    title: str
+    description: Optional[str] = None
+    completed: bool = False
+    priority: str = "medium"
+    due_date: Optional[datetime] = None
+    reminder_at: Optional[datetime] = None
+    tags: list[str] = Field(default_factory=list)
+    recurrence_rule: Optional[str] = None
+    parent_task_id: Optional[int] = None
+    # Include updated_at for optimistic locking verification
+    updated_at: Optional[datetime] = None
+
+
+class ReminderEvent(SQLModel):
+    """
+    CloudEvents 1.0 formatted reminder event.
+
+    Triggered by Dapr Jobs when reminder_at time is reached.
+    Creates in-app notification for the user.
+    """
+    specversion: str = "1.0"
+    type: str = "todo.reminder.triggered"
+    source: str = "/todo-backend/dapr-jobs"
+    id: str  # Unique event ID (UUID)
+    time: datetime
+    datacontenttype: str = "application/json"
+    data: "ReminderEventData"
+
+
+class ReminderEventData(SQLModel):
+    """Reminder event data payload."""
+    task_id: int
+    user_id: str
+    title: str
+    due_date: Optional[datetime] = None
+    reminder_at: datetime
+    time_until_due: Optional[str] = None  # e.g., "1 hour", "1 day"
+
+
+class EventEnvelope(SQLModel):
+    """
+    Generic event envelope for Dapr publishing.
+
+    Wraps any event data with CloudEvents metadata.
+    Used by the EventPublisher service for consistent event formatting.
+    """
+    specversion: str = "1.0"
+    type: str  # Event type (e.g., "todo.task.completed")
+    source: str = "/todo-backend"
+    id: str  # Unique event ID
+    time: datetime
+    datacontenttype: str = "application/json"
+    data: dict  # Event-specific data

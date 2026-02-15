@@ -1,0 +1,66 @@
+# Dapr Configuration for Local Development
+# Purpose: Override defaults for development environment
+#
+# Local Development Usage:
+#   dapr run --app-id todo-backend --app-port 8000 --config dapr-components/config.yaml -- python -m uvicorn app.main:app
+#
+# Production: Use default Dapr configuration (no config needed)
+
+apiVersion: dapr.io/v1
+kind: Configuration
+metadata:
+  name: todo-dev-config
+spec:
+  # Enable API logging for debugging (turn off in production)
+  apiLogging:
+    enabled: true
+    # Optional: Obfuscate API logs to hide sensitive data
+    omitHealthChecks: false
+
+  # Enable detailed logging for development
+  logging:
+    level: debug  # Options: debug, info, warn, error, production (disable)
+
+  # Tracing configuration (optional for local development)
+  tracing:
+    samplingRate: "1"  # 100% sampling for dev
+    zipkin:
+      endpointAddress: "http://localhost:9411/api/v2/spans"
+
+  # Metrics configuration
+  metrics:
+    enabled: true
+    increaseMetricsVerbosity: true
+
+  # Feature flags
+  features:
+    - name: Actor.Reentrancy
+      enabled: true
+
+  # App health probe configuration
+  healthChecks:
+    enabled: true
+    healthCheckPath: "/health"
+    intervalSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+
+  # HTTP pipeline for request/response handling
+  httpPipeline:
+    handlers:
+      - name: "retry-policy"
+        type: "middleware.http.retries"
+        spec:
+          retries: 3
+          retryStatusCodes:
+            - "500-599"
+          backoffPolicy: "exponential"
+          backoffDuration: "100ms"
+
+  # App sidecar configuration
+  appProtocol: http
+  enableProfiling: true
+
+  # MTLS is disabled for local development
+  # In production, enable MTLS for secure service-to-service communication
+  allowInsecure: true

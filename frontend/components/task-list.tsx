@@ -6,6 +6,7 @@
  * - popLayout for high-fidelity list reordering
  * - Semantic OKLCH status mapping
  * - Enhanced sorting and filtering with Zustand persistence
+ * Theme: Connected to globals.css CSS variables
  */
 
 "use client";
@@ -94,7 +95,7 @@ export default function TaskList({ initialTasks = [], refreshTrigger }: TaskList
 
   const hasActiveFilters = statusFilter !== "all" || priorityFilter !== "all" || searchQuery !== "" || presetFilter !== null;
 
-  const controlClasses = "border border-white/20 bg-white/5 focus:border-white/60 focus:ring-4 focus:ring-white/5 transition-all duration-300";
+  const controlClasses = "border border-[var(--glass-border)] bg-[var(--glass-bg)] focus:border-[var(--glass-edge)] focus:ring-4 focus:ring-[var(--primary)]/20 transition-all duration-300";
 
   return (
     <div className="space-y-8 sm:space-y-10">
@@ -105,7 +106,7 @@ export default function TaskList({ initialTasks = [], refreshTrigger }: TaskList
         className="flex flex-col gap-5"
       >
         {/* Search and Status/Priority Row */}
-        <div className="flex flex-col lg:flex-row gap-5 glass-panel p-5 sm:p-7 rounded-3xl border-white/10 shadow-2xl">
+        <div className="flex flex-col lg:flex-row gap-5 glass-panel p-5 sm:p-7 rounded-[var(--radius-3xl)] border-[var(--glass-border)] shadow-[var(--glass-shadow)]">
           {/* Search Engine */}
           <div className="relative flex-1 group">
             <input
@@ -114,11 +115,11 @@ export default function TaskList({ initialTasks = [], refreshTrigger }: TaskList
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={cn(
-                "w-full pl-14 pr-6 py-4 rounded-2xl text-white placeholder:text-white/20 outline-none font-medium text-sm sm:text-base",
+                "w-full pl-14 pr-6 py-4 rounded-2xl text-[var(--foreground)] placeholder:text-[var(--input-placeholder)] outline-none font-medium text-sm sm:text-base",
                 controlClasses
               )}
             />
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30 group-focus-within:text-primary transition-colors" />
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--foreground-muted)] group-focus-within:text-[var(--primary)] transition-colors" />
           </div>
 
           {/* Status Filter */}
@@ -127,16 +128,16 @@ export default function TaskList({ initialTasks = [], refreshTrigger }: TaskList
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className={cn(
-                "w-full md:w-40 appearance-none px-6 py-4 rounded-2xl text-white font-black text-[10px] uppercase tracking-[0.2em] cursor-pointer outline-none",
+                "w-full md:w-40 appearance-none px-6 py-4 rounded-2xl text-[var(--foreground)] font-black text-[10px] uppercase tracking-[0.2em] cursor-pointer outline-none",
                 controlClasses
               )}
               aria-label="Filter by status"
             >
-              <option value="all" className="bg-slate-900">All Status</option>
-              <option value="active" className="bg-slate-900">Active</option>
-              <option value="completed" className="bg-slate-900">Resolved</option>
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="completed">Resolved</option>
             </select>
-            <Filter className="absolute right-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/20 pointer-events-none" />
+            <Filter className="absolute right-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--foreground-muted)] pointer-events-none" />
           </div>
 
           {/* Priority Filter */}
@@ -145,17 +146,17 @@ export default function TaskList({ initialTasks = [], refreshTrigger }: TaskList
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
               className={cn(
-                "w-full md:w-40 appearance-none px-6 py-4 rounded-2xl text-white font-black text-[10px] uppercase tracking-[0.2em] cursor-pointer outline-none",
+                "w-full md:w-40 appearance-none px-6 py-4 rounded-2xl text-[var(--foreground)] font-black text-[10px] uppercase tracking-[0.2em] cursor-pointer outline-none",
                 controlClasses
               )}
               aria-label="Filter by priority"
             >
-              <option value="all" className="bg-slate-900">Priority</option>
-              <option value="high" className="bg-slate-900">Critical</option>
-              <option value="medium" className="bg-slate-900">Standard</option>
-              <option value="low" className="bg-slate-900">Minor</option>
+              <option value="all">Priority</option>
+              <option value="high">Critical</option>
+              <option value="medium">Standard</option>
+              <option value="low">Minor</option>
             </select>
-            <BarChart3 className="absolute right-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/20 pointer-events-none" />
+            <BarChart3 className="absolute right-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--foreground-muted)] pointer-events-none" />
           </div>
         </div>
 
@@ -166,7 +167,7 @@ export default function TaskList({ initialTasks = [], refreshTrigger }: TaskList
 
           {/* Sort Controls */}
           <div className="flex items-center gap-3 self-start">
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Sort By</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--foreground-muted)]">Sort By</span>
             <TaskSortControls />
           </div>
         </div>
@@ -197,23 +198,23 @@ export default function TaskList({ initialTasks = [], refreshTrigger }: TaskList
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center justify-center py-32 glass-panel rounded-[3rem] border-dashed border-white/10 text-center px-8"
+              className="flex flex-col items-center justify-center py-32 glass-panel rounded-[3rem] border-dashed border-[var(--glass-border)] text-center px-8"
             >
               <div className="relative mb-8">
-                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
-                <div className="relative w-20 h-20 rounded-4xl bg-surface-elevated border border-white/10 flex items-center justify-center">
-                  <Inbox className="w-10 h-10 text-primary/40" />
+                <div className="absolute inset-0 bg-[var(--primary)]/20 blur-3xl rounded-full" />
+                <div className="relative w-20 h-20 rounded-4xl bg-[var(--surface-elevated)] border border-[var(--glass-border)] flex items-center justify-center">
+                  <Inbox className="w-10 h-10 text-[var(--primary)]/40" />
                 </div>
               </div>
-              <h3 className="text-2xl font-display font-bold text-white tracking-tightest uppercase mb-2">
+              <h3 className="text-2xl font-display font-bold text-[var(--foreground)] tracking-tightest uppercase mb-2">
                 Workspace Synchronized
               </h3>
-              <p className="text-white/40 font-light max-w-xs mx-auto leading-relaxed">
+              <p className="text-[var(--foreground-muted)] font-light max-w-xs mx-auto leading-relaxed">
                 No pending objectives found. Your Zenith is clear.
               </p>
-              <div className="mt-8 flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 border border-primary/10">
-                <Sparkles className="w-3 h-3 text-primary" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">AI Intelligence Active</span>
+              <div className="mt-8 flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--primary)]/5 border border-[var(--primary)]/10">
+                <Sparkles className="w-3 h-3 text-[var(--primary)]" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]/60">AI Intelligence Active</span>
               </div>
             </motion.div>
           )

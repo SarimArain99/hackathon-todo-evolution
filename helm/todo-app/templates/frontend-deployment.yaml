@@ -13,6 +13,12 @@ spec:
     metadata:
       labels:
         app: {{ .Values.frontend.name }}
+      {{- if .Values.dapr.enabled }}
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "todo-frontend"
+        dapr.io/app-port: "{{ .Values.frontend.port }}"
+      {{- end }}
     spec:
       containers:
         - name: {{ .Values.frontend.name }}

@@ -30,10 +30,10 @@ function ProgrammaticBackground() {
 
   return (
     <div ref={bgRef} className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-      <div className="pulse-glow-signup absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full opacity-[0.08] blur-[120px] bg-[#2ECC71]" />
-      <div className="pulse-glow-signup absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full opacity-[0.05] blur-[100px] bg-blue-500" />
+      <div className="pulse-glow-signup absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full opacity-[0.08] blur-[120px] bg-[var(--primary)]" />
+      <div className="pulse-glow-signup absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full opacity-[0.05] blur-[100px] bg-[var(--brand-main)]" />
       {/* Scanning grid line for registration page */}
-      <div className="absolute inset-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#2ECC71]/10 to-transparent top-1/4 animate-scan opacity-30" />
+      <div className="absolute inset-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[var(--primary)]/10 to-transparent top-1/4 animate-scan opacity-30" />
     </div>
   );
 }
@@ -55,18 +55,18 @@ export default function SignUpPage() {
     gsap.set(".reveal-item", { opacity: 0, y: 20, filter: "blur(8px)" });
     gsap.set(cardRef.current, { scale: 0.96, opacity: 0, backdropFilter: "blur(0px)" });
 
-    tl.to(cardRef.current, { 
-      scale: 1, 
-      opacity: 1, 
-      backdropFilter: "blur(24px)", 
-      duration: 1.4 
+    tl.to(cardRef.current, {
+      scale: 1,
+      opacity: 1,
+      backdropFilter: "blur(24px)",
+      duration: 1.4
     })
-    .to(".reveal-item", { 
-      opacity: 1, 
-      y: 0, 
+    .to(".reveal-item", {
+      opacity: 1,
+      y: 0,
       filter: "blur(0px)",
-      stagger: 0.05, 
-      duration: 1 
+      stagger: 0.05,
+      duration: 1
     }, "-=0.8");
   }, { scope: container });
 
@@ -97,10 +97,10 @@ export default function SignUpPage() {
         setError(result.error.message || "INIT_FAIL: Node deployment rejected");
         triggerErrorShake();
       } else {
-        gsap.to(container.current, { 
-          opacity: 0, 
-          scale: 1.05, 
-          duration: 0.6, 
+        gsap.to(container.current, {
+          opacity: 0,
+          scale: 1.05,
+          duration: 0.6,
           ease: "expo.in",
           onComplete: () => {
             router.push("/dashboard");
@@ -117,38 +117,38 @@ export default function SignUpPage() {
   };
 
   return (
-    <main ref={container} className="relative min-h-screen flex items-center justify-center bg-[#1E2A38] text-white selection:bg-[#2ECC71]/30 p-6">
+    <main ref={container} className="relative min-h-screen flex items-center justify-center bg-[var(--background)] text-[var(--foreground)] selection:bg-[var(--primary)]/30 p-6">
       <ProgrammaticBackground />
 
       <div className="relative z-10 w-full max-w-[500px]">
         {/* System ID Header */}
         <div className="reveal-item flex flex-col items-center mb-12">
           <Link href="/" className="group flex flex-col items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-[#2ECC71] flex items-center justify-center shadow-[0_0_30px_rgba(46,204,113,0.3)] group-hover:rotate-180 transition-transform duration-700">
-              <Terminal className="w-6 h-6 text-[#1E2A38]" />
+            <div className="w-12 h-12 rounded-xl bg-[var(--primary)] flex items-center justify-center shadow-[0_0_30px_rgba(var(--brand-accent),0.3)] group-hover:rotate-180 transition-transform duration-700">
+              <Terminal className="w-6 h-6 text-[var(--primary-foreground)]" />
             </div>
             <span className="text-2xl font-bold tracking-[0.3em] uppercase opacity-80 group-hover:opacity-100 transition-opacity">
-              Zenith <span className="text-[#2ECC71]">OS</span>
+              Zenith <span className="text-[var(--primary)]">OS</span>
             </span>
           </Link>
         </div>
 
         {/* The Deployment Card */}
-        <div 
+        <div
           ref={cardRef}
-          className="glass-panel rounded-[2.5rem] p-10 md:p-14 border border-white/10 shadow-2xl relative"
+          className="glass-panel rounded-[var(--radius-3xl)] p-10 md:p-14 border border-[var(--glass-border)] shadow-[var(--glass-shadow)] relative"
         >
           <div className="reveal-item mb-10">
             <h1 className="text-3xl font-bold tracking-tighter mb-2">Initialize Node</h1>
-            <p className="text-[10px] font-mono tracking-[0.3em] text-[#2ECC71] uppercase opacity-70">
+            <p className="text-[10px] font-mono tracking-[0.3em] text-[var(--primary)] uppercase opacity-70">
               Security Protocol v3.0 // Ready
             </p>
           </div>
 
           {error && (
-            <div className="reveal-item mb-8 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-3">
-              <Activity className="w-4 h-4 text-red-500 animate-pulse" />
-              <p className="text-[10px] font-mono font-bold text-red-500 uppercase tracking-tight">{error}</p>
+            <div className="reveal-item mb-8 p-4 rounded-xl bg-[var(--state-error-bg)] border border-[var(--state-error-border)] flex items-center gap-3">
+              <Activity className="w-4 h-4 text-[var(--state-error-text)] animate-pulse" />
+              <p className="text-[10px] font-mono font-bold text-[var(--state-error-text)] uppercase tracking-tight">{error}</p>
             </div>
           )}
 
@@ -156,26 +156,26 @@ export default function SignUpPage() {
             <div className="space-y-5">
               {/* Field: Identity */}
               <div className="reveal-item space-y-2">
-                <label className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-white/40 ml-1">Identity_Label</label>
+                <label className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-[var(--foreground-muted)] ml-1">Identity_Label</label>
                 <div className="relative group">
-                  <User className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-[#2ECC71] transition-colors" />
+                  <User className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground-muted)] group-focus-within:text-[var(--primary)] transition-colors" />
                   <input
                     type="text" value={name} onChange={(e) => setName(e.target.value)} required
                     placeholder="Subject Name"
-                    className="w-full pl-14 pr-6 py-4 bg-white/[0.03] border border-white/5 rounded-2xl text-sm focus:border-[#2ECC71]/40 focus:bg-[#2ECC71]/5 outline-none transition-all placeholder:text-white/10"
+                    className="w-full pl-14 pr-6 py-4 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-2xl text-sm focus:border-[var(--primary)]/40 focus:bg-[var(--primary)]/5 outline-none transition-all placeholder:text-[var(--input-placeholder)]"
                   />
                 </div>
               </div>
 
               {/* Field: Uplink */}
               <div className="reveal-item space-y-2">
-                <label className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-white/40 ml-1">Uplink_Address</label>
+                <label className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-[var(--foreground-muted)] ml-1">Uplink_Address</label>
                 <div className="relative group">
-                  <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-[#2ECC71] transition-colors" />
+                  <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground-muted)] group-focus-within:text-[var(--primary)] transition-colors" />
                   <input
                     type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
                     placeholder="node_identifier@network.sys"
-                    className="w-full pl-14 pr-6 py-4 bg-white/[0.03] border border-white/5 rounded-2xl text-sm focus:border-[#2ECC71]/40 focus:bg-[#2ECC71]/5 outline-none transition-all placeholder:text-white/10"
+                    className="w-full pl-14 pr-6 py-4 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-2xl text-sm focus:border-[var(--primary)]/40 focus:bg-[var(--primary)]/5 outline-none transition-all placeholder:text-[var(--input-placeholder)]"
                   />
                 </div>
               </div>
@@ -183,24 +183,24 @@ export default function SignUpPage() {
               {/* Field: Passkey Matrix */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="reveal-item space-y-2">
-                  <label className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-white/40 ml-1">Key_Primary</label>
+                  <label className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-[var(--foreground-muted)] ml-1">Key_Primary</label>
                   <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/20 group-focus-within:text-[#2ECC71] transition-colors" />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--foreground-muted)] group-focus-within:text-[var(--primary)] transition-colors" />
                     <input
                       type="password" value={password} onChange={(e) => setPassword(e.target.value)} required
                       placeholder="••••••••"
-                      className="w-full pl-12 pr-4 py-4 bg-white/[0.03] border border-white/5 rounded-2xl text-sm focus:border-[#2ECC71]/40 outline-none transition-all"
+                      className="w-full pl-12 pr-4 py-4 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-2xl text-sm focus:border-[var(--primary)]/40 outline-none transition-all"
                     />
                   </div>
                 </div>
                 <div className="reveal-item space-y-2">
-                  <label className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-white/40 ml-1">Key_Verify</label>
+                  <label className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-[var(--foreground-muted)] ml-1">Key_Verify</label>
                   <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/20 group-focus-within:text-[#2ECC71] transition-colors" />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--foreground-muted)] group-focus-within:text-[var(--primary)] transition-colors" />
                     <input
                       type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required
                       placeholder="••••••••"
-                      className="w-full pl-12 pr-4 py-4 bg-white/[0.03] border border-white/5 rounded-2xl text-sm focus:border-[#2ECC71]/40 outline-none transition-all"
+                      className="w-full pl-12 pr-4 py-4 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-2xl text-sm focus:border-[var(--primary)]/40 outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -209,7 +209,7 @@ export default function SignUpPage() {
 
             <button
               disabled={isLoading}
-              className="reveal-item w-full py-5 bg-[#2ECC71] text-[#1E2A38] font-black text-[10px] uppercase tracking-[0.3em] rounded-2xl shadow-xl shadow-[#2ECC71]/10 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4 mt-8 button-shine disabled:opacity-50"
+              className="reveal-item w-full py-5 bg-[var(--primary)] text-[var(--primary-foreground)] font-black text-[10px] uppercase tracking-[0.3em] rounded-2xl shadow-xl shadow-[var(--primary)]/10 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4 mt-8 button-shine disabled:opacity-50"
             >
               {isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -222,10 +222,10 @@ export default function SignUpPage() {
             </button>
           </form>
 
-          <div className="reveal-item mt-12 text-center pt-8 border-t border-white/5">
-            <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest">
+          <div className="reveal-item mt-12 text-center pt-8 border-t border-[var(--glass-border)]">
+            <p className="text-[10px] font-mono text-[var(--foreground-muted)]/30 uppercase tracking-widest">
               Existing Node detected?{" "}
-              <Link href="/sign-in" className="font-black text-[#2ECC71] hover:underline transition-all">
+              <Link href="/sign-in" className="font-black text-[var(--primary)] hover:underline transition-all">
                 RESUME_SESSION
               </Link>
             </p>
@@ -234,7 +234,7 @@ export default function SignUpPage() {
 
         {/* Security Meta */}
         <div className="reveal-item mt-10 flex justify-center items-center gap-4 opacity-30">
-          <ShieldCheck className="w-4 h-4 text-[#2ECC71]" />
+          <ShieldCheck className="w-4 h-4 text-[var(--primary)]" />
           <span className="text-[8px] font-mono font-bold uppercase tracking-[0.5em]">System Sovereign Encryption Active</span>
         </div>
       </div>

@@ -120,15 +120,15 @@ This is a web application with separate backend and frontend:
 
 ### Tests for User Story 1
 
-- [ ] T021 [P] [US1] Unit test GET /api/tasks/{id} in backend/tests/test_tasks.py
+- [X] T021 [P] [US1] Unit test GET /api/tasks/{id} in backend/tests/test_tasks.py
   - Test success case with valid task
   - Test 404 for non-existent task
   - Test 403 for different user's task
-- [ ] T022 [P] [US1] Unit test PUT /api/tasks/{id} in backend/tests/test_tasks.py
+- [X] T022 [P] [US1] Unit test PUT /api/tasks/{id} in backend/tests/test_tasks.py
   - Test partial update (title only)
   - Test full update (all fields)
   - Test invalid data rejection
-- [ ] T023 [US1] Integration test for edit flow in frontend/tests/task-edit.test.tsx
+- [x] T023 [US1] Integration test for edit flow in frontend/tests/task-edit.test.tsx
   - Test edit dialog opens with pre-populated data
   - Test form submission updates task
   - Test cancel discards changes
@@ -169,12 +169,12 @@ This is a web application with separate backend and frontend:
 
 ### Tests for User Story 2
 
-- [ ] T029 [P] [US2] Unit test sort parameters in backend/tests/test_tasks.py
+- [X] T029 [P] [US2] Unit test sort parameters in backend/tests/test_tasks.py
   - Test sort by due_date asc/desc
   - Test sort by priority
   - Test sort by title
   - Test invalid sort field defaults to created_at
-- [ ] T030 [US2] Integration test for sort UI in frontend/tests/task-sort.test.tsx
+- [x] T030 [US2] Integration test for sort UI in frontend/tests/task-sort.test.tsx
   - Test sort dropdown changes order
   - Test sort direction toggle
   - Test sort preference persists across page reload
@@ -217,12 +217,12 @@ This is a web application with separate backend and frontend:
 
 ### Tests for User Story 3
 
-- [ ] T037 [P] [US3] Unit test filter parameters in backend/tests/test_tasks.py
+- [X] T037 [P] [US3] Unit test filter parameters in backend/tests/test_tasks.py
   - Test today filter
   - Test this_week filter
   - Test this_month filter
   - Test custom date range
-- [ ] T038 [US3] Integration test for filter UI in frontend/tests/task-filter.test.tsx
+- [x] T038 [US3] Integration test for filter UI in frontend/tests/task-filter.test.tsx
   - Test preset buttons filter correctly
   - Test empty state displays
   - Test reset button clears filters
@@ -252,11 +252,11 @@ This is a web application with separate backend and frontend:
 
 ### Tests for User Story 4
 
-- [ ] T042 [P] [US4] Unit test notification creation in backend/tests/test_notifications.py
+- [X] T042 [P] [US4] Unit test notification creation in backend/tests/test_notifications.py
   - Test task completion creates notification
   - Test due date reminder creation
   - Test duplicate reminder prevented
-- [ ] T043 [US4] Integration test for notification flow in backend/tests/test_notification_flow.py
+- [X] T043 [US4] Integration test for notification flow in backend/tests/test_notifications.py
   - Test complete task → notification created
   - Test due date check → reminder created
 
@@ -295,15 +295,15 @@ This is a web application with separate backend and frontend:
 
 ### Tests for User Story 5
 
-- [ ] T048 [P] [US5] Unit test notification bell in frontend/tests/notification-bell.test.tsx
+- [x] T048 [P] [US5] Unit test notification bell in frontend/tests/notification-bell.test.tsx
   - Test badge displays correct count
   - Test 99+ display for large counts
   - Test polling updates count
-- [ ] T049 [US5] Unit test notification dropdown in frontend/tests/notification-dropdown.test.tsx
+- [x] T049 [US5] Unit test notification dropdown in frontend/tests/notification-dropdown.test.tsx
   - Test notifications display newest first
   - Test click marks as read
   - Test dismiss removes notification
-- [ ] T050 [US5] Integration test for notification UI flow in frontend/tests/notification-flow.test.tsx
+- [x] T050 [US5] Integration test for notification UI flow in frontend/tests/notification-flow.test.tsx
   - Test complete task → badge appears
   - Test click bell → dropdown opens
   - Test click notification → marks read, closes dropdown
@@ -338,7 +338,7 @@ This is a web application with separate backend and frontend:
 - [X] T054 [P] [US6] Add recurrence selector to task form in frontend/components/task-form.tsx
   - Buttons: None, Daily, Weekly, Monthly, Yearly
   - Maps to RRULE: FREQ=DAILY, FREQ=WEEKLY, FREQ=MONTHLY, FREQ=YEARLY
-- [ ] T055 [P] [US6] Add edit scope selector to completion dialog in frontend/components/complete-task-dialog.tsx
+- [x] T055 [P] [US6] Add edit scope selector to completion dialog in frontend/components/complete-task-dialog.tsx
   - Radio/buttons: "This instance" | "All future"
   - Only shows for recurring tasks (deferred to v2)
 - [X] T056 [US6] Wire up recurrence in task form submission in frontend/lib/api.ts
@@ -346,16 +346,16 @@ This is a web application with separate backend and frontend:
 
 ### Tests for User Story 6
 
-- [ ] T057 [P] [US6] Unit test RRULE parsing in backend/tests/test_recurrence.py
+- [X] T057 [P] [US6] Unit test RRULE parsing in backend/tests/test_recurrence.py
   - Test daily recurrence
   - Test weekly recurrence
   - Test monthly recurrence
   - Test invalid RRULE rejected
-- [ ] T058 [P] [US6] Unit test next instance creation in backend/tests/test_recurrence.py
+- [X] T058 [P] [US6] Unit test next instance creation in backend/tests/test_recurrence.py
   - Test next instance created on completion
   - Test parent_task_id set correctly
   - Test fields copied correctly
-- [ ] T059 [US6] Integration test for recurrence flow in frontend/tests/task-recurrence.test.tsx
+- [x] T059 [US6] Integration test for recurrence flow in frontend/tests/task-recurrence.test.tsx
   - Test create recurring task
   - Test complete creates next instance
   - Test edit scope selection
@@ -372,8 +372,8 @@ This is a web application with separate backend and frontend:
 - [X] T061 [P] Add timezone handling for due dates in backend/app/services/notification_service.py
 - [X] T062 [P] Document notification cleanup job setup in backend/README.md
 - [X] T063 Run database migrations in development environment
-- [ ] T064 Test all user stories end-to-end in quickstart.md development workflow
-- [ ] T065 Verify all success criteria (SC-001 through SC-008) are met
+- [X] T064 Test all user stories end-to-end in quickstart.md development workflow
+- [X] T065 Verify all success criteria (SC-001 through SC-008) are met
 
 ---
 

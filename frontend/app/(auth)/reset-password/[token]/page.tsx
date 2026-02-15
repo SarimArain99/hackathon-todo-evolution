@@ -33,10 +33,10 @@ function ProgrammaticBackground() {
   return (
     <div ref={bgRef} className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
       <div 
-        className="reset-glow absolute top-[-5%] right-[-5%] w-[55%] h-[55%] rounded-full opacity-[0.06] blur-[100px] bg-accent"
+        className="reset-glow absolute top-[-5%] right-[-5%] w-[55%] h-[55%] rounded-full opacity-[0.06] blur-[100px] bg-[var(--primary)]"
       />
-      <div 
-        className="reset-glow absolute bottom-[-5%] left-[-5%] w-[55%] h-[55%] rounded-full opacity-[0.04] blur-[100px] bg-secondary"
+      <div
+        className="reset-glow absolute bottom-[-5%] left-[-5%] w-[55%] h-[55%] rounded-full opacity-[0.04] blur-[100px] bg-[var(--brand-main)]"
       />
     </div>
   );
@@ -110,64 +110,64 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <main ref={container} className="relative min-h-dvh flex items-center justify-center overflow-hidden bg-background px-4 py-8 noise-overlay">
+    <main ref={container} className="relative min-h-dvh flex items-center justify-center overflow-hidden bg-[var(--background)] px-4 py-8 noise-overlay">
       <ProgrammaticBackground />
 
       <div className="relative z-10 w-full max-w-[440px]">
         {/* Logo */}
         <div className="reveal-auth text-center mb-10">
           <div className="inline-flex flex-col items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center shadow-[0_0_30px_rgba(46,204,113,0.2)]">
-              <Terminal className="w-6 h-6 text-background" />
+            <div className="w-14 h-14 rounded-2xl bg-[var(--primary)] flex items-center justify-center shadow-[0_0_30px_rgba(var(--brand-accent),0.2)]">
+              <Terminal className="w-6 h-6 text-[var(--primary-foreground)]" />
             </div>
             <span className="text-3xl font-display font-bold tracking-tightest text-glow uppercase">ZENITH</span>
           </div>
         </div>
 
         {/* Dynamic Card */}
-        <div className="auth-card glass-panel rounded-[2.5rem] p-8 sm:p-12 shadow-2xl border-white/5 relative min-h-[400px] flex flex-col justify-center">
+        <div className="auth-card glass-panel rounded-[2.5rem] p-8 sm:p-12 shadow-2xl border-[var(--glass-border)] relative min-h-[400px] flex flex-col justify-center">
           {!isSuccess ? (
             <div className="form-content">
               <div className="reveal-auth text-center mb-10">
                 <h1 className="text-3xl font-display font-semibold tracking-tight">Key Recovery</h1>
-                <p className="text-foreground-muted text-[10px] mt-4 font-bold uppercase tracking-[0.2em]">Redefining Security Credentials</p>
+                <p className="text-[var(--foreground-muted)] text-[10px] mt-4 font-bold uppercase tracking-[0.2em]">Redefining Security Credentials</p>
               </div>
 
               {error && (
-                <div className="mb-8 p-4 rounded-2xl bg-danger/10 border border-danger/20 flex items-center gap-3 animate-in fade-in zoom-in duration-300">
-                  <AlertCircle className="w-4 h-4 text-danger shrink-0" />
-                  <p className="text-[11px] text-danger font-bold uppercase tracking-wider">{error}</p>
+                <div className="mb-8 p-4 rounded-2xl bg-[var(--state-error-bg)] border border-[var(--state-error-border)] flex items-center gap-3 animate-in fade-in zoom-in duration-300">
+                  <AlertCircle className="w-4 h-4 text-[var(--state-error-text)] shrink-0" />
+                  <p className="text-[11px] text-[var(--state-error-text)] font-bold uppercase tracking-wider">{error}</p>
                 </div>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="reveal-auth space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground-muted ml-2">New Security Key</label>
+                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--foreground-muted)] ml-2">New Security Key</label>
                   <div className="group relative">
-                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted group-focus-within:text-accent transition-colors" />
+                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground-muted)] group-focus-within:text-[var(--primary)] transition-colors" />
                     <input
                       type="password" value={password} onChange={(e) => setPassword(e.target.value)} required
                       placeholder="••••••••"
-                      className="w-full pl-14 pr-6 py-4.5 bg-white/5 border border-white/10 rounded-2xl text-sm focus:border-accent/40 focus:bg-accent/5 outline-none transition-all placeholder:text-foreground-muted/20"
+                      className="w-full pl-14 pr-6 py-4.5 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-2xl text-sm focus:border-[var(--primary)]/40 focus:bg-[var(--primary)]/5 outline-none transition-all placeholder:text-[var(--input-placeholder)]"
                     />
                   </div>
                 </div>
 
                 <div className="reveal-auth space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground-muted ml-2">Correlate Key</label>
+                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--foreground-muted)] ml-2">Correlate Key</label>
                   <div className="group relative">
-                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted group-focus-within:text-accent transition-colors" />
+                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground-muted)] group-focus-within:text-[var(--primary)] transition-colors" />
                     <input
                       type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required
                       placeholder="••••••••"
-                      className="w-full pl-14 pr-6 py-4.5 bg-white/5 border border-white/10 rounded-2xl text-sm focus:border-accent/40 focus:bg-accent/5 outline-none transition-all placeholder:text-foreground-muted/20"
+                      className="w-full pl-14 pr-6 py-4.5 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-2xl text-sm focus:border-[var(--primary)]/40 focus:bg-[var(--primary)]/5 outline-none transition-all placeholder:text-[var(--input-placeholder)]"
                     />
                   </div>
                 </div>
 
                 <button
                   disabled={isLoading}
-                  className="reveal-auth w-full py-5 bg-accent text-primary-foreground font-bold text-sm rounded-2xl shadow-xl shadow-accent/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4 mt-8 button-shine disabled:opacity-50"
+                  className="reveal-auth w-full py-5 bg-[var(--primary)] text-[var(--primary-foreground)] font-bold text-sm rounded-2xl shadow-xl shadow-[var(--primary)]/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4 mt-8 button-shine disabled:opacity-50"
                 >
                   {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span className="uppercase tracking-widest">Update Security Key</span>}
                 </button>
@@ -175,13 +175,13 @@ export default function ResetPasswordPage() {
             </div>
           ) : (
             <div className="success-content text-center py-4">
-              <div className="w-20 h-20 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-8 border border-accent/30 shadow-[0_0_40px_rgba(46,204,113,0.1)]">
-                <CheckCircle2 className="w-10 h-10 text-accent" />
+              <div className="w-20 h-20 bg-[var(--primary)]/20 rounded-full flex items-center justify-center mx-auto mb-8 border border-[var(--primary)]/30 shadow-[0_0_40px_rgba(var(--brand-accent),0.1)]">
+                <CheckCircle2 className="w-10 h-10 text-[var(--primary)]" />
               </div>
               <h1 className="text-3xl font-display font-semibold mb-4">Protocol Success</h1>
-              <p className="text-foreground-muted text-sm font-light leading-relaxed">
+              <p className="text-[var(--foreground-muted)] text-sm font-light leading-relaxed">
                 Security keys have been synchronized. <br />
-                <span className="text-accent font-bold uppercase text-[10px] tracking-[0.2em] mt-4 block">Redirecting to Access Node...</span>
+                <span className="text-[var(--primary)] font-bold uppercase text-[10px] tracking-[0.2em] mt-4 block">Redirecting to Access Node...</span>
               </p>
             </div>
           )}
@@ -189,7 +189,7 @@ export default function ResetPasswordPage() {
 
         {/* Footer Meta */}
         <div className="reveal-auth mt-10 flex justify-center items-center gap-3 opacity-20">
-          <ShieldCheck className="w-4 h-4 text-accent" />
+          <ShieldCheck className="w-4 h-4 text-[var(--primary)]" />
           <span className="text-[9px] font-bold uppercase tracking-[0.4em]">Secure Handshake Protocol v3.0</span>
         </div>
       </div>

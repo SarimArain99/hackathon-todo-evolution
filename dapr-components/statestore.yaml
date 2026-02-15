@@ -1,0 +1,52 @@
+# Dapr PostgreSQL State Store Component
+# Type: state.postgresql
+# Purpose: Store conversation state and cache data in PostgreSQL
+#
+# Usage in backend:
+#   from dapr.clients import DaprClient
+#   async with DaprClient() as client:
+#       await client.save_state(
+#           store_name="statestore",
+#           key=f"conversation_{user_id}",
+#           value=json.dumps(conversation_state)
+#       )
+#
+# State Keys:
+#   - conversation_{user_id}: Chat conversation state
+#   - job_id_{job_id}: Dapr Job metadata for cancellation
+#
+# See: https://docs.dapr.io/operations/components/setup-state-store/supported-state-stores/setup-postgresql/
+
+apiVersion: dapr.io/v1
+kind: Component
+metadata:
+  name: statestore
+  namespace: todo-app
+spec:
+  type: state.postgresql
+  version: v1
+  metadata:
+    # Connection string from Kubernetes secret
+    - name: connectionString
+      secretKeyRef:
+        name: todo-secrets
+        key: database-url
+    # Remove stale entries after 7 days (for conversation state)
+    - name: ttlInSeconds
+      value: "604800"
+    # Cleanup interval
+    - name: keyPrefix
+      value: "todo"
+scopes:
+  todo-backend:
+    kinds:
+      - type: State
+        name: statestore
+    # Only backend needs state access
+    allowedOperations: ["get", "set", "delete"]
+  todo-frontend:
+    kinds:
+      - type: State
+        name: statestore
+    # Frontend doesn't need state access
+    allowedOperations: []

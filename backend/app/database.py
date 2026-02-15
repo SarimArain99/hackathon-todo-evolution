@@ -123,8 +123,14 @@ def init_db() -> None:
 
 async def init_async_db() -> None:
     """Async version of init_db. Use with async startup."""
-    # Import models here to ensure they're registered
-    from app.models import Task, User, Conversation, Message  # noqa: F401
+    # Import models here to ensure they're registered with SQLModel metadata
+    from app.models import (
+        Task,
+        User,
+        Conversation,
+        Message,
+        Notification,
+    )  # noqa: F401
 
     async with async_engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)

@@ -1,31 +1,80 @@
-# Cloud deployment values for Phase V
+# Cloud deployment values for Oracle OKE
 # This file extends values.yaml with cloud-specific configurations
-# Use during Phase V for cloud deployment (DOKS/AKS/GKE)
+# Use for Oracle Kubernetes Engine (OKE) deployment
 
-# Enable Dapr for cloud deployment (Phase V)
+#=============================================================================
+# Dapr Configuration (Phase 6: Cloud Deployment)
+#=============================================================================
 dapr:
   enabled: true
 
-# Override backend image registry for cloud deployment
+#=============================================================================
+# Backend Configuration
+#=============================================================================
 backend:
   image:
-    # Set your cloud registry (e.g., ghcr.io, docker.io)
-    repository: ghcr.io/your-org/todo-backend
+    # Update with your GitHub username/organization
+    # Example: ghcr.io/sarimarain99/hackathon_2/backend
+    repository: ghcr.io/sarimarain99/hackathon_2/backend
     tag: latest
+    pullPolicy: Always
 
-# Override frontend image registry for cloud deployment
+  # Increase replicas for cloud deployment (horizontal scaling)
+  replicas: 2
+
+  # Cloud resource allocation (adjust based on OKE node pool)
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+#=============================================================================
+# Frontend Configuration
+#=============================================================================
 frontend:
   image:
-    # Set your cloud registry (e.g., ghcr.io, docker.io)
-    repository: ghcr.io/your-org/todo-frontend
+    # Update with your GitHub username/organization
+    # Example: ghcr.io/sarimarain99/hackathon_2/frontend
+    repository: ghcr.io/sarimarain99/hackathon_2/frontend
     tag: latest
+    pullPolicy: Always
 
-# Cloud-specific ingress configuration
+  # Increase replicas for cloud deployment
+  replicas: 2
+
+  # Cloud resource allocation
+  resources:
+    limits:
+      cpu: 300m
+      memory: 384Mi
+    requests:
+      cpu: 150m
+      memory: 192Mi
+
+  # Backend API URL for cloud (internal cluster communication)
+  env:
+    NEXT_PUBLIC_API_URL: "http://backend:8000"
+
+#=============================================================================
+# Ingress Configuration (Oracle OKE with LoadBalancer)
+#=============================================================================
 ingress:
-  # Cloud provider may require different ingress class
+  enabled: true
   className: nginx
-  # Use actual domain name for cloud deployment
-  host: todo.your-domain.com
+  # Update with your actual domain or OKE load balancer IP
+  host: todo.cloud.example.com
   annotations:
-    # Cloud provider-specific annotations
+    # TLS certificate (cert-manager or Oracle Certificate service)
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # Oracle Cloud Infrastructure specific annotations
+    # service.beta.kubernetes.io/oci-load-balancer-ssl-ports: "443"
+
+#=============================================================================
+# PostgreSQL Configuration (Optional - use Cloud DB instead)
+#=============================================================================
+postgres:
+  enabled: false  # Use Oracle Autonomous Database or managed PostgreSQL
+  # If enabled, would create a StatefulSet with persistent volume

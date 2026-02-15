@@ -3,7 +3,7 @@
  *
  * Configures Better Auth with:
  * - PostgreSQL database adapter for persistent credential storage
- * - JWT plugin for integration with the FastAPI backend
+ * - JWT plugin for integration with FastAPI backend
  * - Email & password authentication with optional verification
  * - Password reset via email (requires Resend API key)
  *
@@ -15,13 +15,12 @@
  * Environment variables required:
  * - DATABASE_URL: PostgreSQL connection string
  * - BETTER_AUTH_SECRET: Secret key for signing tokens (32+ chars)
- * - BETTER_AUTH_URL: Base URL for the application
+ * - BETTER_AUTH_TRUSTED_ORIGINS: Comma-separated list of trusted domains (OPTIONAL)
  * - RESEND_API_KEY: For password reset and email verification
- * - BETTER_AUTH_TRUSTED_ORIGINS: Comma-separated list of trusted domains
+ * - BETTER_AUTH_TRUSTED_ORIGINS: Comma-separated list of trusted domains (OPTIONAL)
  * - REQUIRE_EMAIL_VERIFICATION: Set to "true" to require email verification
  * - RESEND_FROM_EMAIL: Sender email for password reset/verification emails
  */
-
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import { resend, checkRateLimit } from "./email";
@@ -72,22 +71,22 @@ const validateConfig = () => {
   if (!process.env.BETTER_AUTH_SECRET) {
     throw new Error(
       "BETTER_AUTH_SECRET environment variable is required. " +
-      "Generate a secure random string (32+ characters) and set it in .env"
+      "Generate a secure random string (32+ characters) and set it in .env.local"
     );
   }
 };
 
 export const auth = betterAuth({
   // Base URL for the application
-  baseURL: process.env.BETTER_AUTH_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
+  // Note: With Next.js App Router, auth endpoints are served by Next.js itself
+  // Do NOT set BETTER_AUTH_URL in development - let Better Auth use default
+  // For production with Vercel, BETTER_AUTH_URL will be set automatically
 
-  // Trusted origins for CSRF protection
-  trustedOrigins: (
-    process.env.BETTER_AUTH_TRUSTED_ORIGINS ||
-    "http://localhost:3000,https://zenith-flow-zeta.vercel.app"
-  ).split(","),
-
+  // Trustedorigins for CSRF protection
+  trustedOrigins: [
+    "http://localhost:3000",
+    "https://zenith-flow-beta.vercel.app"
+  ],
   // Secret key for signing JWT tokens (use dummy for CLI)
   secret: process.env.BETTER_AUTH_SECRET || "dummy-secret-for-cli-only-set-BETTER_AUTH_SECRET-in-production",
 
@@ -110,13 +109,11 @@ export const auth = betterAuth({
   // Plugins
   plugins: [
     // JWT plugin temporarily disabled due to session decoding issue
-    // Re-enable after Better Auth fixes the JWT session token handling
+    // Re-enable after Better Auth fixes JWT session token handling
     // jwt({
-    //   jwks: {
-    //     jwksPath: "/api/auth/jwks",
-    //   },
+    //   jwksPath: "/api/auth/jwks",
     //   expiresIn: 60 * 60 * 24 * 7, // 7 days
-    // }),
+    //   }),
     nextCookies(),
   ],
 
@@ -125,12 +122,12 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: process.env.REQUIRE_EMAIL_VERIFICATION === "true",
     minPasswordLength: 8,
-    resetPasswordTokenExpiresIn: 60 * 60, // 1 hour
+    resetPasswordTokenExpiresIn: 60 * 60 * 1000, // 1 hour
 
     // Password reset callback with rate limiting
-    sendResetPassword: async ({ user, url }: { user: { email: string; name: string }; url: string }) => {
+    sendResetPassword: async ({ user, email }: { user: { email: string; name: string }; url: string }) => {
       // Check rate limit (3 requests per hour per email)
-      const allowed = await checkRateLimit(user.email, "password-reset", 3, 60 * 60 * 1000);
+      const allowed = await checkRateLimit(email, "password-reset", 3, 60 * 60 * 1000);
       if (!allowed) {
         throw new Error("Too many password reset requests. Please try again later.");
       }
@@ -176,51 +173,8 @@ export const auth = betterAuth({
       }
     },
 
-    // Email verification callback
-    sendVerificationEmail: async ({ user, url }: { user: { email: string; name: string }; url: string }) => {
-      // Send verification email via Resend
-      try {
-        await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || "noreply@zenith-flow.com",
-          to: user.email,
-          subject: "Verify Your Zenith Account",
-          html: `
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <style>
-                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a1a; }
-                .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
-                .button { display: inline-block; padding: 14px 28px; background: #6366f1; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-                .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e5e5; font-size: 12px; color: #666; }
-              </style>
-            </head>
-            <body>
-              <div class="container">
-                <h2>Welcome to Zenith!</h2>
-                <p>Thanks for signing up. Please verify your email address to complete your account setup.</p>
-                <p>Click the button below to verify your email:</p>
-                <a href="${url}" class="button">Verify Email</a>
-                <p>Or copy and paste this link into your browser:</p>
-                <p style="word-break: break-all; color: #6366f1;">${url}</p>
-                <p><strong>This link expires in 1 hour.</strong></p>
-                <div class="footer">
-                  <p>© 2026 Zenith Flow. All rights reserved.</p>
-                </div>
-              </div>
-            </body>
-            </html>
-          `,
-        });
-      } catch (error) {
-        console.error("Failed to send verification email:", error);
-      }
-    },
-  },
-
-  // Email verification configuration
-  emailVerification: {
-    sendVerificationEmail: async ({ user, url }: { user: { email: string; name: string }; url: string }) => {
+  // Email verification callback
+  sendVerificationEmail: async ({ user, url }: { user: { email: string; name: string }; url: string }) => {
       // Send verification email via Resend
       try {
         await resend.emails.send({
@@ -266,7 +220,6 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     // Note: cookieCache removed - now using database persistence
   },
-
   // Account configuration (stateless cookie storage removed)
   account: {
     accountLinking: {

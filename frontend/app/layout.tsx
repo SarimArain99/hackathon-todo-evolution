@@ -33,11 +33,10 @@ const dmSerif = DM_Serif_Display({
 });
 
 // --- VIEWPORT CONFIGURATION ---
-// Updated to reflect your custom #1E2A38 background color
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
-    { media: "(prefers-color-scheme: dark)", color: "#1E2A38" }, 
+    { media: "(prefers-color-scheme: dark)", color: "#0a0e17" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -85,18 +84,18 @@ export default function RootLayout({
     >
       <body
         className={`
-          ${outfit.variable} 
-          ${jetbrainsMono.variable} 
+          ${outfit.variable}
+          ${jetbrainsMono.variable}
           ${dmSerif.variable}
-          antialiased 
-          bg-background 
-          text-foreground 
-          selection:bg-accent/30 
-          selection:text-accent
-          transition-colors 
+          antialiased
+          transition-colors
           duration-700
           noise-overlay
         `}
+        style={{
+          backgroundColor: 'var(--background)',
+          color: 'var(--foreground)',
+        }}
       >
         <ThemeProvider
           attribute="class"
@@ -110,13 +109,13 @@ export default function RootLayout({
           </div>
           
           {/* Custom Sonner Toaster - Styled for Glassmorphism */}
-          <Toaster 
-            position="bottom-right" 
+          <Toaster
+            position="bottom-right"
             expand={true}
-            richColors 
+            richColors
             closeButton
             toastOptions={{
-              className: "glass-panel !bg-bg-glass !backdrop-blur-xl !border-white/10 !rounded-2xl !p-4 !shadow-2xl",
+              className: "glass-panel !bg-[var(--glass-bg)] !backdrop-blur-xl !border-[var(--glass-border)] !rounded-[var(--radius-2xl)] !p-4 !shadow-[var(--glass-shadow)]",
               style: {
                 fontFamily: 'var(--font-outfit)',
                 color: 'var(--foreground)',

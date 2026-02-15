@@ -3,6 +3,7 @@
  *
  * Displays a bell icon with unread notification badge.
  * Polls for unread count every 30 seconds.
+ * Theme: Connected to globals.css CSS variables
  */
 
 "use client";
@@ -50,12 +51,12 @@ export function NotificationBell({ onOpenChange }: NotificationBellProps) {
   return (
     <button
       onClick={handleClick}
-      className="relative p-2 rounded-full hover:bg-white/10 transition-colors"
+      className="relative p-2 rounded-full hover:bg-[var(--surface-overlay)] transition-colors"
       aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
     >
-      <Bell className="w-5 h-5 text-white/70" />
+      <Bell className="w-5 h-5 text-[var(--foreground-muted)]" />
       {unreadCount > 0 && (
-        <span className="absolute -top-1 -right-1 bg-gradient-to-r from-primary to-pink-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold shadow-lg">
+        <span className="absolute -top-1 -right-1 bg-gradient-to-r from-[var(--primary)] to-[var(--state-error-text)] text-[var(--primary-foreground)] text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold shadow-lg">
           {unreadCount > 99 ? "99+" : unreadCount}
         </span>
       )}

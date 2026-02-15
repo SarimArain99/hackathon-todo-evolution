@@ -58,17 +58,17 @@ export default function DashboardShell({
       }
     })
     .to(".status-dot", { opacity: 1, duration: 0.3, repeat: 3, yoyo: true })
-    .to(".header-reveal", { 
-      y: 0, 
-      opacity: 1, 
-      stagger: 0.1, 
-      duration: 1 
+    .to(".header-reveal", {
+      y: 0,
+      opacity: 1,
+      stagger: 0.1,
+      duration: 1
     }, "-=0.5")
-    .to(".workspace-card", { 
-      scale: 1, 
-      opacity: 1, 
-      y: 0, 
-      duration: 1.2 
+    .to(".workspace-card", {
+      scale: 1,
+      opacity: 1,
+      y: 0,
+      duration: 1.2
     }, "-=0.8");
 
     // Magnetic background drift
@@ -84,32 +84,32 @@ export default function DashboardShell({
   }, { scope: container });
 
   return (
-    <main ref={container} className="relative min-h-screen w-full bg-background noise-overlay selection:bg-accent/30 selection:text-white">
+    <main ref={container} className="relative min-h-screen w-full bg-[var(--background)] noise-overlay selection:bg-[var(--primary)]/30 selection:text-[var(--primary-foreground)]">
       {/* Background depth with dynamic drift */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="bg-glow absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full opacity-[0.06] blur-[120px] bg-accent" />
-        <div className="bg-glow absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full opacity-[0.04] blur-[120px] bg-secondary" />
+        <div className="bg-glow absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full opacity-[0.06] blur-[120px] bg-[var(--primary)]" />
+        <div className="bg-glow absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full opacity-[0.04] blur-[120px] bg-[var(--brand-main)]" />
       </div>
 
       {/* Top System Bar */}
-      <header className="sticky top-0 z-50 w-full glass-panel border-b border-white/5 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 w-full glass-panel border-b border-[var(--glass-border)] backdrop-blur-xl">
         <div className="max-w-screen-2xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between gap-8">
-            
+
             {/* System Branding & Status */}
             <div className="flex items-center gap-6 min-w-0">
               <Link href="/dashboard" className="header-reveal flex items-center gap-3 group">
-                <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center shadow-[0_0_20px_rgba(46,204,113,0.2)] group-hover:rotate-90 transition-transform duration-500">
-                  <Terminal className="w-5 h-5 text-background" />
+                <div className="w-10 h-10 rounded-xl bg-[var(--primary)] flex items-center justify-center shadow-[0_0_20px_rgba(var(--brand-accent),0.2)] group-hover:rotate-90 transition-transform duration-500">
+                  <Terminal className="w-5 h-5 text-[var(--primary-foreground)]" />
                 </div>
                 <span className="text-xl font-display font-bold tracking-tightest text-glow hidden md:block">ZENITH</span>
               </Link>
 
-              <div className="h-6 w-px bg-white/10 hidden md:block" />
+              <div className="h-6 w-px bg-[var(--glass-border)] hidden md:block" />
 
-              <div className="header-reveal flex items-center gap-4 text-xs font-mono tracking-widest text-foreground-muted overflow-hidden">
-                <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/5">
-                  <span className="status-dot w-2 h-2 rounded-full bg-accent shadow-[0_0_8px_#2ECC71]" />
+              <div className="header-reveal flex items-center gap-4 text-xs font-mono tracking-widest text-[var(--foreground-muted)] overflow-hidden">
+                <div className="flex items-center gap-2 bg-[var(--glass-bg)] px-4 py-2 rounded-full border border-[var(--glass-border)]">
+                  <span className="status-dot w-2 h-2 rounded-full bg-[var(--primary)] shadow-[0_0_8px_var(--primary)]" />
                   <span className="whitespace-nowrap">{statusText}</span>
                 </div>
               </div>
@@ -119,15 +119,15 @@ export default function DashboardShell({
             <div className="header-reveal flex items-center gap-4 shrink-0 relative">
               <div className="hidden lg:flex items-center gap-6 mr-4">
                 <div className="flex flex-col items-end">
-                  <span className="text-[10px] font-bold text-foreground uppercase tracking-[0.2em]">{user.name}</span>
-                  <span className="text-[9px] text-accent font-medium mt-1 uppercase tracking-widest flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold text-[var(--foreground)] uppercase tracking-[0.2em]">{user.name}</span>
+                  <span className="text-[9px] text-[var(--primary)] font-medium mt-1 uppercase tracking-widest flex items-center gap-1.5">
                     <Activity className="w-3 h-3" />
                     Neural Link Active
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 bg-black/20 p-1.5 rounded-2xl border border-white/5 shadow-inner">
+              <div className="flex items-center gap-2 bg-[var(--surface-base)]/20 p-1.5 rounded-2xl border border-[var(--glass-border)] shadow-inner">
                 {/* Notification Bell */}
                 <div className="relative">
                   <NotificationBell
@@ -143,7 +143,7 @@ export default function DashboardShell({
                 </div>
 
                 <ThemeToggle />
-                <div className="h-4 w-px bg-white/10 mx-1" />
+                <div className="h-4 w-px bg-[var(--glass-border)] mx-1" />
                 <LogoutButton />
               </div>
             </div>
@@ -153,10 +153,10 @@ export default function DashboardShell({
 
       {/* Main Workspace Environment */}
       <div className="relative z-10 max-w-screen-2xl mx-auto px-6 py-12 lg:py-20">
-        
+
         {/* Workspace Intro */}
         <div className="mb-16">
-          <div className="header-reveal inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-[9px] font-bold text-accent uppercase tracking-[0.3em] mb-6">
+          <div className="header-reveal inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-[var(--primary)]/10 border border-[var(--primary)]/20 text-[9px] font-bold text-[var(--primary)] uppercase tracking-[0.3em] mb-6">
             <Cpu className="w-3 h-3" />
             Core Deployment: 01
           </div>
@@ -164,13 +164,13 @@ export default function DashboardShell({
             Design your <br />
             <span className="text-glow italic font-medium">Perspective.</span>
           </h1>
-          <div className="header-reveal flex flex-wrap gap-8 text-foreground-muted font-light max-w-2xl text-lg sm:text-xl">
+          <div className="header-reveal flex flex-wrap gap-8 text-[var(--foreground-muted)] font-light max-w-2xl text-lg sm:text-xl">
              <p className="flex items-center gap-2">
-               <Globe className="w-4 h-4 text-accent/50" />
+               <Globe className="w-4 h-4 text-[var(--primary)]/50" />
                Global Sync Enabled
              </p>
              <p className="flex items-center gap-2">
-               <Command className="w-4 h-4 text-accent/50" />
+               <Command className="w-4 h-4 text-[var(--primary)]/50" />
                Sub-second Response
              </p>
           </div>
@@ -179,11 +179,11 @@ export default function DashboardShell({
         {/* The Workspace Surface */}
         <div className="relative group">
           {/* Programmatic Corner Guards */}
-          <div className="absolute -top-4 -left-4 w-12 h-12 border-t border-l border-accent/30 rounded-tl-3xl transition-all group-hover:-top-2 group-hover:-left-2" />
-          <div className="absolute -bottom-4 -right-4 w-12 h-12 border-b border-r border-accent/30 rounded-br-3xl transition-all group-hover:-bottom-2 group-hover:-right-2" />
-          
-          <div className="workspace-card glass-panel rounded-[3rem] p-1 sm:p-2 shadow-2xl overflow-hidden border-white/5 bg-white/[0.02]">
-             <div className="bg-background/40 rounded-[2.8rem] p-6 sm:p-12 min-h-[600px] backdrop-blur-sm">
+          <div className="absolute -top-4 -left-4 w-12 h-12 border-t border-l border-[var(--primary)]/30 rounded-tl-3xl transition-all group-hover:-top-2 group-hover:-left-2" />
+          <div className="absolute -bottom-4 -right-4 w-12 h-12 border-b border-r border-[var(--primary)]/30 rounded-br-3xl transition-all group-hover:-bottom-2 group-hover:-right-2" />
+
+          <div className="workspace-card glass-panel rounded-[3rem] p-1 sm:p-2 shadow-[var(--glass-shadow)] overflow-hidden border-[var(--glass-border)] bg-[var(--surface-base)]/[0.02]">
+             <div className="bg-[var(--background)]/40 rounded-[2.8rem] p-6 sm:p-12 min-h-[600px] backdrop-blur-sm">
                 {children}
              </div>
           </div>
@@ -192,17 +192,17 @@ export default function DashboardShell({
 
       {/* System Footer */}
       <footer className="relative z-10 max-w-screen-2xl mx-auto px-10 pb-16 mt-20">
-        <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+        <div className="pt-10 border-t border-[var(--glass-border)] flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center gap-3">
-             <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-             <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-[0.5em]">
+             <div className="w-2 h-2 rounded-full bg-[var(--primary)] animate-pulse" />
+             <p className="text-[10px] font-bold text-[var(--foreground-muted)] uppercase tracking-[0.5em]">
                Zenith OS // Rev 3.0.1
              </p>
           </div>
-          
+
           <div className="flex gap-10">
             {["Kernel", "Security", "Uplink"].map((item) => (
-              <span key={item} className="text-[10px] font-bold text-foreground-muted uppercase tracking-widest cursor-pointer hover:text-accent transition-all hover:tracking-[0.2em]">
+              <span key={item} className="text-[10px] font-bold text-[var(--foreground-muted)] uppercase tracking-widest cursor-pointer hover:text-[var(--primary)] transition-all hover:tracking-[0.2em]">
                 {item}
               </span>
             ))}

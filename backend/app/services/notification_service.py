@@ -231,6 +231,7 @@ class NotificationService:
                     "title": task.title,
                     "description": task.description,
                     "priority": task.priority,
+                    "tags": task.tags,  # Include tags (stored as JSON string in DB)
                     "due_date": next_date,
                     "recurrence_rule": task.recurrence_rule,
                     "completed": False,
