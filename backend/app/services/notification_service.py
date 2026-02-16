@@ -3,9 +3,10 @@ NotificationService - Business logic for notification operations.
 
 Implements user isolation and notification lifecycle management.
 Includes due date reminder checking and recurring task instance creation.
+All datetimes are handled in UTC for consistency.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from dateutil.rrule import rrulestr
@@ -15,6 +16,11 @@ from sqlalchemy import select
 from sqlmodel import select
 
 from app.models import Notification, Task, NotificationCreate, NotificationUpdate
+
+
+def utcnow() -> datetime:
+    """Get current datetime in UTC with timezone info for consistent comparisons."""
+    return datetime.now(timezone.utc).replace(microsecond=0)
 
 
 class NotificationService:
@@ -225,6 +231,7 @@ class NotificationService:
                     "title": task.title,
                     "description": task.description,
                     "priority": task.priority,
+                    "tags": task.tags,  # Include tags (stored as JSON string in DB)
                     "due_date": next_date,
                     "recurrence_rule": task.recurrence_rule,
                     "completed": False,
@@ -244,27 +251,31 @@ class NotificationService:
         Creates notifications for tasks due within 24 hours
         that don't already have a reminder.
 
+        Uses UTC timezone for all date comparisons to ensure consistency
+        across different server locations and user timezones.
+
         Args:
             session: Database session
         """
-        tomorrow = datetime.now() + timedelta(days=1)
-        start = tomorrow.replace(hour=0, minute=0, second=0, microsecond=0)
-        end = tomorrow.replace(hour=23, minute=59, second=59, microsecond=999999)
+        now = utcnow()
+        tomorrow_start = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0)
+        tomorrow_end = (now + timedelta(days=1)).replace(hour=23, minute=59, second=59)
 
-        # Find tasks due tomorrow that aren't completed
+        # Find tasks due in the next 24 hours (tomorrow) that aren't completed
         query = select(Task).where(
-            Task.due_date >= start,
-            Task.due_date <= end,
+            Task.due_date >= tomorrow_start,
+            Task.due_date <= tomorrow_end,
             Task.completed == False
         )
         result = await session.execute(query)
         tasks_due = result.scalars().all()
 
         for task in tasks_due:
-            # Check if reminder already exists
+            # Check if reminder already exists for this task
             existing_query = select(Notification).where(
                 Notification.task_id == task.id,
-                Notification.type == "due_date_reminder"
+                Notification.type == "due_date_reminder",
+                Notification.created_at >= tomorrow_start  # Only check recent notifications
             )
             existing_result = await session.execute(existing_query)
             existing = existing_result.first()

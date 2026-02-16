@@ -1,0 +1,57 @@
+# Dapr Kafka Pub/Sub Component
+# Type: pubsub.kafka
+# Purpose: Abstract Redpanda (Kafka-compatible) message broker for event streaming
+#
+# Usage in backend:
+#   from dapr.clients import DaprClient
+#   async with DaprClient() as client:
+#       await client.publish_event(
+#           pubsub_name="kafka-pubsub",
+#           topic_name="task-events",
+#           data=json.dumps(event),
+#           data_content_type="application/json"
+#       )
+#
+# Topics:
+#   - task-events: Task lifecycle events (created, updated, completed, deleted)
+#   - reminders: Reminder notifications triggered by Dapr Jobs
+#
+# See: https://docs.dapr.io/operations/components/setup-pubsub/supported-pubsubs/kafka/
+
+apiVersion: dapr.io/v1
+kind: Component
+metadata:
+  name: kafka-pubsub
+  namespace: todo-app
+spec:
+  type: pubsub.kafka
+  version: v1
+  metadata:
+    # Redpanda service address (Kafka-compatible broker)
+    - name: brokers
+      value: redpanda.todo-app.svc.cluster.local:9092
+    # Consumer group for load balancing across instances
+    - name: consumerGroup
+      value: todo-service
+    # Disable auth for local development (enable for production)
+    - name: authRequired
+      value: "false"
+    # Use the simplest and most reliable auto-commit strategy
+    - name: autoEnableSASL
+      value: "false"
+    # Initial offset for new consumer groups
+    - name: initialOffset
+      value: newest
+scopes:
+  todo-backend:
+    kinds:
+      - type: Pubsub
+        name: kafka-pubsub
+    # Allow backend to both publish and subscribe
+    allowedOperations: ["publish", "subscribe"]
+  todo-frontend:
+    kinds:
+      - type: Pubsub
+        name: kafka-pubsub
+    # Frontend only needs to publish (e.g., user interaction events)
+    allowedOperations: ["publish"]

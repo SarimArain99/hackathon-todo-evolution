@@ -130,42 +130,42 @@
 
 ### MCP Server Implementation
 
-- [ ] T065 [US3] Add openai-agents-sdk, mcp dependencies in backend/pyproject.toml
-- [ ] T066 [US3] Create MCP server base structure in backend/app/mcp_server/server.py
-- [ ] T067 [US3] Implement add_task MCP tool in backend/app/mcp_server/tools.py
-- [ ] T068 [US3] Implement list_tasks MCP tool in backend/app/mcp_server/tools.py
-- [ ] T069 [US3] Implement complete_task MCP tool in backend/app/mcp_server/tools.py
-- [ ] T070 [US3] Implement delete_task MCP tool in backend/app/mcp_server/tools.py
-- [ ] T071 [US3] Implement update_task MCP tool in backend/app/mcp_server/tools.py
-- [ ] T072 [US3] Register all tools with MCP server in backend/app/mcp_server/server.py
+- [x] T065 [US3] Add openai-agents-sdk, mcp dependencies in backend/pyproject.toml
+- [x] T066 [US3] Create MCP server base structure in backend/app/mcp_server/server.py
+- [x] T067 [US3] Implement add_task MCP tool in backend/app/mcp_server/tools.py
+- [x] T068 [US3] Implement list_tasks MCP tool in backend/app/mcp_server/tools.py
+- [x] T069 [US3] Implement complete_task MCP tool in backend/app/mcp_server/tools.py
+- [x] T070 [US3] Implement delete_task MCP tool in backend/app/mcp_server/tools.py
+- [x] T071 [US3] Implement update_task MCP tool in backend/app/mcp_server/tools.py
+- [x] T072 [US3] Register all tools with MCP server in backend/app/mcp_server/server.py
 
 ### Conversation Persistence
 
-- [ ] T073 [US3] Create SQLModel Conversation entity in backend/app/models.py
-- [ ] T074 [US3] Create SQLModel Message entity with role enum in backend/app/models.py
-- [ ] T075 [US3] Create ConversationService for CRUD operations in backend/app/services/conversation_service.py
-- [ ] T076 [US3] Implement conversation history retrieval in backend/app/services/conversation_service.py
+- [x] T073 [US3] Create SQLModel Conversation entity in backend/app/models.py
+- [x] T074 [US3] Create SQLModel Message entity with role enum in backend/app/models.py
+- [x] T075 [US3] Create ConversationService for CRUD operations in backend/app/services/conversation_service.py
+- [x] T076 [US3] Implement conversation history retrieval in backend/app/services/conversation_service.py
 
 ### Chat API Endpoints
 
-- [ ] T077 [US3] Create Agent with MCP tools integration in backend/app/services/agent_service.py
-- [ ] T078 [US3] Implement stateless chat processing in backend/app/services/agent_service.py
-- [ ] T079 [US3] Create POST /api/chat endpoint in backend/app/routes/chat.py
-- [ ] T080 [US3] Create GET /api/chat/conversations endpoint in backend/app/routes/chat.py
-- [ ] T081 [US3] Create GET /api/chat/conversations/{id}/messages endpoint in backend/app/routes/chat.py
-- [ ] T082 [US3] Create DELETE /api/chat/conversations/{id} endpoint in backend/app/routes/chat.py
-- [ ] T083 [US3] Register chat routes in backend/app/main.py
+- [x] T077 [US3] Create Agent with MCP tools integration in backend/app/services/agent_service.py
+- [x] T078 [US3] Implement stateless chat processing in backend/app/services/agent_service.py
+- [x] T079 [US3] Create POST /api/chat endpoint in backend/app/routes/chat.py
+- [x] T080 [US3] Create GET /api/chat/conversations endpoint in backend/app/routes/chat.py
+- [x] T081 [US3] Create GET /api/chat/conversations/{id}/messages endpoint in backend/app/routes/chat.py
+- [x] T082 [US3] Create DELETE /api/chat/conversations/{id} endpoint in backend/app/routes/chat.py
+- [x] T083 [US3] Register chat routes in backend/app/main.py
 
 ### Chat Frontend
 
-- [ ] T084 [US3] Install OpenAI ChatKit in frontend/package.json
-- [ ] T085 [US3] Create Chat component with message display in frontend/components/chat.tsx
-- [ ] T086 [US3] Create ChatInput component in frontend/components/chat-input.tsx
-- [ ] T087 [US3] Create ConversationList component in frontend/components/conversation-list.tsx
-- [ ] T088 [US3] Create chat page with ChatKit integration in frontend/app/(protected)/chat/page.tsx
-- [ ] T089 [US3] Add chat navigation link to dashboard in frontend/app/(protected)/layout.tsx
-- [ ] T090 [P] [US3] Write chat API integration tests in backend/tests/test_chat.py
-- [ ] T090-B [P] [US3] Define AI accuracy test suite with 100 representative natural language commands (add, list, complete, delete, update variations) and document pass/fail evaluation methodology in backend/tests/test_ai_accuracy.py
+- [x] T084 [US3] Install OpenAI ChatKit in frontend/package.json
+- [x] T085 [US3] Create Chat component with message display in frontend/app/(protected)/chat/page.tsx
+- [x] T086 [US3] Create ChatInput component in frontend/app/(protected)/chat/page.tsx
+- [x] T087 [US3] Create ConversationList component in frontend/app/(protected)/chat/page.tsx
+- [x] T088 [US3] Create chat page with ChatKit integration in frontend/app/(protected)/chat/page.tsx
+- [x] T089 [US3] Add chat navigation link to dashboard in frontend/app/(protected)/layout.tsx
+- [x] T090 [P] [US3] Write chat API integration tests in backend/tests/test_chat.py
+- [x] T090-B [P] [US3] Define AI accuracy test suite with 100 representative natural language commands (add, list, complete, delete, update variations) and document pass/fail evaluation methodology in backend/tests/test_ai_accuracy.py
 
 **Checkpoint**: Phase III complete (200 pts). AI chatbot operational with natural language task management.
 
@@ -179,35 +179,35 @@
 
 ### Docker Images
 
-- [ ] T091 [US4] Create multi-stage backend Dockerfile in docker/backend.Dockerfile
-- [ ] T092 [US4] Create multi-stage frontend Dockerfile in docker/frontend.Dockerfile
-- [ ] T093 [US4] Create .dockerignore files for backend and frontend
+- [x] T091 [US4] Create multi-stage backend Dockerfile in backend/Dockerfile
+- [x] T092 [US4] Create multi-stage frontend Dockerfile in frontend/Dockerfile
+- [x] T093 [US4] Create .dockerignore files for backend and frontend
 
 ### Helm Chart Structure
 
-- [ ] T094 [US4] Create Helm chart scaffolding in helm/todo-app/Chart.yaml
-- [ ] T095 [US4] Create \_helpers.tpl with template functions in helm/todo-app/templates/\_helpers.tpl
-- [ ] T096 [US4] Create values.yaml with all configuration in helm/todo-app/values.yaml
-- [ ] T097 [US4] Create backend Deployment template in helm/todo-app/templates/backend-deployment.yaml
-- [ ] T098 [US4] Create backend Service template in helm/todo-app/templates/backend-service.yaml
-- [ ] T099 [US4] Create frontend Deployment template in helm/todo-app/templates/frontend-deployment.yaml
-- [ ] T100 [US4] Create frontend Service template in helm/todo-app/templates/frontend-service.yaml
-- [ ] T101 [US4] Create ConfigMap template in helm/todo-app/templates/configmap.yaml
-- [ ] T102 [US4] Create Secret template in helm/todo-app/templates/secret.yaml
-- [ ] T103 [US4] Create Ingress template in helm/todo-app/templates/ingress.yaml
+- [x] T094 [US4] Create Helm chart scaffolding in helm/todo-app/Chart.yaml
+- [x] T095 [US4] Create \_helpers.tpl with template functions in helm/todo-app/templates/\_helpers.tpl
+- [x] T096 [US4] Create values.yaml with all configuration in helm/todo-app/values.yaml
+- [x] T097 [US4] Create backend Deployment template in helm/todo-app/templates/backend-deployment.yaml
+- [x] T098 [US4] Create backend Service template in helm/todo-app/templates/backend-service.yaml
+- [x] T099 [US4] Create frontend Deployment template in helm/todo-app/templates/frontend-deployment.yaml
+- [x] T100 [US4] Create frontend Service template in helm/todo-app/templates/frontend-service.yaml
+- [x] T101 [US4] Create ConfigMap template in helm/todo-app/templates/configmap.yaml
+- [x] T102 [US4] Create Secret template in helm/todo-app/templates/secret.yaml
+- [x] T103 [US4] Create Ingress template in helm/todo-app/templates/ingress.yaml
 
 ### Health Checks
 
-- [ ] T104 [US4] Add readiness probe to backend Deployment in helm/todo-app/templates/backend-deployment.yaml
-- [ ] T105 [US4] Add liveness probe to backend Deployment in helm/todo-app/templates/backend-deployment.yaml
-- [ ] T106 [US4] Enhance /health endpoint with database check in backend/app/main.py
+- [x] T104 [US4] Add readiness probe to backend Deployment in helm/todo-app/templates/backend-deployment.yaml
+- [x] T105 [US4] Add liveness probe to backend Deployment in helm/todo-app/templates/backend-deployment.yaml
+- [x] T106 [US4] Enhance /health endpoint with database check in backend/app/main.py
 
 ### Minikube Deployment
 
-- [ ] T107 [US4] Create deployment script for Minikube in scripts/deploy-minikube.sh
-- [ ] T108 [US4] Document Minikube setup in quickstart.md (update)
-- [ ] T109 [US4] Create kubectl-ai integration examples in docs/kubectl-ai-examples.md
-- [ ] T110 [P] [US4] Test Helm chart with helm template --debug
+- [x] T107 [US4] Create deployment script for Minikube in scripts/deploy-minikube.sh
+- [x] T108 [US4] Document Minikube setup in quickstart.md (update)
+- [x] T109 [US4] Create kubectl-ai integration examples in docs/kubectl-ai-examples.md
+- [x] T110 [P] [US4] Test Helm chart with helm template --debug
 
 **Checkpoint**: Phase IV complete (250 pts). Application running on local Kubernetes.
 

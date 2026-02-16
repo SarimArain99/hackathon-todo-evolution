@@ -40,11 +40,64 @@ FastAPI backend for the Todo Evolution application with JWT authentication.
 
 ### Tasks
 - `GET /api/tasks` - List all tasks (authenticated)
+  - Supports: sorting, filtering, date ranges, presets
+  - Query params: `sort_by`, `sort_order`, `filter_start`, `filter_end`, `preset_filter`
 - `POST /api/tasks` - Create a new task (authenticated)
+  - Supports: recurrence rules (RRULE format)
 - `GET /api/tasks/{id}` - Get a specific task (authenticated)
 - `PUT /api/tasks/{id}` - Update a task (authenticated)
+  - Includes optimistic locking for concurrent edits
 - `DELETE /api/tasks/{id}` - Delete a task (authenticated)
 - `POST /api/tasks/{id}/complete` - Mark task as complete (authenticated)
+  - Creates next instance for recurring tasks
+
+### Notifications
+- `GET /api/notifications` - List notifications (authenticated)
+- `GET /api/notifications/unread-count` - Get unread count (authenticated)
+- `PATCH /api/notifications/{id}/read` - Mark as read (authenticated)
+- `DELETE /api/notifications/{id}` - Dismiss notification (authenticated)
+
+## Background Jobs
+
+The application uses APScheduler to run background tasks for due date reminders.
+
+### Due Date Reminders
+
+- **Schedule**: Daily at midnight (00:00 UTC)
+- **Function**: Checks for tasks due within 24 hours and creates reminder notifications
+- **Implementation**: `due_date_reminder_job()` in `app/main.py`
+
+### Notification Cleanup
+
+To keep the notification table from growing indefinitely, you can set up a periodic cleanup job:
+
+```sql
+-- The cleanup_old_notifications() function is defined in the migration
+-- Call it periodically to delete notifications older than 90 days:
+SELECT cleanup_old_notifications();
+```
+
+**Recommended setup for PostgreSQL**:
+
+1. **Manual cleanup** (run occasionally):
+   ```bash
+   psql $DATABASE_URL -c "SELECT cleanup_old_notifications();"
+   ```
+
+2. **Scheduled cleanup** via cron (add to crontab):
+   ```bash
+   # Run cleanup weekly on Sunday at 2 AM
+   0 2 * * 0 psql $DATABASE_URL -c "SELECT cleanup_old_notifications();"
+   ```
+
+3. **Using pg_cron** (if available):
+   ```sql
+   SELECT cron.schedule('weekly-notification-cleanup',
+                        '0 2 * * 0',
+                        'SELECT cleanup_old_notifications();');
+   ```
+
+**Note for SQLite**: The cleanup function is still created, but you'll need to run it manually since SQLite doesn't have built-in job scheduling. Consider using the application's scheduler or external cron.
 
 ## Running Locally
 

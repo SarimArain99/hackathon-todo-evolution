@@ -8,7 +8,7 @@ Users can only access their own tasks (data isolation).
 from datetime import date, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Body, Depends, Query, status
+from fastapi import APIRouter, Body, Depends, Query, status, Request
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -95,11 +95,18 @@ async def get_task(
 @router.post("", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
 async def create_task(
     task_data: TaskCreate,
+    request: Request,
     session: AsyncSession = Depends(get_session),
     current_user: UserRead = Depends(get_current_user),
 ) -> TaskRead:
-    """Create a new task for the current user."""
-    return await TaskService.create_task(session, task_data, current_user.id)
+    """
+    Create a new task for the current user.
+
+    If reminder_at is set, schedules a reminder notification using APScheduler.
+    """
+    # Get scheduler from app.state
+    scheduler = getattr(request.app.state, "scheduler", None)
+    return await TaskService.create_task(session, task_data, current_user.id, scheduler)
 
 
 @router.put("/{task_id}", response_model=TaskRead)
@@ -155,6 +162,10 @@ async def complete_task(
     # Get the task before completion
     task = await TaskService.get_task(session, task_id, current_user.id)
 
+    # Store recurrence_rule and title before any changes
+    recurrence_rule = task.recurrence_rule
+    task_title = task.title
+
     # Mark as completed
     updated_task = await TaskService.set_completion(session, task_id, True, current_user.id)
 
@@ -164,14 +175,17 @@ async def complete_task(
         user_id=current_user.id,
         type="task_completed",
         title="Task completed",
-        message=f"Great job! You finished {task.title}",
+        message=f"Great job! You finished {task_title}",
         task_id=task.id,
     )
 
     # Handle recurring tasks - create next instance if applicable
+    # Use the stored recurrence_rule since task may be in stale state
     next_instance = None
-    if task.recurrence_rule and request.edit_scope == "this":
-        next_instance_data = NotificationService.create_next_instance(task)
+    if recurrence_rule and request.edit_scope == "this":
+        # Get fresh task for recurrence processing
+        fresh_task = await TaskService.get_task(session, task_id, current_user.id)
+        next_instance_data = NotificationService.create_next_instance(fresh_task)
         if next_instance_data:
             # Import here to avoid circular dependency
             from app.models import Task
@@ -180,9 +194,6 @@ async def complete_task(
             await session.commit()
             await session.refresh(next_task)
             next_instance = TaskRead.model_validate(next_task)
-
-    # Refresh to get latest state
-    await session.refresh(updated_task)
 
     return updated_task
 

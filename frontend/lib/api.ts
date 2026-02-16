@@ -27,6 +27,7 @@ export interface Task {
   tags: string[];
   due_date: string | null;
   recurrence_rule: string | null;
+  reminder_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -39,6 +40,7 @@ export interface TaskCreate {
   tags?: string[];
   due_date?: string;
   recurrence_rule?: string;
+  reminder_at?: string;
 }
 
 export interface TaskUpdate {
@@ -49,6 +51,7 @@ export interface TaskUpdate {
   tags?: string[];
   due_date?: string;
   recurrence_rule?: string;
+  reminder_at?: string;
 }
 
 export interface TaskListResponse {
@@ -61,7 +64,7 @@ export interface Notification {
   id: number;
   user_id: string;
   task_id: number | null;
-  type: string; // "due_date_reminder" | "task_completed"
+  type: string; // "due_date_reminder" | "task_completed" | "reminder"
   title: string;
   message: string | null;
   read: boolean;
@@ -94,20 +97,13 @@ export async function apiRequest<T>(
     ...(options.headers as Record<string, string>),
   };
 
-  if (isDev) {
-    console.log(`API Request: ${options.method || "GET"} ${API_PROXY}${endpoint}`);
-  }
-
-  const response = await fetch(`${API_PROXY}${endpoint}`, {
+  const response = await fetch(API_PROXY + endpoint, {
     ...options,
     headers,
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    if (isDev) {
-      console.error(`API Error: ${response.status} - ${errorText}`);
-    }
     let errorMessage = `API Error: ${response.status}`;
     try {
       const error = JSON.parse(errorText);

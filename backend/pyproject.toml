@@ -26,6 +26,8 @@ dependencies = [
     "qdrant-client>=1.12.0",  # Vector database for chat history embeddings
     "sentence-transformers>=3.0.0",  # Embeddings for semantic search
     "python-dateutil>=2.8.0",  # RRULE parsing for recurring tasks
+    "apscheduler>=3.10.0",  # Background jobs for due date reminders
+    "dapr==1.14.0",  # Dapr Python SDK (pinned version per NFR)
 ]
 
 [build-system]
@@ -39,6 +41,7 @@ packages = ["app"]
 dev-dependencies = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.24.0",
+    "pytest-mock>=3.14.0",  # Mock support for subscriber testing (T110, T160)
     "httpx>=0.28.0",
 ]
 

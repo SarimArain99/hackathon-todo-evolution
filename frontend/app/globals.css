@@ -9,41 +9,187 @@
    ============================================ */
 
 :root {
-  /* Brand Palette - Calibrated OKLCH for "Engineered" Aesthetics */
+  /* ============================================
+     BRAND PALETTE - Calibrated OKLCH
+     ============================================ */
   --brand-main: oklch(25% 0.04 250);   /* Zenith Slate #1E2A38 */
   --brand-accent: oklch(78% 0.18 155); /* Zenith Emerald #2ECC71 */
   --brand-glow: oklch(85% 0.12 180);
-  
-  /* Semantic Tokens */
+
+  /* ============================================
+     SEMANTIC TOKENS - Light Mode
+     ============================================ */
   --background: oklch(98% 0.01 245);
   --foreground: oklch(20% 0.05 245);
   --foreground-muted: oklch(45% 0.03 245);
-  
-  /* Glass Refraction Logic (Light Mode) */
+
+  /* Primary Action */
+  --primary: var(--brand-accent);
+  --primary-foreground: oklch(98% 0.01 245);
+  --primary-hover: oklch(72% 0.18 155);
+  --primary-active: oklch(68% 0.18 155);
+
+  /* ============================================
+     PRIORITY COLORS - Light Mode
+     ============================================ */
+  --priority-low-bg: oklch(85% 0.18 155 / 0.1);
+  --priority-low-text: oklch(55% 0.18 155);
+  --priority-low-border: oklch(78% 0.18 155 / 0.2);
+
+  --priority-medium-bg: oklch(75% 0.15 85 / 0.1);
+  --priority-medium-text: oklch(50% 0.15 85);
+  --priority-medium-border: oklch(75% 0.15 85 / 0.2);
+
+  --priority-high-bg: oklch(65% 0.2 25 / 0.1);
+  --priority-high-text: oklch(50% 0.2 25);
+  --priority-high-border: oklch(65% 0.2 25 / 0.2);
+
+  /* ============================================
+     SURFACE COLORS - Light Mode
+     ============================================ */
+  --surface-base: oklch(100% 0 0);
+  --surface-elevated: oklch(98% 0.01 245);
+  --surface-overlay: rgba(255, 255, 255, 0.4);
+  --surface-sunken: oklch(95% 0.01 245);
+
+  /* ============================================
+     GLASS REFRACTION - Light Mode
+     ============================================ */
   --glass-bg: rgba(255, 255, 255, 0.4);
   --glass-border: rgba(255, 255, 255, 0.5);
   --glass-edge: rgba(255, 255, 255, 0.8);
   --glass-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05),
                   0 0 1px 0 rgba(0, 0, 0, 0.1);
-  
-  /* Motion Constants */
+
+  /* ============================================
+     STATE COLORS - Light Mode
+     ============================================ */
+  --state-success-bg: oklch(85% 0.18 155 / 0.1);
+  --state-success-text: oklch(55% 0.18 155);
+  --state-success-border: oklch(78% 0.18 155 / 0.2);
+
+  --state-error-bg: oklch(65% 0.2 25 / 0.1);
+  --state-error-text: oklch(50% 0.2 25);
+  --state-error-border: oklch(65% 0.2 25 / 0.2);
+
+  --state-warning-bg: oklch(75% 0.15 85 / 0.1);
+  --state-warning-text: oklch(50% 0.15 85);
+  --state-warning-border: oklch(75% 0.15 85 / 0.2);
+
+  --state-info-bg: oklch(65% 0.15 250 / 0.1);
+  --state-info-text: oklch(45% 0.15 250);
+  --state-info-border: oklch(65% 0.15 250 / 0.2);
+
+  /* ============================================
+     INPUT COLORS - Light Mode
+     ============================================ */
+  --input-bg: oklch(100% 0 0);
+  --input-border: oklch(85% 0.02 245);
+  --input-text: oklch(20% 0.05 245);
+  --input-placeholder: oklch(60% 0.02 245);
+  --input-focus-ring: oklch(78% 0.18 155 / 0.5);
+
+  /* ============================================
+     MOTION CONSTANTS
+     ============================================ */
   --ease-expo: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* ============================================
+     SPACING SCALE
+     ============================================ */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* ============================================
+     BORDER RADIUS
+     ============================================ */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+  --radius-full: 9999px;
 }
 
 .dark {
-  --background: #1E2A38;
+  /* ============================================
+     SEMANTIC TOKENS - Dark Mode
+     ============================================ */
+  --background: #0a0e17;
   --foreground: oklch(98% 0.01 245);
   --foreground-muted: oklch(75% 0.02 245);
 
-  /* Dark Refraction Logic - Simulated Depth */
-  --glass-bg: rgba(30, 42, 56, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.06);
-  --glass-edge: rgba(255, 255, 255, 0.12); /* Essential for "Invented" look */
-  --glass-shadow: 0 25px 80px -20px rgba(0, 0, 0, 0.5),
-                  0 0 0 1px rgba(255, 255, 255, 0.03); /* Subtle Outer Stroke */
-  
+  /* Primary Action - Dark Mode */
   --primary: var(--brand-accent);
   --primary-foreground: var(--background);
+  --primary-hover: oklch(82% 0.18 155);
+  --primary-active: oklch(85% 0.18 155);
+
+  /* ============================================
+     PRIORITY COLORS - Dark Mode
+     ============================================ */
+  --priority-low-bg: oklch(78% 0.18 155 / 0.15);
+  --priority-low-text: oklch(85% 0.18 155);
+  --priority-low-border: oklch(78% 0.18 155 / 0.3);
+
+  --priority-medium-bg: oklch(70% 0.15 85 / 0.15);
+  --priority-medium-text: oklch(80% 0.15 85);
+  --priority-medium-border: oklch(70% 0.15 85 / 0.3);
+
+  --priority-high-bg: oklch(60% 0.2 25 / 0.15);
+  --priority-high-text: oklch(75% 0.2 25);
+  --priority-high-border: oklch(60% 0.2 25 / 0.3);
+
+  /* ============================================
+     SURFACE COLORS - Dark Mode
+     ============================================ */
+  --surface-base: #0a0e17;
+  --surface-elevated: rgba(15, 20, 30, 0.8);
+  --surface-overlay: rgba(10, 14, 23, 0.7);
+  --surface-sunken: rgba(5, 8, 13, 0.9);
+
+  /* ============================================
+     GLASS REFRACTION - Dark Mode
+     ============================================ */
+  --glass-bg: rgba(10, 14, 23, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-edge: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 25px 80px -20px rgba(0, 0, 0, 0.7),
+                  0 0 0 1px rgba(255, 255, 255, 0.02);
+
+  /* ============================================
+     STATE COLORS - Dark Mode
+     ============================================ */
+  --state-success-bg: oklch(78% 0.18 155 / 0.15);
+  --state-success-text: oklch(85% 0.18 155);
+  --state-success-border: oklch(78% 0.18 155 / 0.3);
+
+  --state-error-bg: oklch(60% 0.2 25 / 0.15);
+  --state-error-text: oklch(75% 0.2 25);
+  --state-error-border: oklch(60% 0.2 25 / 0.3);
+
+  --state-warning-bg: oklch(70% 0.15 85 / 0.15);
+  --state-warning-text: oklch(80% 0.15 85);
+  --state-warning-border: oklch(70% 0.15 85 / 0.3);
+
+  --state-info-bg: oklch(60% 0.15 250 / 0.15);
+  --state-info-text: oklch(70% 0.15 250);
+  --state-info-border: oklch(60% 0.15 250 / 0.3);
+
+  /* ============================================
+     INPUT COLORS - Dark Mode
+     ============================================ */
+  --input-bg: rgba(15, 20, 30, 0.6);
+  --input-border: rgba(255, 255, 255, 0.1);
+  --input-text: oklch(98% 0.01 245);
+  --input-placeholder: oklch(75% 0.02 245 / 0.5);
+  --input-focus-ring: oklch(78% 0.18 155 / 0.4);
 }
 
 @layer base {

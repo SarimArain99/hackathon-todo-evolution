@@ -6,7 +6,8 @@ All operations are scoped to the current user's ID.
 """
 
 import json
-from datetime import date, datetime, timedelta
+import logging
+from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import HTTPException, status
@@ -14,6 +15,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.models import Task, TaskCreate, TaskRead, TaskUpdate
+
+logger = logging.getLogger(__name__)
+
+
+def utcnow() -> datetime:
+    """Get current datetime in UTC with timezone info."""
+    return datetime.now(timezone.utc).replace(microsecond=0)
+
+
+class ConcurrencyError(HTTPException):
+    """Raised when a task has been modified by another user/session."""
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This task was modified by another session. Please refresh and try again."
+        )
 
 
 class TaskService:
@@ -159,6 +176,7 @@ class TaskService:
         session: AsyncSession,
         task_data: TaskCreate,
         user_id: str,
+        scheduler=None,
     ) -> TaskRead:
         """
         Create a new task for the current user.
@@ -167,6 +185,7 @@ class TaskService:
             session: Database session
             task_data: Task creation data
             user_id: Current user's ID (for ownership)
+            scheduler: Optional APScheduler instance for scheduling reminders
 
         Returns:
             The created task
@@ -176,6 +195,10 @@ class TaskService:
         session.add(task)
         await session.commit()
         await session.refresh(task)
+
+        # Schedule reminder if reminder_at is set and scheduler is available
+        if task.reminder_at and scheduler:
+            TaskService.schedule_reminder(task.id, task.reminder_at, scheduler)
 
         return TaskRead.model_validate(task)
 
@@ -200,11 +223,22 @@ class TaskService:
 
         Raises:
             HTTPException: 404 if task not found, 403 if not owned by user
+            ConcurrencyError: 409 if task was modified by another session
         """
         task = await TaskService.get_task(session, task_id, user_id)
 
+        # Optimistic locking: Check if task was modified by another session
+        if task_data.updated_at is not None:
+            # Convert to UTC for comparison (strip microseconds for precision matching)
+            client_updated_at = task_data.updated_at.replace(microsecond=0)
+            server_updated_at = task.updated_at.replace(microsecond=0)
+            if client_updated_at < server_updated_at:
+                raise ConcurrencyError()
+
         # Update only provided fields
         update_data = TaskService._task_data_to_dict(task_data)
+        # Exclude updated_at from the update data (we set it automatically)
+        update_data.pop("updated_at", None)
         for field, value in update_data.items():
             setattr(task, field, value)
 
@@ -257,10 +291,56 @@ class TaskService:
         """
         task = await TaskService.get_task(session, task_id, user_id)
         task.completed = completed
-        task.updated_at = datetime.utcnow()
+        task.updated_at = utcnow()
 
         session.add(task)
         await session.commit()
         await session.refresh(task)
 
         return TaskRead.model_validate(task)
+
+    @staticmethod
+    def schedule_reminder(task_id: int, reminder_at: datetime, scheduler) -> str:
+        """
+        Schedule a reminder job for a task.
+
+        Args:
+            task_id: Task ID to remind about
+            reminder_at: When to send the reminder
+            scheduler: APScheduler instance
+
+        Returns:
+            Job ID for the scheduled reminder
+        """
+        from app.jobs import create_reminder_notification
+
+        job_id = f"reminder_task_{task_id}_{int(reminder_at.timestamp())}"
+
+        # Schedule the job
+        scheduler.add_job(
+            create_reminder_notification,
+            'date',
+            run_date=reminder_at,
+            args=[task_id],
+            id=job_id,
+            misfire_grace_time=3600,  # Allow 1 hour misfire window
+        )
+
+        logger.info(f"Scheduled reminder for task {task_id} at {reminder_at}, job_id: {job_id}")
+        return job_id
+
+    @staticmethod
+    def cancel_reminder(task_id: int, scheduler) -> None:
+        """
+        Cancel all reminder jobs for a task.
+
+        Args:
+            task_id: Task ID to cancel reminders for
+            scheduler: APScheduler instance
+        """
+        # Find all jobs for this task
+        jobs = scheduler.get_jobs()
+        for job in jobs:
+            if job.id.startswith(f"reminder_task_{task_id}_"):
+                scheduler.remove_job(job.id)
+                logger.info(f"Cancelled reminder job {job.id} for task {task_id}")

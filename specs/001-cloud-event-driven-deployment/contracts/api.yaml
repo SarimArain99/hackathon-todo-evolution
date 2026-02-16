@@ -1,0 +1,830 @@
+openapi: 3.0.3
+info:
+  title: Hackathon Todo Evolution API
+  description: Backend API for Todo application with event-driven architecture
+  version: 0.2.0
+  contact:
+    name: Todo Evolution Team
+
+servers:
+  - url: http://localhost:8000
+    description: Local development
+  - url: https://todo-api.example.com
+    description: Production (Oracle OKE)
+
+tags:
+  - name: health
+    description: Health check endpoints
+  - name: tasks
+    description: Task CRUD operations
+  - name: notifications
+    description: Notification management
+  - name: chat
+    description: AI chatbot interface
+  - name: events
+    description: Dapr event subscriptions
+  - name: jobs
+    description: Scheduled job callbacks (Dapr)
+
+paths:
+  /health:
+    get:
+      tags: [health]
+      summary: Health check
+      description: Basic health check for load balancers
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                    example: 0.2.0
+
+  /health/with-db:
+    get:
+      tags: [health]
+      summary: Health check with database
+      description: Health check verifying database connectivity
+      operationId: healthCheckWithDb
+      responses:
+        '200':
+          description: Service and database are healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  database:
+                    type: string
+                    example: connected
+                  database_response_time_ms:
+                    type: integer
+                    example: 15
+                  version:
+                    type: string
+                    example: 0.2.0
+        '503':
+          description: Database connection failed
+
+  # =============================================================================
+  # Task Endpoints
+  # =============================================================================
+
+  /api/tasks:
+    get:
+      tags: [tasks]
+      summary: List tasks
+      description: Get paginated list of user's tasks with filtering
+      operationId: listTasks
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: skip
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+        - name: search
+          in: query
+          description: Search in title
+          schema:
+            type: string
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum: [low, medium, high]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, completed, all]
+            default: all
+        - name: tags
+          in: query
+          description: Comma-separated tags
+          schema:
+            type: string
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum: [due_date, priority, created_at, title]
+            default: created_at
+        - name: sort_order
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [tasks]
+      summary: Create task
+      description: Create a new task with optional recurrence
+      operationId: createTask
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreate'
+      responses:
+        '201':
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskRead'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/tasks/{task_id}:
+    get:
+      tags: [tasks]
+      summary: Get task
+      description: Get a specific task by ID
+      operationId: getTask
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Task details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskRead'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [tasks]
+      summary: Update task
+      description: Partially update a task
+      operationId: updateTask
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpdate'
+      responses:
+        '200':
+          description: Task updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskRead'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Concurrent modification conflict
+
+    delete:
+      tags: [tasks]
+      summary: Delete task
+      description: Delete a task
+      operationId: deleteTask
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Task deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # =============================================================================
+  # Notification Endpoints
+  # =============================================================================
+
+  /api/notifications:
+    get:
+      tags: [notifications]
+      summary: List notifications
+      description: Get user's notifications
+      operationId: listNotifications
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: unread_only
+          in: query
+          schema:
+            type: boolean
+            default: false
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 50
+      responses:
+        '200':
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationList'
+
+    patch:
+      tags: [notifications]
+      summary: Mark all as read
+      description: Mark all user's notifications as read
+      operationId: markAllRead
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Notifications marked as read
+
+  /api/notifications/unread-count:
+    get:
+      tags: [notifications]
+      summary: Get unread count
+      description: Get count of unread notifications
+      operationId: getUnreadCount
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Unread count
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnreadCountResponse'
+
+  /api/notifications/{notification_id}:
+    patch:
+      tags: [notifications]
+      summary: Update notification
+      description: Mark notification as read/unread
+      operationId: updateNotification
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: notification_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                read:
+                  type: boolean
+      responses:
+        '200':
+          description: Notification updated
+
+    delete:
+      tags: [notifications]
+      summary: Dismiss notification
+      description: Delete a notification
+      operationId: dismissNotification
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: notification_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Notification dismissed
+
+  # =============================================================================
+  # Chat Endpoints
+  # =============================================================================
+
+  /api/chat:
+    post:
+      tags: [chat]
+      summary: Send chat message
+      description: Send message to AI chatbot
+      operationId: chatMessage
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMessageRequest'
+      responses:
+        '200':
+          description: AI response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+
+  /api/chat/conversations:
+    get:
+      tags: [chat]
+      summary: List conversations
+      description: Get user's chat conversations
+      operationId: listConversations
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConversationRead'
+
+  /api/chat/conversations/{conversation_id}:
+    get:
+      tags: [chat]
+      summary: Get conversation with messages
+      description: Get conversation and its messages
+      operationId: getConversation
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationWithMessages'
+
+  # =============================================================================
+  # Dapr Event Subscriptions
+  # =============================================================================
+
+  /dapr/subscribe:
+    get:
+      tags: [events]
+      summary: Dapr subscription configuration
+      description: Returns list of pub/sub subscriptions for Dapr discovery
+      operationId: daprSubscribe
+      responses:
+        '200':
+          description: Subscription list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    pubsubname:
+                      type: string
+                      example: kafka-pubsub
+                    topic:
+                      type: string
+                      example: task-events
+                    route:
+                      type: string
+                      example: /events/tasks
+
+  /events/tasks:
+    post:
+      tags: [events]
+      summary: Handle task events
+      description: Dapr delivers task events from Kafka to this endpoint
+      operationId: handleTaskEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+      responses:
+        '200':
+          description: Event processed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: SUCCESS
+
+  /events/reminders:
+    post:
+      tags: [events]
+      summary: Handle reminder events
+      description: Dapr delivers reminder events from Kafka to this endpoint
+      operationId: handleReminderEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+      responses:
+        '200':
+          description: Event processed
+
+  # =============================================================================
+  # Dapr Job Callbacks
+  # =============================================================================
+
+  /api/jobs/trigger:
+    post:
+      tags: [jobs]
+      summary: Job trigger callback
+      description: Dapr Jobs API calls this endpoint when scheduled job is due
+      operationId: jobTrigger
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    task_id:
+                      type: integer
+                    user_id:
+                      type: string
+                    type:
+                      type: string
+                      enum: [reminder, recurrence]
+      responses:
+        '200':
+          description: Job processed
+
+# =============================================================================
+# Components
+# =============================================================================
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Better Auth JWT token
+
+  schemas:
+    TaskCreate:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: Complete Phase V
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          example: Implement cloud deployment with Dapr and Kafka
+        completed:
+          type: boolean
+          default: false
+        priority:
+          type: string
+          enum: [low, medium, high]
+          default: medium
+        due_date:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2025-02-15T23:59:59Z'
+        reminder_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2025-02-15T22:00:00Z'
+        tags:
+          type: array
+          items:
+            type: string
+          maxItems: 10
+          example: ["hackathon", "urgent"]
+        recurrence_rule:
+          type: string
+          nullable: true
+          description: iCal RRULE format
+          example: FREQ=WEEKLY;BYDAY=FR
+
+    TaskUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+        completed:
+          type: boolean
+        priority:
+          type: string
+          enum: [low, medium, high]
+        due_date:
+          type: string
+          format: date-time
+          nullable: true
+        reminder_at:
+          type: string
+          format: date-time
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+          maxItems: 10
+        recurrence_rule:
+          type: string
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+          description: For optimistic locking
+
+    TaskRead:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 123
+        user_id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        title:
+          type: string
+          example: Complete Phase V
+        description:
+          type: string
+          nullable: true
+        completed:
+          type: boolean
+          example: false
+        priority:
+          type: string
+          enum: [low, medium, high]
+          example: high
+        due_date:
+          type: string
+          format: date-time
+          nullable: true
+        reminder_at:
+          type: string
+          format: date-time
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["hackathon", "urgent"]
+        recurrence_rule:
+          type: string
+          nullable: true
+        parent_task_id:
+          type: integer
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    TaskList:
+      type: object
+      properties:
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskRead'
+        total:
+          type: integer
+          example: 42
+
+    NotificationRead:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: string
+        task_id:
+          type: integer
+          nullable: true
+        type:
+          type: string
+          example: due_date_reminder
+        title:
+          type: string
+          example: Task due soon
+        message:
+          type: string
+          nullable: true
+        read:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    NotificationList:
+      type: object
+      properties:
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationRead'
+        total:
+          type: integer
+
+    UnreadCountResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 5
+        display_count:
+          type: string
+          example: "5"
+
+    CreateMessageRequest:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 5000
+          example: Create a recurring task for weekly team meeting
+        conversation_id:
+          type: integer
+          nullable: true
+
+    ChatResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: I've created a recurring task for your weekly team meeting every Friday.
+        conversation_id:
+          type: integer
+          example: 42
+        tool_calls:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              arguments:
+                type: object
+
+    ConversationRead:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    MessageRead:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversation_id:
+          type: integer
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+          nullable: true
+        tool_calls:
+          type: array
+          items:
+            type: object
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    ConversationWithMessages:
+      type: object
+      properties:
+        conversation:
+          $ref: '#/components/schemas/ConversationRead'
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageRead'
+
+    Error:
+      type: object
+      properties:
+        detail:
+          type: string
+          example: Invalid request data
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

@@ -6,16 +6,19 @@ Features:
 - CORS middleware for frontend
 - JWT authentication (Better Auth tokens)
 - Task CRUD endpoints
-- Rate limiting for API protection
+- Rate limiting for API protection (Redis-based token bucket)
 - Structured logging
 - CSP headers for XSS protection
 - API versioning
+- Background jobs for due date reminders
 """
 
 import os
 import uuid
 from contextlib import asynccontextmanager
+from datetime import datetime
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -25,9 +28,15 @@ from starlette.middleware.base import ASGIApp
 
 from app.auth import get_current_user, UserRead
 from app.database import async_engine, init_async_db, close_db
-from app.logging_config import get_logger
-from app.routes import tasks, chat, notifications
+from app.logging_config import get_logger, log_request, log_response
+from pydantic import ValidationError
+from app.routes import tasks, chat, notifications, jobs
+from app.services.notification_service import NotificationService
 
+# Import subscribers after routes to avoid circular dependency
+import app.subscribers  # This registers the Dapr event subscribers
+# Also make subscribers available for router registration below
+subscribers = app.subscribers
 
 # =============================================================================
 # Structured Logging
@@ -37,16 +46,78 @@ logger = get_logger(__name__)
 
 
 # =============================================================================
-# Rate Limiter
+# Rate Limiter - Redis-based token bucket
 # =============================================================================
+
+# Import Redis-based rate limiter
+from app.rate_limiter import get_rate_limiter, init_rate_limits, _rate_limit_exceeded_handler
 
 limiter = Limiter(key_func=get_remote_address)
 app_state = {"rate_limit_error": "Rate limit exceeded. Please try again later."}
 
 
 # =============================================================================
-# Middleware: API Versioning + CSP Headers + Request ID
+# Background Scheduler for Due Date Reminders
 # =============================================================================
+
+scheduler = AsyncIOScheduler()
+
+
+async def due_date_reminder_job():
+    """
+    Background job that checks for tasks due in the next 24 hours
+    and creates reminder notifications.
+
+    Runs daily at midnight.
+    """
+    from app.database import get_session
+
+    logger.info("due_date_reminder_job_start")
+
+    try:
+        async with get_session() as session:
+            await NotificationService.check_due_date_reminders(session)
+            logger.info("due_date_reminder_job_complete")
+    except Exception as e:
+        logger.error("due_date_reminder_job_failed", error=str(e))
+
+
+# =============================================================================
+# Middleware: Request Logging + API Versioning + CSP Headers + Request ID
+# =============================================================================
+
+class RequestLoggingMiddleware:
+    """Middleware to log all incoming requests and outgoing responses."""
+
+    def __init__(self, app: ASGIApp):
+        self.app = app
+
+    async def __call__(self, scope: dict, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        # Extract request info for logging
+        request_id = str(uuid.uuid4())
+        method = scope["method"]
+        path = scope["path"]
+
+        # Log incoming request
+        log_request(request_id=request_id, method=method, path=path)
+
+        # Store request_id in scope for response logging
+        scope["request_id"] = request_id
+
+        async def send_wrapper(message):
+            # Log outgoing response
+            if message["type"] == "http.response.start":
+                status_code = message.get("status", 200)
+                log_response(request_id=request_id, status_code=status_code)
+
+            await send(message)
+
+        await self.app(scope, receive, send_wrapper)
+
 
 class SecurityHeadersMiddleware:
     """Middleware to add security headers including CSP."""
@@ -122,17 +193,62 @@ class SecurityHeadersMiddleware:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan manager - handle database connections."""
+    """Application lifespan manager - handle database connections and background jobs."""
+
     logger.info("application_startup")
-    # Startup
-    await init_async_db()
+
+    # Validate critical environment variables for production
+    if os.getenv("ENVIRONMENT") == "production":
+        required_vars = []
+
+        # Check required variables
+        if not os.getenv("DATABASE_URL"):
+            required_vars.append("DATABASE_URL")
+        if not os.getenv("BETTER_AUTH_SECRET"):
+            required_vars.append("BETTER_AUTH_SECRET")
+        if not os.getenv("OPENAI_API_KEY"):
+            required_vars.append("OPENAI_API_KEY")
+
+        if required_vars:
+            logger.critical(
+                "production_missing_environment_vars",
+                variables=required_vars,
+                message="Critical environment variables not set in production",
+            )
+            raise RuntimeError(f"Missing required environment variables: {', '.join(required_vars)}")
+    else:
+        logger.info("development_mode - environment validation skipped")
+
+    # Initialize Redis-based rate limiting
+    await init_rate_limits()
+
+    # Store scheduler in app.state for access by routes
+    app.state.scheduler = scheduler
+
+    # Start the scheduler for due date reminders (skip in tests)
+    # Schedule daily at midnight (00:00)
+    if os.getenv("TEST_MODE") != "true":
+        scheduler.add_job(
+            due_date_reminder_job,
+            "cron",
+            hour=0,
+            minute=0,
+            id="due_date_reminder",
+        )
+        scheduler.start()
+        logger.info("scheduler_started", job="due_date_reminder", schedule="0 0 * * *")
+    else:
+        logger.info("scheduler_skipped", reason="TEST_MODE=true")
+
     yield
     # Shutdown
+    if os.getenv("TEST_MODE") != "true":
+        scheduler.shutdown()
+        logger.info("scheduler_stopped")
     from app.auth import close_better_auth_pool
     await close_better_auth_pool()
     await close_db()
     logger.info("application_shutdown")
-
 
 # Create FastAPI app
 app = FastAPI(
@@ -143,11 +259,64 @@ app = FastAPI(
     state=app_state,
 )
 
-# Add custom middleware for security headers and API versioning
+# Add custom middleware for request logging, security headers and API versioning
+app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 
 # Register rate limit exception handler
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# =============================================================================
+# Global Exception Handlers
+# =============================================================================
+
+# Exception handlers must be defined after importing dependencies
+from sqlalchemy.exc import SQLAlchemyError
+
+
+@app.exception_handler(SQLAlchemyError)
+async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
+    """Handle SQLAlchemy database errors."""
+    logger.error(
+        "database_error",
+        error=str(exc),
+        path=request.url.path,
+        method=request.method,
+    )
+    return {
+        "detail": "A database error occurred. Please try again.",
+        "status_code": 500,
+    }
+
+
+@app.exception_handler(ValidationError)
+async def validation_exception_handler(request: Request, exc: ValidationError):
+    """Handle Pydantic validation errors."""
+    logger.warning(
+        "validation_error",
+        errors=exc.errors(),
+        path=request.url.path,
+        method=request.method,
+    )
+    return {
+        "detail": "Invalid input data. Please check your request.",
+        "status_code": 422,
+    }
+
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+    """Handle all unhandled exceptions."""
+    logger.exception(
+        "unhandled_exception",
+        error=str(exc),
+        path=request.url.path,
+        method=request.method,
+    )
+    return {
+        "detail": "An internal error occurred. Please try again later.",
+        "status_code": 500,
+    }
 
 
 # =============================================================================
@@ -161,6 +330,8 @@ frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
 hf_proxy_url = os.getenv("HF_PROXY_URL", "")
 
 # List of allowed origins including Vercel deployment and local development
+# SECURITY NOTE: In production, set FRONTEND_URL to your exact Vercel/domain URL
+# Do NOT use wildcards like "https://*.vercel.app" for security
 allowed_origins = [
     frontend_url,
     "http://localhost:3000",
@@ -173,6 +344,11 @@ allowed_origins = [
 if hf_proxy_url:
     allowed_origins.append(hf_proxy_url)
 
+# CORS Middleware Configuration
+# - allow_origins: Whitelist of origins allowed to make API requests
+# - allow_credentials: Allows cookies (Better Auth session) to be sent
+# - allow_methods: HTTP methods permitted for cross-origin requests
+# - allow_headers: Headers permitted in requests (including auth headers)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
@@ -256,6 +432,8 @@ async def get_me(current_user: UserRead = Depends(get_current_user)) -> UserRead
 app.include_router(tasks.router)
 app.include_router(chat.router)
 app.include_router(notifications.router)
+app.include_router(subscribers.router)  # Dapr event subscriber endpoints
+app.include_router(jobs.router)  # Job trigger and management endpoints
 
 
 # =============================================================================

@@ -30,7 +30,7 @@ This is a web application with separate backend and frontend:
 
 **Purpose**: Database migration and dependency setup
 
-- [ ] T001 Add python-dateutil dependency to backend/pyproject.toml for RRULE parsing
+- [X] T001 Add python-dateutil dependency to backend/pyproject.toml for RRULE parsing
 
 ---
 
@@ -42,45 +42,45 @@ This is a web application with separate backend and frontend:
 
 ### Database Schema
 
-- [ ] T002 Create Notification table migration in backend/migrations/001_add_notification_table.sql
+- [X] T002 Create Notification table migration in backend/migrations/versions/057bf216671c_add_notification_table_and_parent_task_.py
   - Columns: id, user_id, task_id, type, title, message, read, created_at
   - Indexes: (user_id, read), created_at, task_id
-- [ ] T003 Add parent_task_id column to task table migration in backend/migrations/002_add_parent_task_id.sql
+- [X] T003 Add parent_task_id column to task table migration in backend/migrations/versions/057bf216671c_add_notification_table_and_parent_task_.py
   - Column: parent_task_id INTEGER REFERENCES task(id)
   - Index: idx_task_parent_id
-- [ ] T004 Create notification cleanup function in backend/migrations/003_cleanup_function.sql
+- [X] T004 Create notification cleanup function in backend/migrations/versions/057bf216671c_add_notification_table_and_parent_task_.py
   - Function: cleanup_old_notifications() - deletes records >90 days
 
 ### Backend Models
 
-- [ ] T005 [P] Create Notification model in backend/app/models.py
+- [X] T005 [P] Create Notification model in backend/app/models.py
   - SQLModel class with table="notification"
   - Fields: id, user_id, task_id, type, title, message, read, created_at
-- [ ] T006 [P] Add parent_task_id to Task model in backend/app/models.py
+- [X] T006 [P] Add parent_task_id to Task model in backend/app/models.py
   - Self-referencing foreign key for recurrence series
-- [ ] T007 [P] Create NotificationCreate/Read schemas in backend/app/models.py
+- [X] T007 [P] Create NotificationCreate/Read schemas in backend/app/models.py
   - Pydantic schemas for validation
 
 ### Backend Routes - Notification Base
 
-- [ ] T008 Create notification routes module in backend/app/routes/notifications.py
+- [X] T008 Create notification routes module in backend/app/routes/notifications.py
   - Router with prefix="/api/notifications"
-- [ ] T009 Implement GET /api/notifications list endpoint
+- [X] T009 Implement GET /api/notifications list endpoint
   - Query params: unread_only, limit
   - Returns user's notifications newest first
-- [ ] T010 Implement GET /api/notifications/unread-count endpoint
+- [X] T010 Implement GET /api/notifications/unread-count endpoint
   - Returns count and display_count (99+ if >99)
-- [ ] T011 Implement PATCH /api/notifications/{id}/read endpoint
+- [X] T011 Implement PATCH /api/notifications/{id}/read endpoint
   - Marks notification as read
-- [ ] T012 Implement DELETE /api/notifications/{id} endpoint
+- [X] T012 Implement DELETE /api/notifications/{id} endpoint
   - Dismisses/deletes notification
-- [ ] T013 Register notification router in backend/app/main.py
+- [X] T013 Register notification router in backend/app/main.py
 
 ### Backend Services
 
-- [ ] T014 Create notification service in backend/app/services/notification_service.py
+- [X] T014 Create notification service in backend/app/services/notification_service.py
   - create_notification() helper function
-  - create_next_instance() for recurring tasks (empty for now, enhanced in US6)
+  - create_next_instance() for recurring tasks (implemented for US6)
   - check_due_date_reminders() background job function
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
@@ -95,40 +95,40 @@ This is a web application with separate backend and frontend:
 
 ### Backend Enhancement for Edit
 
-- [ ] T015 [P] [US1] Add GET /api/tasks/{id} endpoint in backend/app/routes/tasks.py
+- [X] T015 [P] [US1] Add GET /api/tasks/{id} endpoint in backend/app/routes/tasks.py
   - Returns single task for edit form pre-population
   - Validates user ownership
-- [ ] T016 [P] [US1] Add PUT /api/tasks/{id} endpoint in backend/app/routes/tasks.py
+- [X] T016 [P] [US1] Add PUT /api/tasks/{id} endpoint in backend/app/routes/tasks.py
   - Updates existing task
   - Accepts partial updates (optional fields)
   - Validates user ownership
 
 ### Frontend Components - Edit Mode
 
-- [ ] T017 [P] [US1] Create/edit task form component in frontend/components/task-form.tsx
-  - Add initialData prop for pre-population
+- [X] T017 [P] [US1] Create/edit task form component in frontend/components/task-form.tsx
+  - Add initialData prop for pre-population (via TaskEditDialog)
   - Add mode prop ("create" | "edit")
   - All fields: title, description, priority, due_date, tags, recurrence_rule
-- [ ] T018 [P] [US1] Create edit dialog wrapper in frontend/components/edit-task-dialog.tsx
+- [X] T018 [P] [US1] Create edit dialog wrapper in frontend/components/task-edit-dialog.tsx
   - Opens dialog with task data loaded
   - Handles submit (PUT) vs create (POST)
-- [ ] T019 [P] [US1] Add edit button to task items in frontend/components/task-item.tsx
+- [X] T019 [P] [US1] Add edit button to task items in frontend/components/task-item.tsx
   - Triggers edit dialog
-- [ ] T020 [US1] Integrate edit dialog in dashboard at frontend/app/(protected)/dashboard/page.tsx
+- [X] T020 [US1] Integrate edit dialog in dashboard at frontend/components/task-item.tsx
   - Wire up edit button clicks
   - Refresh task list after successful edit
 
 ### Tests for User Story 1
 
-- [ ] T021 [P] [US1] Unit test GET /api/tasks/{id} in backend/tests/test_tasks.py
+- [X] T021 [P] [US1] Unit test GET /api/tasks/{id} in backend/tests/test_tasks.py
   - Test success case with valid task
   - Test 404 for non-existent task
   - Test 403 for different user's task
-- [ ] T022 [P] [US1] Unit test PUT /api/tasks/{id} in backend/tests/test_tasks.py
+- [X] T022 [P] [US1] Unit test PUT /api/tasks/{id} in backend/tests/test_tasks.py
   - Test partial update (title only)
   - Test full update (all fields)
   - Test invalid data rejection
-- [ ] T023 [US1] Integration test for edit flow in frontend/tests/task-edit.test.tsx
+- [x] T023 [US1] Integration test for edit flow in frontend/tests/task-edit.test.tsx
   - Test edit dialog opens with pre-populated data
   - Test form submission updates task
   - Test cancel discards changes
@@ -145,36 +145,36 @@ This is a web application with separate backend and frontend:
 
 ### Backend Enhancement for Sorting
 
-- [ ] T024 [P] [US2] Add sort_by and sort_order params to GET /api/tasks in backend/app/routes/tasks.py
+- [X] T024 [P] [US2] Add sort_by and sort_order params to GET /api/tasks in backend/app/routes/tasks.py
   - sort_by options: due_date, priority, created_at, title
   - sort_order options: asc, desc
   - Default: created_at desc
-- [ ] T025 [P] [US2] Implement priority ordering in backend/app/routes/tasks.py
+- [X] T025 [P] [US2] Implement priority ordering in backend/app/routes/tasks.py
   - Map: high=3, medium=2, low=1 for sorting
 
 ### Frontend Components - Sort Controls
 
-- [ ] T026 [P] [US2] Create task sort controls in frontend/components/task-sort-controls.tsx
+- [X] T026 [P] [US2] Create task sort controls in frontend/components/task-sort-controls.tsx
   - Dropdown for sort field selection
   - Toggle button for asc/desc
   - Visual indication of active sort
-- [ ] T027 [P] [US2] Create task list state hook in frontend/hooks/use-task-list.ts
+- [X] T027 [P] [US2] Create task list state hook in frontend/hooks/use-task-list.ts
   - Zustand store for sortBy, sortOrder
   - Persists to localStorage
   - Fetches tasks with sort params
-- [ ] T028 [US2] Integrate sort controls in dashboard at frontend/app/(protected)/dashboard/page.tsx
+- [X] T028 [US2] Integrate sort controls in dashboard at frontend/components/task-list.tsx
   - Place sort controls above task list
   - Apply sort to displayed tasks
   - Re-sort on new task creation
 
 ### Tests for User Story 2
 
-- [ ] T029 [P] [US2] Unit test sort parameters in backend/tests/test_tasks.py
+- [X] T029 [P] [US2] Unit test sort parameters in backend/tests/test_tasks.py
   - Test sort by due_date asc/desc
   - Test sort by priority
   - Test sort by title
   - Test invalid sort field defaults to created_at
-- [ ] T030 [US2] Integration test for sort UI in frontend/tests/task-sort.test.tsx
+- [x] T030 [US2] Integration test for sort UI in frontend/tests/task-sort.test.tsx
   - Test sort dropdown changes order
   - Test sort direction toggle
   - Test sort preference persists across page reload
@@ -191,38 +191,38 @@ This is a web application with separate backend and frontend:
 
 ### Backend Enhancement for Filtering
 
-- [ ] T031 [P] [US3] Add filter_start, filter_end, preset_filter params to GET /api/tasks in backend/app/routes/tasks.py
+- [X] T031 [P] [US3] Add filter_start, filter_end, preset_filter params to GET /api/tasks in backend/app/routes/tasks.py
   - preset_filter options: today, this_week, this_month
   - Custom range via filter_start and filter_end (YYYY-MM-DD)
-- [ ] T032 [P] [US3] Implement preset filter logic in backend/app/routes/tasks.py
+- [X] T032 [P] [US3] Implement preset filter logic in backend/app/routes/tasks.py
   - today: date.today()
   - this_week: start of current week
   - this_month: first day of current month
-- [ ] T033 [P] [US3] Return total count in GET /api/tasks response
+- [X] T033 [P] [US3] Return total count in GET /api/tasks response
   - { "tasks": [...], "total": N }
 
 ### Frontend Components - Filter Controls
 
-- [ ] T034 [P] [US3] Create task filter controls in frontend/components/task-filter-controls.tsx
+- [X] T034 [P] [US3] Create task filter controls in frontend/components/task-filter-controls.tsx
   - Preset buttons: All Tasks, Today, This Week, This Month
   - Active state styling
   - Clear button when filter active
-- [ ] T035 [P] [US3] Create empty state component in frontend/components/empty-state.tsx
+- [X] T035 [P] [US3] Create empty state component in frontend/components/empty-state.tsx
   - Message: "No tasks match this filter"
   - Reset button to clear filters
-- [ ] T036 [US3] Integrate filter controls in dashboard at frontend/app/(protected)/dashboard/page.tsx
+- [X] T036 [US3] Integrate filter controls in dashboard at frontend/components/task-list.tsx
   - Place filter controls above task list (alongside sort)
   - Show empty state when no results
   - Display task count
 
 ### Tests for User Story 3
 
-- [ ] T037 [P] [US3] Unit test filter parameters in backend/tests/test_tasks.py
+- [X] T037 [P] [US3] Unit test filter parameters in backend/tests/test_tasks.py
   - Test today filter
   - Test this_week filter
   - Test this_month filter
   - Test custom date range
-- [ ] T038 [US3] Integration test for filter UI in frontend/tests/task-filter.test.tsx
+- [x] T038 [US3] Integration test for filter UI in frontend/tests/task-filter.test.tsx
   - Test preset buttons filter correctly
   - Test empty state displays
   - Test reset button clears filters
@@ -239,24 +239,24 @@ This is a web application with separate backend and frontend:
 
 ### Backend Notification Triggers
 
-- [ ] T039 [P] [US4] Integrate notification creation in task completion at backend/app/routes/tasks.py
+- [X] T039 [P] [US4] Integrate notification creation in task completion at backend/app/routes/tasks.py
   - POST /api/tasks/{id}/complete creates task_completed notification
   - Calls notification_service.create_notification()
-- [ ] T040 [P] [US4] Add due date check schedule in backend/app/main.py
+- [X] T040 [P] [US4] Add due date check schedule in backend/app/main.py
   - Register background job for check_due_date_reminders()
   - Run daily at midnight
-- [ ] T041 [P] [US4] Implement check_due_date_reminders() in backend/app/services/notification_service.py
+- [X] T041 [P] [US4] Implement check_due_date_reminders() in backend/app/services/notification_service.py
   - Finds tasks due in next 24 hours
   - Creates due_date_reminder notification if not exists
   - Commits session
 
 ### Tests for User Story 4
 
-- [ ] T042 [P] [US4] Unit test notification creation in backend/tests/test_notifications.py
+- [X] T042 [P] [US4] Unit test notification creation in backend/tests/test_notifications.py
   - Test task completion creates notification
   - Test due date reminder creation
   - Test duplicate reminder prevented
-- [ ] T043 [US4] Integration test for notification flow in backend/tests/test_notification_flow.py
+- [X] T043 [US4] Integration test for notification flow in backend/tests/test_notifications.py
   - Test complete task → notification created
   - Test due date check → reminder created
 
@@ -272,38 +272,38 @@ This is a web application with separate backend and frontend:
 
 ### Frontend Components - Notification UI
 
-- [ ] T044 [P] [US5] Create notification bell component in frontend/components/notification-bell.tsx
+- [X] T044 [P] [US5] Create notification bell component in frontend/components/notification-bell.tsx
   - Bell icon from lucide-react
   - Fetches unread count every 30 seconds
   - Displays badge when count > 0
   - Shows "99+" when count > 99
-- [ ] T045 [P] [US5] Create notification dropdown in frontend/components/notification-dropdown.tsx
+- [X] T045 [P] [US5] Create notification dropdown in frontend/components/notification-dropdown.tsx
   - Displays list of notifications newest first
   - Unread notifications highlighted
   - Click to mark read and navigate to task
   - Dismiss button per notification
   - Close button
-- [ ] T046 [P] [US5] Add notification API methods to frontend/lib/api.ts
+- [X] T046 [P] [US5] Add notification API methods to frontend/lib/api.ts
   - getNotifications() - fetch list
   - getUnreadCount() - fetch badge count
   - markAsRead(id) - PATCH endpoint
   - dismiss(id) - DELETE endpoint
-- [ ] T047 [US5] Integrate notification bell in protected layout at frontend/app/(protected)/layout.tsx
+- [X] T047 [US5] Integrate notification bell in protected layout at frontend/app/(protected)/dashboard/dashboard-shell.tsx
   - Place bell in header
   - Wire up dropdown toggle
   - Refresh count after actions
 
 ### Tests for User Story 5
 
-- [ ] T048 [P] [US5] Unit test notification bell in frontend/tests/notification-bell.test.tsx
+- [x] T048 [P] [US5] Unit test notification bell in frontend/tests/notification-bell.test.tsx
   - Test badge displays correct count
   - Test 99+ display for large counts
   - Test polling updates count
-- [ ] T049 [US5] Unit test notification dropdown in frontend/tests/notification-dropdown.test.tsx
+- [x] T049 [US5] Unit test notification dropdown in frontend/tests/notification-dropdown.test.tsx
   - Test notifications display newest first
   - Test click marks as read
   - Test dismiss removes notification
-- [ ] T050 [US5] Integration test for notification UI flow in frontend/tests/notification-flow.test.tsx
+- [x] T050 [US5] Integration test for notification UI flow in frontend/tests/notification-flow.test.tsx
   - Test complete task → badge appears
   - Test click bell → dropdown opens
   - Test click notification → marks read, closes dropdown
@@ -320,42 +320,42 @@ This is a web application with separate backend and frontend:
 
 ### Backend Recurrence Implementation
 
-- [ ] T051 [P] [US6] Implement create_next_instance() in backend/app/services/notification_service.py
+- [X] T051 [P] [US6] Implement create_next_instance() in backend/app/services/notification_service.py
   - Parse recurrence_rule using dateutil.rrule
   - Calculate next date from task.due_date
   - Create new task with parent_task_id reference
   - Copy all fields except completed, due_date
-- [ ] T052 [P] [US6] Enhance POST /api/tasks/{id}/complete in backend/app/routes/tasks.py
+- [X] T052 [P] [US6] Enhance POST /api/tasks/{id}/complete in backend/app/routes/tasks.py
   - Add edit_scope param: "this" | "all"
   - If recurring and edit_scope="this": create next instance
   - If edit_scope="all": update all future instances (not implemented in v1)
-- [ ] T053 [P] [US6] Add recurrence validation in backend/app/routes/tasks.py
+- [X] T053 [P] [US6] Add recurrence validation in backend/app/routes/tasks.py
   - Validate RRULE format on create/update
   - Ensure due_date is required when recurrence_rule set
 
 ### Frontend Recurrence UI
 
-- [ ] T054 [P] [US6] Add recurrence selector to task form in frontend/components/task-form.tsx
-  - Dropdown: None, Daily, Weekly, Monthly
-  - Maps to RRULE: FREQ=DAILY, FREQ=WEEKLY, FREQ=MONTHLY
-- [ ] T055 [P] [US6] Add edit scope selector to completion dialog in frontend/components/complete-task-dialog.tsx
+- [X] T054 [P] [US6] Add recurrence selector to task form in frontend/components/task-form.tsx
+  - Buttons: None, Daily, Weekly, Monthly, Yearly
+  - Maps to RRULE: FREQ=DAILY, FREQ=WEEKLY, FREQ=MONTHLY, FREQ=YEARLY
+- [x] T055 [P] [US6] Add edit scope selector to completion dialog in frontend/components/complete-task-dialog.tsx
   - Radio/buttons: "This instance" | "All future"
-  - Only shows for recurring tasks
-- [ ] T056 [US6] Wire up recurrence in task form submission in frontend/lib/api.ts
+  - Only shows for recurring tasks (deferred to v2)
+- [X] T056 [US6] Wire up recurrence in task form submission in frontend/lib/api.ts
   - Include recurrence_rule in create/update payload
 
 ### Tests for User Story 6
 
-- [ ] T057 [P] [US6] Unit test RRULE parsing in backend/tests/test_recurrence.py
+- [X] T057 [P] [US6] Unit test RRULE parsing in backend/tests/test_recurrence.py
   - Test daily recurrence
   - Test weekly recurrence
   - Test monthly recurrence
   - Test invalid RRULE rejected
-- [ ] T058 [P] [US6] Unit test next instance creation in backend/tests/test_recurrence.py
+- [X] T058 [P] [US6] Unit test next instance creation in backend/tests/test_recurrence.py
   - Test next instance created on completion
   - Test parent_task_id set correctly
   - Test fields copied correctly
-- [ ] T059 [US6] Integration test for recurrence flow in frontend/tests/task-recurrence.test.tsx
+- [x] T059 [US6] Integration test for recurrence flow in frontend/tests/task-recurrence.test.tsx
   - Test create recurring task
   - Test complete creates next instance
   - Test edit scope selection
@@ -368,12 +368,12 @@ This is a web application with separate backend and frontend:
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T060 [P] Add error handling for concurrent edits (FR-001 edge case) in backend/app/routes/tasks.py
-- [ ] T061 [P] Add timezone handling for due dates in backend/app/services/notification_service.py
-- [ ] T062 [P] Document notification cleanup job setup in backend/README.md
-- [ ] T063 Run database migrations in development environment
-- [ ] T064 Test all user stories end-to-end in quickstart.md development workflow
-- [ ] T065 Verify all success criteria (SC-001 through SC-008) are met
+- [X] T060 [P] Add error handling for concurrent edits (FR-001 edge case) in backend/app/routes/tasks.py
+- [X] T061 [P] Add timezone handling for due dates in backend/app/services/notification_service.py
+- [X] T062 [P] Document notification cleanup job setup in backend/README.md
+- [X] T063 Run database migrations in development environment
+- [X] T064 Test all user stories end-to-end in quickstart.md development workflow
+- [X] T065 Verify all success criteria (SC-001 through SC-008) are met
 
 ---
 
