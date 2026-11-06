@@ -1,19 +1,11 @@
-/**
- * Zenith TaskItem Component
- * Style: Matches Auth Page aesthetic with Backdrop-blur-2xl
- * Features: Responsive actions, glassmorphism cards, full CRUD, and smooth animations.
- * Theme: Connected to globals.css CSS variables
- */
-
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { tasksApi, type Task } from "@/lib/api";
 import { taskToasts } from "@/lib/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { TaskEditDialog } from "@/components/task-edit-dialog";
-import { Repeat } from "lucide-react";
+import { Repeat, Pencil, Trash2 } from "lucide-react";
 
 interface TaskItemProps {
   task: Task;
@@ -21,17 +13,19 @@ interface TaskItemProps {
   onDelete: (taskId: number) => void;
 }
 
-const priorityColors = {
-  low: "bg-[var(--priority-low-bg)] text-[var(--priority-low-text)] border-[var(--priority-low-border)]",
-  medium: "bg-[var(--priority-medium-bg)] text-[var(--priority-medium-text)] border-[var(--priority-medium-border)]",
-  high: "bg-[var(--priority-high-bg)] text-[var(--priority-high-text)] border-[var(--priority-high-border)]",
-};
+const priorityClasses = {
+  low: "bg-priority-low-bg text-priority-low-text border-priority-low-border",
+  medium: "bg-priority-medium-bg text-priority-medium-text border-priority-medium-border",
+  high: "bg-priority-high-bg text-priority-high-text border-priority-high-border",
+} as const;
+
+const priorityLabels = { low: "Low", medium: "Medium", high: "High" } as const;
 
 export default function TaskItem({ task, onChange, onDelete }: TaskItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
+  const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -65,9 +59,8 @@ export default function TaskItem({ task, onChange, onDelete }: TaskItemProps) {
 
   const handleSaveEdit = async () => {
     if (!editTitle.trim()) return;
-
     try {
-      const updatedTask = await tasksApi.update(task.id, { title: editTitle });
+      const updatedTask = await tasksApi.update(task.id, { title: editTitle.trim() });
       onChange(task.id, updatedTask);
       setIsEditing(false);
       taskToasts.updated(task.title);
@@ -77,56 +70,53 @@ export default function TaskItem({ task, onChange, onDelete }: TaskItemProps) {
   };
 
   const dueDate = task.due_date ? new Date(task.due_date) : null;
-  const isOverdue = dueDate && dueDate < new Date() && !task.completed;
+  const isOverdue = dueDate !== null && dueDate < new Date() && !task.completed;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: -100 }}
-      transition={{ duration: 0.2 }}
-      className={`
-        group relative overflow-hidden transition-all duration-300
-        bg-[var(--glass-bg)] backdrop-blur-2xl
-        border border-[var(--glass-border)] rounded-[var(--radius-2xl)]
-        ${task.completed ? "opacity-60 grayscale-[0.5]" : "opacity-100"}
-        ${isOverdue ? "ring-1 ring-[var(--state-error-text)]/50" : ""}
-      `}
+    <div
+      className={`relative overflow-hidden rounded-2xl border bg-surface shadow-sm transition-colors ${
+        task.completed ? "border-border opacity-70" : "border-border"
+      } ${isOverdue ? "border-state-error-border" : ""}`}
     >
-      {/* Overdue Glow Indicator */}
       {isOverdue && (
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[var(--state-error-text)] to-[var(--state-warning-text)]" />
+        <div
+          className="absolute bottom-0 left-0 top-0 w-1 bg-state-error-text"
+          aria-hidden="true"
+        />
       )}
 
       <div className="p-4 sm:p-5">
         <div className="flex items-start gap-3 sm:gap-4">
-          {/* Checkbox Scaling */}
           <button
             onClick={handleToggleComplete}
             disabled={isDeleting}
-            className={`
-              mt-1 shrink-0 w-6 h-6 sm:w-7 sm:h-7 rounded-xl border-2 flex items-center justify-center transition-all duration-300
-              ${task.completed
-                ? "bg-[var(--primary)] border-[var(--primary)] shadow-lg shadow-[var(--primary)]/40"
-                : "border-[var(--input-border)] hover:border-[var(--primary)] bg-[var(--surface-overlay)]"}
-            `}
+            aria-label={task.completed ? "Mark as not done" : "Mark as complete"}
+            aria-pressed={task.completed}
+            className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border-2 transition-colors ${
+              task.completed
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-input-border bg-surface hover:border-primary"
+            }`}
           >
             {task.completed && (
-              <svg className="w-3 h-3 sm:w-4 sm:h-4 text-[var(--primary-foreground)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
               </svg>
             )}
           </button>
 
-          {/* Task Content */}
-          <div className="flex-1 min-w-0">
+          <div className="min-w-0 flex-1">
             {isEditing ? (
               <div className="flex flex-col gap-2">
+                <label htmlFor={`edit-title-${task.id}`} className="sr-only">
+                  Edit task title
+                </label>
                 <input
+                  id={`edit-title-${task.id}`}
                   type="text"
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)] focus:ring-2 focus:ring-[var(--input-focus-ring)] outline-none text-sm"
+                  className="w-full rounded-xl border border-input-border bg-input-bg px-4 py-2 text-sm text-input-text outline-none focus:border-primary focus:ring-2 focus:ring-input-focus-ring"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleSaveEdit();
                     if (e.key === "Escape") {
@@ -137,60 +127,91 @@ export default function TaskItem({ task, onChange, onDelete }: TaskItemProps) {
                   autoFocus
                 />
                 <div className="flex gap-2">
-                  <button onClick={handleSaveEdit} className="px-3 py-1.5 bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-bold rounded-lg transition hover:bg-[var(--primary-hover)]">Save</button>
-                  <button onClick={() => { setIsEditing(false); setEditTitle(task.title); }} className="px-3 py-1.5 bg-[var(--surface-sunken)] text-[var(--foreground-muted)] text-xs font-bold rounded-lg border border-[var(--glass-border)]">Cancel</button>
+                  <button
+                    onClick={handleSaveEdit}
+                    className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary-hover"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsEditing(false);
+                      setEditTitle(task.title);
+                    }}
+                    className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-foreground-muted hover:text-foreground"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
             ) : (
               <div className="flex flex-col">
-                <h3 className={`text-sm sm:text-base font-bold tracking-tight wrap-break-word ${task.completed ? "text-[var(--foreground-muted)] line-through decoration-[var(--primary)]/50" : "text-[var(--foreground)]"}`}>
+                <h3
+                  className={`break-words text-base font-semibold ${
+                    task.completed ? "text-foreground-muted line-through" : "text-foreground"
+                  }`}
+                >
                   {task.title}
                 </h3>
 
                 {task.description && (
-                  <p className={`mt-1 text-xs sm:text-sm leading-relaxed text-[var(--foreground-muted)] ${isExpanded ? "" : "line-clamp-1 sm:line-clamp-2"}`}>
+                  <p
+                    className={`mt-1 text-sm leading-relaxed text-foreground-muted ${
+                      isExpanded ? "" : "line-clamp-2"
+                    }`}
+                  >
                     {task.description}
                   </p>
                 )}
 
-                {/* Metadata row with responsive wrapping */}
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  {/* Recurring indicator (T126) */}
                   {task.recurrence_rule && !task.parent_task_id && (
-                    <span className="px-2 py-0.5 text-[9px] font-bold bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary)]/30 rounded-md uppercase flex items-center gap-1">
-                      <Repeat className="w-2.5 h-2.5" />
+                    <span className="flex items-center gap-1 rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                      <Repeat className="h-3 w-3" aria-hidden="true" />
                       Repeats
                     </span>
                   )}
 
-                  {/* Parent task reference for instances */}
                   {task.parent_task_id && (
-                    <span className="px-2 py-0.5 text-[9px] font-bold bg-[var(--surface-sunken)] text-[var(--foreground-muted)] border border-[var(--glass-border)] rounded-md uppercase">
-                      Instance of #{task.parent_task_id}
+                    <span className="rounded-md border border-border bg-surface-sunken px-2 py-0.5 text-xs font-semibold text-foreground-muted">
+                      Instance of task #{task.parent_task_id}
                     </span>
                   )}
 
-                  <span className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-wider border rounded-md ${priorityColors[task.priority]}`}>
-                    {task.priority}
+                  <span
+                    className={`rounded-md border px-2 py-0.5 text-xs font-semibold ${priorityClasses[task.priority]}`}
+                  >
+                    {priorityLabels[task.priority]} priority
                   </span>
 
                   {dueDate && (
-                    <div className={`flex items-center gap-1 px-2 py-0.5 rounded-md border text-[9px] font-bold uppercase
-                      ${isOverdue ? "bg-[var(--state-error-bg)] text-[var(--state-error-text)] border-[var(--state-error-border)]" : "bg-[var(--surface-sunken)] text-[var(--foreground-muted)] border-[var(--glass-border)]"}
-                    `}>
-                      {dueDate.toLocaleDateString()}
-                    </div>
+                    <span
+                      className={`rounded-md border px-2 py-0.5 text-xs font-semibold ${
+                        isOverdue
+                          ? "border-state-error-border bg-state-error-bg text-state-error-text"
+                          : "border-border bg-surface-sunken text-foreground-muted"
+                      }`}
+                    >
+                      Due {dueDate.toLocaleDateString()}
+                      {isOverdue ? " (overdue)" : ""}
+                    </span>
                   )}
 
                   {task.tags?.map((tag) => (
-                    <span key={tag} className="px-2 py-0.5 text-[9px] font-bold bg-[var(--state-info-bg)] text-[var(--state-info-text)] border border-[var(--state-info-border)] rounded-md uppercase">
+                    <span
+                      key={tag}
+                      className="rounded-md border border-state-info-border bg-state-info-bg px-2 py-0.5 text-xs font-semibold text-state-info-text"
+                    >
                       #{tag}
                     </span>
                   ))}
 
                   {(task.description || task.due_date || (task.tags && task.tags.length > 0)) && (
-                    <button onClick={() => setIsExpanded(!isExpanded)} className="text-[10px] font-bold text-[var(--primary)] hover:underline uppercase">
-                      {isExpanded ? "Less" : "More"}
+                    <button
+                      onClick={() => setIsExpanded(!isExpanded)}
+                      className="text-xs font-semibold text-primary underline-offset-2 hover:underline"
+                    >
+                      {isExpanded ? "Show less" : "Show more"}
                     </button>
                   )}
                 </div>
@@ -198,30 +219,25 @@ export default function TaskItem({ task, onChange, onDelete }: TaskItemProps) {
             )}
           </div>
 
-          {/* Action Buttons: Always visible on mobile, lg:hover-only */}
-          <div className="flex items-center gap-1 self-start opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity shrink-0">
+          <div className="flex shrink-0 items-center gap-1 self-start">
             <button
               onClick={() => setShowEditDialog(true)}
               disabled={isDeleting || task.completed}
-              className="p-2 text-[var(--foreground-muted)] hover:text-[var(--primary)] transition-all disabled:opacity-30"
+              className="rounded-lg p-2 text-foreground-muted transition-colors hover:bg-hover-bg hover:text-primary disabled:opacity-30"
               aria-label="Edit task"
             >
-              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
+              <Pencil className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
             </button>
             <button
               onClick={() => setShowDeleteDialog(true)}
               disabled={isDeleting}
-              className="p-2 text-[var(--foreground-muted)] hover:text-[var(--state-error-text)] transition-all disabled:opacity-30"
+              className="rounded-lg p-2 text-foreground-muted transition-colors hover:bg-hover-bg hover:text-danger disabled:opacity-30"
               aria-label="Delete task"
             >
               {isDeleting ? (
-                <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+                <span className="block h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent sm:h-5 sm:w-5" />
               ) : (
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 011-1h2a1 1 0 011 1v3M4 7h16" />
-                </svg>
+                <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
               )}
             </button>
           </div>
@@ -232,8 +248,8 @@ export default function TaskItem({ task, onChange, onDelete }: TaskItemProps) {
         isOpen={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
         onConfirm={handleDelete}
-        title="Delete Objective?"
-        message={`Are you sure you want to permanently delete "${task.title}"? This action cannot be undone.`}
+        title="Delete task?"
+        message={`Are you sure you want to delete "${task.title}"? This cannot be undone.`}
         confirmLabel="Delete"
         cancelLabel="Cancel"
         variant="danger"
@@ -245,6 +261,6 @@ export default function TaskItem({ task, onChange, onDelete }: TaskItemProps) {
         onClose={() => setShowEditDialog(false)}
         onTaskUpdated={(updatedTask) => onChange(task.id, updatedTask)}
       />
-    </motion.div>
+    </div>
   );
 }

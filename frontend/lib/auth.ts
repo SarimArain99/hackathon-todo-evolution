@@ -23,6 +23,7 @@
  */
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
+import type { Pool as PgPool } from "pg";
 import { resend, checkRateLimit } from "./email";
 
 // Get database URL from environment
@@ -76,19 +77,71 @@ const validateConfig = () => {
   }
 };
 
+/**
+ * Resolve the Better Auth secret, failing hard when it is unset.
+ *
+ * There is intentionally NO fallback secret: signing sessions with a
+ * publicly known value would let anyone forge a session. Local dev works
+ * by setting BETTER_AUTH_SECRET in frontend/.env.local (gitignored, never
+ * committed). The single exception is the production-build bundling phase
+ * (NEXT_PHASE=phase-production-build), where the module is only bundled,
+ * never executed to serve a request — a placeholder is returned there so
+ * `next build` can run without a secret present; any real request at
+ * runtime still throws.
+ */
+function getSecret(): string {
+  const secret = process.env.BETTER_AUTH_SECRET;
+  if (secret) return secret;
+  if (process.env.NEXT_PHASE === "phase-production-build") {
+    return "build-time-placeholder-never-used-at-runtime";
+  }
+  throw new Error(
+    "BETTER_AUTH_SECRET environment variable is required. " +
+    "Generate a secure random string (32+ characters) and set it in .env.local. " +
+    "Refusing to start with a fallback secret."
+  );
+}
+
+/** Shared pg Pool for the auth tables (also reused by the /api/tasks routes). */
+export function getDbPool(): PgPool | null {
+  return pool;
+}
+
+/** Trusted origins for CSRF protection, incl. env override (comma-separated). */
+function getTrustedOrigins(): string[] {
+  const origins = new Set<string>([
+    "http://localhost:3000",
+    "https://zenith-flow-zeta.vercel.app",
+    "https://zenith-flow-beta.vercel.app",
+    // Wildcard for Vercel preview deployments. Supported by the installed
+    // better-auth 1.4.15: trustedOrigins entries containing `*` are matched
+    // with wildcardMatch (see node_modules/better-auth/dist/auth/trusted-origins.mjs).
+    "https://*.vercel.app",
+  ]);
+  const extra = process.env.BETTER_AUTH_TRUSTED_ORIGINS;
+  if (extra) {
+    for (const o of extra.split(",")) {
+      const trimmed = o.trim();
+      if (trimmed) origins.add(trimmed);
+    }
+  }
+  return [...origins];
+}
+
 export const auth = betterAuth({
   // Base URL for the application
   // Note: With Next.js App Router, auth endpoints are served by Next.js itself
   // Do NOT set BETTER_AUTH_URL in development - let Better Auth use default
   // For production with Vercel, BETTER_AUTH_URL will be set automatically
 
-  // Trustedorigins for CSRF protection
-  trustedOrigins: [
-    "http://localhost:3000",
-    "https://zenith-flow-beta.vercel.app"
-  ],
-  // Secret key for signing JWT tokens (use dummy for CLI)
-  secret: process.env.BETTER_AUTH_SECRET || "dummy-secret-for-cli-only-set-BETTER_AUTH_SECRET-in-production",
+  // Trusted origins for CSRF protection (live domain + Vercel previews).
+  // NOTE: the live site is zenith-flow-zeta.vercel.app — a previous merge
+  // dropped it from this list and broke sign-in on the live domain.
+  trustedOrigins: getTrustedOrigins(),
+  // Secret key for signing sessions. Fails hard at startup when unset —
+  // there is no fallback secret (a publicly known dummy would let anyone
+  // forge sessions). Set BETTER_AUTH_SECRET in .env.local for local dev.
+  secret: getSecret(),
 
   // Database adapter for persistent credential storage
   database: pool,
@@ -125,9 +178,12 @@ export const auth = betterAuth({
     resetPasswordTokenExpiresIn: 60 * 60 * 1000, // 1 hour
 
     // Password reset callback with rate limiting
-    sendResetPassword: async ({ user, email }: { user: { email: string; name: string }; url: string }) => {
+    // NOTE: `url` must be destructured — the email template below links to
+    // it. A previous version destructured { user, email } only, so `url`
+    // was undefined and every reset email was broken.
+    sendResetPassword: async ({ user, url }: { user: { email: string; name: string }; url: string }) => {
       // Check rate limit (3 requests per hour per email)
-      const allowed = await checkRateLimit(email, "password-reset", 3, 60 * 60 * 1000);
+      const allowed = await checkRateLimit(user.email, "password-reset", 3, 60 * 60 * 1000);
       if (!allowed) {
         throw new Error("Too many password reset requests. Please try again later.");
       }
@@ -137,7 +193,7 @@ export const auth = betterAuth({
         await resend.emails.send({
           from: process.env.RESEND_FROM_EMAIL || "noreply@zenith-flow.com",
           to: user.email,
-          subject: "Reset Your Zenith Password",
+          subject: "Reset Your Todo Evolution Password",
           html: `
             <!DOCTYPE html>
             <html>
@@ -152,7 +208,7 @@ export const auth = betterAuth({
             <body>
               <div class="container">
                 <h2>Reset Your Password</h2>
-                <p>We received a request to reset the password for your Zenith account.</p>
+                <p>We received a request to reset the password for your Todo Evolution account.</p>
                 <p>Click the button below to create a new password:</p>
                 <a href="${url}" class="button">Reset Password</a>
                 <p>Or copy and paste this link into your browser:</p>
@@ -160,7 +216,7 @@ export const auth = betterAuth({
                 <p><strong>This link expires in 1 hour.</strong></p>
                 <p>If you didn't request this reset, please ignore this email.</p>
                 <div class="footer">
-                  <p>© 2026 Zenith Flow. All rights reserved.</p>
+                  <p>© 2026 Todo Evolution. All rights reserved.</p>
                 </div>
               </div>
             </body>
@@ -180,7 +236,7 @@ export const auth = betterAuth({
         await resend.emails.send({
           from: process.env.RESEND_FROM_EMAIL || "noreply@zenith-flow.com",
           to: user.email,
-          subject: "Verify Your Zenith Account",
+          subject: "Verify Your Todo Evolution Account",
           html: `
             <!DOCTYPE html>
             <html>
@@ -194,7 +250,7 @@ export const auth = betterAuth({
             </head>
             <body>
               <div class="container">
-                <h2>Welcome to Zenith!</h2>
+                <h2>Welcome to Todo Evolution!</h2>
                 <p>Thanks for signing up. Please verify your email address to complete your account setup.</p>
                 <p>Click the button below to verify your email:</p>
                 <a href="${url}" class="button">Verify Email</a>
@@ -202,7 +258,7 @@ export const auth = betterAuth({
                 <p style="word-break: break-all; color: #6366f1;">${url}</p>
                 <p><strong>This link expires in 1 hour.</strong></p>
                 <div class="footer">
-                  <p>© 2026 Zenith Flow. All rights reserved.</p>
+                  <p>© 2026 Todo Evolution. All rights reserved.</p>
                 </div>
               </div>
             </body>

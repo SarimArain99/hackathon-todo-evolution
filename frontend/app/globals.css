@@ -1,324 +1,254 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Serif+Display:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
 
-/* ============================================
-   ZENITH PRECISION SYSTEM v3.0
-   Design Language: Programmatic Glassmorphism
-   ============================================ */
+/*
+ * Todo Evolution design tokens.
+ *
+ * Light theme is the default. Both themes use the same token names, so
+ * every component reads foreground/background from tokens and stays
+ * readable in either theme. The @theme inline block below is what makes
+ * Tailwind utilities like bg-primary / text-foreground actually exist —
+ * without it those classes generate no CSS at all.
+ */
 
 :root {
-  /* ============================================
-     BRAND PALETTE - Calibrated OKLCH
-     ============================================ */
-  --brand-main: oklch(25% 0.04 250);   /* Zenith Slate #1E2A38 */
-  --brand-accent: oklch(78% 0.18 155); /* Zenith Emerald #2ECC71 */
-  --brand-glow: oklch(85% 0.12 180);
+  /* Brand: a calm green. Dark enough in light mode for white text. */
+  --brand-accent: oklch(45% 0.16 155);
 
-  /* ============================================
-     SEMANTIC TOKENS - Light Mode
-     ============================================ */
+  /* Semantic tokens — light mode */
   --background: oklch(98% 0.01 245);
   --foreground: oklch(20% 0.05 245);
-  --foreground-muted: oklch(45% 0.03 245);
+  --foreground-muted: oklch(44% 0.03 245);
 
-  /* Primary Action */
   --primary: var(--brand-accent);
-  --primary-foreground: oklch(98% 0.01 245);
-  --primary-hover: oklch(72% 0.18 155);
-  --primary-active: oklch(68% 0.18 155);
+  --primary-foreground: oklch(99% 0 0);
+  --primary-hover: oklch(40% 0.16 155);
 
-  /* ============================================
-     PRIORITY COLORS - Light Mode
-     ============================================ */
-  --priority-low-bg: oklch(85% 0.18 155 / 0.1);
-  --priority-low-text: oklch(55% 0.18 155);
-  --priority-low-border: oklch(78% 0.18 155 / 0.2);
-
-  --priority-medium-bg: oklch(75% 0.15 85 / 0.1);
-  --priority-medium-text: oklch(50% 0.15 85);
-  --priority-medium-border: oklch(75% 0.15 85 / 0.2);
-
-  --priority-high-bg: oklch(65% 0.2 25 / 0.1);
-  --priority-high-text: oklch(50% 0.2 25);
-  --priority-high-border: oklch(65% 0.2 25 / 0.2);
-
-  /* ============================================
-     SURFACE COLORS - Light Mode
-     ============================================ */
-  --surface-base: oklch(100% 0 0);
-  --surface-elevated: oklch(98% 0.01 245);
-  --surface-overlay: rgba(255, 255, 255, 0.4);
+  --surface: oklch(100% 0 0);
+  --surface-elevated: oklch(100% 0 0);
   --surface-sunken: oklch(95% 0.01 245);
+  --hover-bg: oklch(93% 0.01 245);
 
-  /* ============================================
-     GLASS REFRACTION - Light Mode
-     ============================================ */
-  --glass-bg: rgba(255, 255, 255, 0.4);
-  --glass-border: rgba(255, 255, 255, 0.5);
-  --glass-edge: rgba(255, 255, 255, 0.8);
-  --glass-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05),
-                  0 0 1px 0 rgba(0, 0, 0, 0.1);
+  --border: oklch(87% 0.02 245);
+  --border-strong: oklch(76% 0.02 245);
 
-  /* ============================================
-     STATE COLORS - Light Mode
-     ============================================ */
-  --state-success-bg: oklch(85% 0.18 155 / 0.1);
-  --state-success-text: oklch(55% 0.18 155);
-  --state-success-border: oklch(78% 0.18 155 / 0.2);
+  --glass-bg: oklch(100% 0 0 / 0.85);
+  --glass-border: oklch(87% 0.02 245);
+  --glass-shadow: 0 10px 40px -12px rgba(15, 23, 42, 0.15);
 
-  --state-error-bg: oklch(65% 0.2 25 / 0.1);
-  --state-error-text: oklch(50% 0.2 25);
-  --state-error-border: oklch(65% 0.2 25 / 0.2);
+  --danger: oklch(48% 0.19 25);
+  --warning: oklch(48% 0.14 85);
+  --success: oklch(45% 0.16 155);
+  --info: oklch(45% 0.14 250);
 
-  --state-warning-bg: oklch(75% 0.15 85 / 0.1);
-  --state-warning-text: oklch(50% 0.15 85);
-  --state-warning-border: oklch(75% 0.15 85 / 0.2);
+  --priority-low-bg: oklch(45% 0.16 155 / 0.1);
+  --priority-low-text: oklch(42% 0.16 155);
+  --priority-low-border: oklch(45% 0.16 155 / 0.35);
 
-  --state-info-bg: oklch(65% 0.15 250 / 0.1);
-  --state-info-text: oklch(45% 0.15 250);
-  --state-info-border: oklch(65% 0.15 250 / 0.2);
+  --priority-medium-bg: oklch(55% 0.14 85 / 0.12);
+  --priority-medium-text: oklch(42% 0.13 85);
+  --priority-medium-border: oklch(55% 0.14 85 / 0.4);
 
-  /* ============================================
-     INPUT COLORS - Light Mode
-     ============================================ */
+  --priority-high-bg: oklch(55% 0.19 25 / 0.1);
+  --priority-high-text: oklch(45% 0.19 25);
+  --priority-high-border: oklch(55% 0.19 25 / 0.4);
+
+  --state-success-bg: oklch(45% 0.16 155 / 0.1);
+  --state-success-text: oklch(42% 0.16 155);
+  --state-success-border: oklch(45% 0.16 155 / 0.35);
+
+  --state-error-bg: oklch(55% 0.19 25 / 0.08);
+  --state-error-text: oklch(45% 0.19 25);
+  --state-error-border: oklch(55% 0.19 25 / 0.35);
+
+  --state-warning-bg: oklch(55% 0.14 85 / 0.1);
+  --state-warning-text: oklch(42% 0.13 85);
+  --state-warning-border: oklch(55% 0.14 85 / 0.4);
+
+  --state-info-bg: oklch(55% 0.14 250 / 0.1);
+  --state-info-text: oklch(42% 0.14 250);
+  --state-info-border: oklch(55% 0.14 250 / 0.35);
+
   --input-bg: oklch(100% 0 0);
-  --input-border: oklch(85% 0.02 245);
+  --input-border: oklch(82% 0.02 245);
   --input-text: oklch(20% 0.05 245);
-  --input-placeholder: oklch(60% 0.02 245);
-  --input-focus-ring: oklch(78% 0.18 155 / 0.5);
+  --input-placeholder: oklch(58% 0.02 245);
+  --input-focus-ring: oklch(45% 0.16 155 / 0.35);
 
-  /* ============================================
-     MOTION CONSTANTS
-     ============================================ */
-  --ease-expo: cubic-bezier(0.19, 1, 0.22, 1);
-  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-
-  /* ============================================
-     SPACING SCALE
-     ============================================ */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  --spacing-2xl: 3rem;
-
-  /* ============================================
-     BORDER RADIUS
-     ============================================ */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
   --radius-3xl: 2rem;
-  --radius-full: 9999px;
 }
 
 .dark {
-  /* ============================================
-     SEMANTIC TOKENS - Dark Mode
-     ============================================ */
-  --background: #0a0e17;
-  --foreground: oklch(98% 0.01 245);
-  --foreground-muted: oklch(75% 0.02 245);
+  --background: #0b0f16;
+  --foreground: oklch(96% 0.01 245);
+  --foreground-muted: oklch(74% 0.02 245);
 
-  /* Primary Action - Dark Mode */
-  --primary: var(--brand-accent);
-  --primary-foreground: var(--background);
+  --primary: oklch(76% 0.18 155);
+  --primary-foreground: oklch(16% 0.05 155);
   --primary-hover: oklch(82% 0.18 155);
-  --primary-active: oklch(85% 0.18 155);
 
-  /* ============================================
-     PRIORITY COLORS - Dark Mode
-     ============================================ */
-  --priority-low-bg: oklch(78% 0.18 155 / 0.15);
-  --priority-low-text: oklch(85% 0.18 155);
-  --priority-low-border: oklch(78% 0.18 155 / 0.3);
+  --surface: #131a26;
+  --surface-elevated: #182130;
+  --surface-sunken: #0a0e17;
+  --hover-bg: #1c2636;
 
-  --priority-medium-bg: oklch(70% 0.15 85 / 0.15);
-  --priority-medium-text: oklch(80% 0.15 85);
-  --priority-medium-border: oklch(70% 0.15 85 / 0.3);
+  --border: rgba(255, 255, 255, 0.14);
+  --border-strong: rgba(255, 255, 255, 0.28);
 
-  --priority-high-bg: oklch(60% 0.2 25 / 0.15);
-  --priority-high-text: oklch(75% 0.2 25);
-  --priority-high-border: oklch(60% 0.2 25 / 0.3);
+  --glass-bg: rgba(19, 26, 38, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 25px 60px -20px rgba(0, 0, 0, 0.7);
 
-  /* ============================================
-     SURFACE COLORS - Dark Mode
-     ============================================ */
-  --surface-base: #0a0e17;
-  --surface-elevated: rgba(15, 20, 30, 0.8);
-  --surface-overlay: rgba(10, 14, 23, 0.7);
-  --surface-sunken: rgba(5, 8, 13, 0.9);
+  --danger: oklch(72% 0.19 25);
+  --warning: oklch(78% 0.14 85);
+  --success: oklch(76% 0.18 155);
+  --info: oklch(74% 0.14 250);
 
-  /* ============================================
-     GLASS REFRACTION - Dark Mode
-     ============================================ */
-  --glass-bg: rgba(10, 14, 23, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.05);
-  --glass-edge: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 25px 80px -20px rgba(0, 0, 0, 0.7),
-                  0 0 0 1px rgba(255, 255, 255, 0.02);
+  --priority-low-bg: oklch(76% 0.18 155 / 0.15);
+  --priority-low-text: oklch(84% 0.18 155);
+  --priority-low-border: oklch(76% 0.18 155 / 0.4);
 
-  /* ============================================
-     STATE COLORS - Dark Mode
-     ============================================ */
-  --state-success-bg: oklch(78% 0.18 155 / 0.15);
-  --state-success-text: oklch(85% 0.18 155);
-  --state-success-border: oklch(78% 0.18 155 / 0.3);
+  --priority-medium-bg: oklch(74% 0.14 85 / 0.15);
+  --priority-medium-text: oklch(84% 0.14 85);
+  --priority-medium-border: oklch(74% 0.14 85 / 0.4);
 
-  --state-error-bg: oklch(60% 0.2 25 / 0.15);
-  --state-error-text: oklch(75% 0.2 25);
-  --state-error-border: oklch(60% 0.2 25 / 0.3);
+  --priority-high-bg: oklch(68% 0.19 25 / 0.15);
+  --priority-high-text: oklch(80% 0.19 25);
+  --priority-high-border: oklch(68% 0.19 25 / 0.4);
 
-  --state-warning-bg: oklch(70% 0.15 85 / 0.15);
-  --state-warning-text: oklch(80% 0.15 85);
-  --state-warning-border: oklch(70% 0.15 85 / 0.3);
+  --state-success-bg: oklch(76% 0.18 155 / 0.15);
+  --state-success-text: oklch(84% 0.18 155);
+  --state-success-border: oklch(76% 0.18 155 / 0.4);
 
-  --state-info-bg: oklch(60% 0.15 250 / 0.15);
-  --state-info-text: oklch(70% 0.15 250);
-  --state-info-border: oklch(60% 0.15 250 / 0.3);
+  --state-error-bg: oklch(68% 0.19 25 / 0.15);
+  --state-error-text: oklch(80% 0.19 25);
+  --state-error-border: oklch(68% 0.19 25 / 0.4);
 
-  /* ============================================
-     INPUT COLORS - Dark Mode
-     ============================================ */
-  --input-bg: rgba(15, 20, 30, 0.6);
-  --input-border: rgba(255, 255, 255, 0.1);
-  --input-text: oklch(98% 0.01 245);
-  --input-placeholder: oklch(75% 0.02 245 / 0.5);
-  --input-focus-ring: oklch(78% 0.18 155 / 0.4);
+  --state-warning-bg: oklch(74% 0.14 85 / 0.15);
+  --state-warning-text: oklch(84% 0.14 85);
+  --state-warning-border: oklch(74% 0.14 85 / 0.4);
+
+  --state-info-bg: oklch(68% 0.14 250 / 0.15);
+  --state-info-text: oklch(78% 0.14 250);
+  --state-info-border: oklch(68% 0.14 250 / 0.4);
+
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --input-border: rgba(255, 255, 255, 0.16);
+  --input-text: oklch(96% 0.01 245);
+  --input-placeholder: oklch(70% 0.02 245);
+  --input-focus-ring: oklch(76% 0.18 155 / 0.4);
+}
+
+/* Map the tokens to Tailwind utilities (bg-primary, text-foreground, …). */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-hover-bg: var(--hover-bg);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
+  --color-info: var(--info);
+  --color-input-bg: var(--input-bg);
+  --color-input-border: var(--input-border);
+  --color-input-text: var(--input-text);
+  --color-input-placeholder: var(--input-placeholder);
+  --color-input-focus-ring: var(--input-focus-ring);
+  --color-state-error-bg: var(--state-error-bg);
+  --color-state-error-text: var(--state-error-text);
+  --color-state-error-border: var(--state-error-border);
+  --color-state-success-bg: var(--state-success-bg);
+  --color-state-success-text: var(--state-success-text);
+  --color-state-success-border: var(--state-success-border);
+  --color-state-warning-bg: var(--state-warning-bg);
+  --color-state-warning-text: var(--state-warning-text);
+  --color-state-warning-border: var(--state-warning-border);
+  --color-state-info-bg: var(--state-info-bg);
+  --color-state-info-text: var(--state-info-text);
+  --color-state-info-border: var(--state-info-border);
+  --color-priority-low-bg: var(--priority-low-bg);
+  --color-priority-low-text: var(--priority-low-text);
+  --color-priority-low-border: var(--priority-low-border);
+  --color-priority-medium-bg: var(--priority-medium-bg);
+  --color-priority-medium-text: var(--priority-medium-text);
+  --color-priority-medium-border: var(--priority-medium-border);
+  --color-priority-high-bg: var(--priority-high-bg);
+  --color-priority-high-text: var(--priority-high-text);
+  --color-priority-high-border: var(--priority-high-border);
+  --color-glass-bg: var(--glass-bg);
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), Georgia, serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
 }
 
 @layer base {
   * {
-    border-color: var(--glass-border);
-    outline-color: var(--brand-accent);
+    border-color: var(--border);
   }
 
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: 'Outfit', sans-serif;
+    font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
-    letter-spacing: -0.01em;
-    
-    /* Programmatic Engine Background */
-    background-image: 
-      radial-gradient(circle at 2px 2px, rgba(255,255,255,0.03) 1px, transparent 0);
-    background-size: 32px 32px;
-    background-attachment: fixed;
   }
 
-  /* High-Performance Smooth Scroll */
   html {
     scroll-behavior: smooth;
     scrollbar-gutter: stable;
   }
+
+  /* Native controls (selects, date inputs) must use the theme colours. */
+  select,
+  input[type="date"],
+  input[type="datetime-local"] {
+    color-scheme: light;
+  }
+  .dark select,
+  .dark input[type="date"],
+  .dark input[type="datetime-local"] {
+    color-scheme: dark;
+  }
+  select option {
+    background-color: var(--surface);
+    color: var(--foreground);
+  }
 }
 
 @layer utilities {
-  /* THE PRECISION GLASS COMPONENT */
+  /* Simple card surface: solid, readable in both themes. */
   .glass-panel {
-    background: var(--glass-bg);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid var(--glass-border);
+    background: var(--surface);
+    border: 1px solid var(--border);
     box-shadow: var(--glass-shadow);
-    
-    /* "Scrying" Edge Lighting - Mimics light hitting the top edge of glass */
-    position: relative;
-    overflow: hidden;
   }
+}
 
-  .glass-panel::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: linear-gradient(
-      135deg, 
-      rgba(255, 255, 255, 0.1) 0%, 
-      transparent 40%, 
-      transparent 60%, 
-      rgba(255, 255, 255, 0.02) 100%
-    );
+/* Content must never depend on animation to become visible. If the user
+   prefers reduced motion, turn animations and smooth scrolling off. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
-
-  /* KINETIC MICRO-INTERACTION */
-  .button-shine {
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .button-shine::before {
-    content: "";
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(
-      45deg,
-      transparent,
-      rgba(255, 255, 255, 0.1),
-      transparent
-    );
-    transform: rotate(45deg);
-    transition: 0.6s;
-  }
-
-  .button-shine:hover::before {
-    left: 100%;
-  }
-
-  /* TYPOGRAPHY SYSTEMS */
-  .text-glow {
-    background: linear-gradient(to bottom, #fff 20%, var(--brand-accent));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    filter: drop-shadow(0 0 15px oklch(var(--brand-accent) / 0.3));
-  }
-
-  .font-mono-system {
-    font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    font-size: 0.7rem;
-    font-weight: 700;
-    opacity: 0.6;
-  }
-
-  /* GSAP LAYOUT HELPERS */
-  .reveal-stage {
-    visibility: hidden; /* Prevent FOUC before GSAP loads */
-  }
-
-  /* NOISE ARCHITECTURE */
-  .noise-overlay {
-    position: relative;
-  }
-  
-  .noise-overlay::after {
-    content: "";
-    position: fixed;
-    inset: -200%;
-    z-index: 9999;
-    opacity: 0.015;
-    pointer-events: none;
-    background-image: url("https://grainy-gradients.vercel.app/noise.svg");
-    animation: grain 8s steps(10) infinite;
-  }
-
-  @keyframes grain {
-    0%, 100% { transform: translate(0, 0); }
-    10% { transform: translate(-5%, -10%); }
-    30% { transform: translate(3%, -15%); }
-    50% { transform: translate(12%, 9%); }
-    70% { transform: translate(9%, 4%); }
-    90% { transform: translate(-1%, 7%); }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

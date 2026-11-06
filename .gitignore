@@ -56,6 +56,14 @@ node_modules/
 out/
 *.log
 
+# Databases — never commit local/dev database files (they can contain real
+# user rows, password hashes and session tokens).
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
 # Docker
 *.log
 

@@ -24,6 +24,7 @@ export function TaskSortControls() {
   return (
     <div className="flex items-center gap-2">
       <select
+        id="sort-by"
         value={sortBy}
         onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
         className="px-4 py-3 rounded-2xl bg-[var(--glass-bg)] border border-[var(--glass-border)] text-[var(--foreground)] text-sm font-bold appearance-none cursor-pointer outline-none focus:border-[var(--glass-edge)] transition-colors pr-10"

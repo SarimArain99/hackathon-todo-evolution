@@ -12,7 +12,7 @@ import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const FILTER_OPTIONS = [
-  { value: null, label: "All Tasks" },
+  { value: null, label: "All" },
   { value: "today", label: "Today" },
   { value: "this_week", label: "This Week" },
   { value: "this_month", label: "This Month" },

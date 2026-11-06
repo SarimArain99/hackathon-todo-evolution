@@ -1,13 +1,6 @@
-/**
- * Zenith ConfirmDialog Component v2.1
- * Purpose: Reusable confirmation modal for destructive actions
- * Features: OKLCH Semantic Theming, Spring Physics, Haptic-feel Buttons
- */
-
 "use client";
 
 import { useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { AlertCircle, AlertTriangle, Info, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,19 +17,19 @@ interface ConfirmDialogProps {
 
 const variantStyles = {
   danger: {
-    confirmBg: "bg-danger text-white shadow-danger/20",
+    confirmBg: "bg-danger text-white hover:opacity-90",
     iconBg: "bg-danger/10",
     iconColor: "text-danger",
     Icon: AlertCircle,
   },
   warning: {
-    confirmBg: "bg-warning text-white shadow-warning/20",
+    confirmBg: "bg-warning text-white hover:opacity-90",
     iconBg: "bg-warning/10",
     iconColor: "text-warning",
     Icon: AlertTriangle,
   },
   info: {
-    confirmBg: "bg-primary text-primary-foreground shadow-primary/20",
+    confirmBg: "bg-primary text-primary-foreground hover:bg-primary-hover",
     iconBg: "bg-primary/10",
     iconColor: "text-primary",
     Icon: Info,
@@ -47,8 +40,8 @@ export function ConfirmDialog({
   isOpen,
   onClose,
   onConfirm,
-  title = "Confirm Action",
-  message = "Are you sure you want to proceed? This action cannot be undone.",
+  title = "Are you sure?",
+  message = "Are you sure you want to continue? This cannot be undone.",
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
   variant = "danger",
@@ -56,7 +49,6 @@ export function ConfirmDialog({
   const { confirmBg, iconBg, iconColor, Icon } = variantStyles[variant];
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Lock scroll when open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -64,94 +56,73 @@ export function ConfirmDialog({
     } else {
       document.body.style.overflow = "unset";
     }
-    return () => { document.body.style.overflow = "unset"; };
+    return () => {
+      document.body.style.overflow = "unset";
+    };
   }, [isOpen]);
 
-  // Handle escape key
   useEffect(() => {
+    if (!isOpen) return;
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) onClose();
+      if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
 
+  if (!isOpen) return null;
+
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
-          {/* Backdrop with enhanced blur */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-background/60 backdrop-blur-md"
-            onClick={onClose}
-          />
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      role="alertdialog"
+      aria-modal="true"
+      aria-label={title}
+    >
+      <div
+        className="absolute inset-0 bg-black/50"
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
-          {/* Dialog Body */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20, filter: "blur(10px)" }}
-            animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
-            exit={{ opacity: 0, scale: 0.95, y: 10, filter: "blur(5px)" }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-100 glass-panel rounded-3xl p-8 sm:p-10 shadow-2xl overflow-hidden"
-            role="alertdialog"
-            aria-modal="true"
-          >
-            {/* Top Shine Accent */}
-            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-border to-transparent opacity-50" />
+      <div className="relative w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-xl sm:p-8">
+        <button
+          onClick={onClose}
+          className="absolute right-5 top-5 rounded-lg p-2 text-foreground-muted hover:bg-hover-bg hover:text-foreground"
+          aria-label="Close dialog"
+        >
+          <X className="h-4 w-4" aria-hidden="true" />
+        </button>
 
-            {/* Close Icon (Top Right) */}
-            <button 
-              onClick={onClose}
-              className="absolute top-6 right-6 p-2 rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            {/* Semantic Icon Header */}
-            <div className={cn("inline-flex p-4 rounded-2xl mb-8", iconBg)}>
-              <Icon className={cn("w-7 h-7", iconColor)} />
-            </div>
-
-            {/* Text Hierarchy */}
-            <div className="space-y-3 mb-10">
-              <h2 className="text-2xl font-display font-bold tracking-tightest text-foreground">
-                {title}
-              </h2>
-              <p className="text-base text-foreground-muted font-light leading-relaxed">
-                {message}
-              </p>
-            </div>
-
-            {/* Action Cluster */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <motion.button
-                ref={cancelButtonRef}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={onClose}
-                className="flex-1 px-6 py-3.5 text-sm font-bold text-foreground-muted bg-surface border border-border/50 rounded-2xl hover:bg-surface-elevated hover:text-foreground transition-all duration-300"
-              >
-                {cancelLabel}
-              </motion.button>
-              
-              <motion.button
-                whileHover={{ scale: 1.02, y: -1 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => { onConfirm(); onClose(); }}
-                className={cn(
-                  "flex-1 px-6 py-3.5 text-sm font-bold rounded-2xl shadow-xl transition-all duration-300 button-shine",
-                  confirmBg
-                )}
-              >
-                {confirmLabel}
-              </motion.button>
-            </div>
-          </motion.div>
+        <div className={cn("mb-6 inline-flex rounded-2xl p-4", iconBg)}>
+          <Icon className={cn("h-7 w-7", iconColor)} aria-hidden="true" />
         </div>
-      )}
-    </AnimatePresence>
+
+        <h2 className="text-xl font-semibold text-foreground">{title}</h2>
+        <p className="mt-2 text-sm leading-relaxed text-foreground-muted">{message}</p>
+
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <button
+            ref={cancelButtonRef}
+            onClick={onClose}
+            className="flex-1 rounded-xl border border-border bg-surface px-6 py-3 text-sm font-semibold text-foreground-muted hover:bg-hover-bg hover:text-foreground"
+          >
+            {cancelLabel}
+          </button>
+          <button
+            onClick={() => {
+              onConfirm();
+              onClose();
+            }}
+            className={cn(
+              "flex-1 rounded-xl px-6 py-3 text-sm font-semibold shadow-sm",
+              confirmBg
+            )}
+          >
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

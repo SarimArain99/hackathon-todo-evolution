@@ -1,19 +1,10 @@
-/**
- * Task Edit Dialog
- *
- * Full-featured edit dialog for tasks with pre-populated fields.
- * Supports editing title, description, priority, tags, due date, and recurrence.
- */
-
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { tasksApi, type Task, type TaskUpdate } from "@/lib/api";
 import { taskToasts } from "@/lib/toast";
-import { X, Target, Calendar, BarChart3, Tag, Repeat } from "lucide-react";
+import { X, ChevronDown } from "lucide-react";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
 import { cn } from "@/lib/utils";
 
 interface TaskEditDialogProps {
@@ -24,7 +15,7 @@ interface TaskEditDialogProps {
 }
 
 const RECURRENCE_OPTIONS = [
-  { value: "", label: "No Recurrence" },
+  { value: "", label: "Does not repeat" },
   { value: "DAILY", label: "Daily" },
   { value: "WEEKLY", label: "Weekly" },
   { value: "MONTHLY", label: "Monthly" },
@@ -32,14 +23,19 @@ const RECURRENCE_OPTIONS = [
 ] as const;
 
 const WEEKDAY_OPTIONS = [
-  { value: "MO", label: "Monday" },
-  { value: "TU", label: "Tuesday" },
-  { value: "WE", label: "Wednesday" },
-  { value: "TH", label: "Thursday" },
-  { value: "FR", label: "Friday" },
-  { value: "SA", label: "Saturday" },
-  { value: "SU", label: "Sunday" },
+  { value: "MO", label: "Mon" },
+  { value: "TU", label: "Tue" },
+  { value: "WE", label: "Wed" },
+  { value: "TH", label: "Thu" },
+  { value: "FR", label: "Fri" },
+  { value: "SA", label: "Sat" },
+  { value: "SU", label: "Sun" },
 ] as const;
+
+const inputClasses =
+  "w-full rounded-xl border border-input-border bg-input-bg px-4 py-3 text-base text-input-text outline-none placeholder:text-input-placeholder focus:border-primary focus:ring-2 focus:ring-input-focus-ring";
+
+const labelClasses = "mb-1.5 block text-sm font-medium text-foreground";
 
 export function TaskEditDialog({ task, isOpen, onClose, onTaskUpdated }: TaskEditDialogProps) {
   const [title, setTitle] = useState("");
@@ -52,7 +48,6 @@ export function TaskEditDialog({ task, isOpen, onClose, onTaskUpdated }: TaskEdi
   const [recurrenceWeekdays, setRecurrenceWeekdays] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Reset form when task changes
   useEffect(() => {
     if (task) {
       setTitle(task.title);
@@ -61,28 +56,15 @@ export function TaskEditDialog({ task, isOpen, onClose, onTaskUpdated }: TaskEdi
       setTags(task.tags?.join(", ") || "");
       setDueDate(task.due_date ? task.due_date.split("T")[0] : "");
 
-      // Parse existing recurrence rule
       if (task.recurrence_rule) {
         const rrule = task.recurrence_rule;
-        if (rrule.includes("DAILY")) {
-          setRecurrenceType("DAILY");
+        const freq = ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"].find((f) => rrule.includes(f));
+        if (freq) {
+          setRecurrenceType(freq);
           const match = rrule.match(/INTERVAL=(\d+)/);
           setRecurrenceInterval(match ? match[1] : "1");
-        } else if (rrule.includes("WEEKLY")) {
-          setRecurrenceType("WEEKLY");
-          const match = rrule.match(/INTERVAL=(\d+)/);
-          setRecurrenceInterval(match ? match[1] : "1");
-          // Parse BYDAY
           const bydayMatch = rrule.match(/BYDAY=([A-Z,]+)/);
-          if (bydayMatch) {
-            setRecurrenceWeekdays(bydayMatch[1].split(","));
-          }
-        } else if (rrule.includes("MONTHLY")) {
-          setRecurrenceType("MONTHLY");
-          const match = rrule.match(/INTERVAL=(\d+)/);
-          setRecurrenceInterval(match ? match[1] : "1");
-        } else if (rrule.includes("YEARLY")) {
-          setRecurrenceType("YEARLY");
+          setRecurrenceWeekdays(bydayMatch ? bydayMatch[1].split(",") : []);
         }
       } else {
         setRecurrenceType("");
@@ -92,24 +74,29 @@ export function TaskEditDialog({ task, isOpen, onClose, onTaskUpdated }: TaskEdi
     }
   }, [task]);
 
+  // Close on Escape.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, onClose]);
+
   const handleWeekdayToggle = (day: string) => {
-    setRecurrenceWeekdays(prev =>
-      prev.includes(day)
-        ? prev.filter(d => d !== day)
-        : [...prev, day]
+    setRecurrenceWeekdays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
     );
   };
 
   const generateRRule = (): string | undefined => {
     if (!recurrenceType) return undefined;
-
     const interval = parseInt(recurrenceInterval) || 1;
     const parts = [`FREQ=${recurrenceType}`, `INTERVAL=${interval}`];
-
     if (recurrenceType === "WEEKLY" && recurrenceWeekdays.length > 0) {
       parts.push(`BYDAY=${recurrenceWeekdays.join(",")}`);
     }
-
     return parts.join(";");
   };
 
@@ -120,10 +107,10 @@ export function TaskEditDialog({ task, isOpen, onClose, onTaskUpdated }: TaskEdi
     setIsSubmitting(true);
     try {
       const taskData: TaskUpdate = {
-        title,
-        description: description || undefined,
+        title: title.trim(),
+        description: description.trim() || undefined,
         priority,
-        tags: tags ? tags.split(",").map(t => t.trim()).filter(Boolean) : undefined,
+        tags: tags ? tags.split(",").map((t) => t.trim()).filter(Boolean) : undefined,
         due_date: dueDate || undefined,
         recurrence_rule: generateRRule(),
       };
@@ -139,227 +126,191 @@ export function TaskEditDialog({ task, isOpen, onClose, onTaskUpdated }: TaskEdi
     }
   };
 
-  const inputClasses = "border border-white/20 focus:border-white/60 focus:ring-4 focus:ring-white/5 transition-all duration-300";
-
   if (!task || !isOpen) return null;
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        {/* Backdrop */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        />
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Edit task"
+    >
+      <div
+        className="absolute inset-0 bg-black/50"
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
-        {/* Dialog */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="relative w-full max-w-lg glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl overflow-hidden"
-        >
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+      <div className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-surface p-6 shadow-xl sm:p-8">
+        <div className="mb-6 flex items-center justify-between">
+          <h3 className="text-xl font-semibold text-foreground">Edit task</h3>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-2 text-foreground-muted hover:bg-hover-bg hover:text-foreground"
+            aria-label="Close dialog"
+          >
+            <X className="h-5 w-5" aria-hidden="true" />
+          </button>
+        </div>
 
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center">
-                <Target className="w-5 h-5 text-white" />
-              </div>
-              <h3 className="text-2xl font-display font-bold text-white tracking-tightest uppercase">
-                Edit Objective
-              </h3>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2.5 rounded-2xl hover:bg-danger/10 text-white/60 hover:text-danger border border-white/10 hover:border-danger/20 transition-all duration-300"
-              aria-label="Close dialog"
-            >
-              <X className="w-5 h-5" />
-            </button>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label htmlFor="edit-task-title" className={labelClasses}>
+              Task title
+            </label>
+            <input
+              id="edit-task-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              className={inputClasses}
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Title */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 ml-2">Title</label>
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-                placeholder="E.g., Quarterly Growth Strategy"
-                className={inputClasses}
-              />
-            </div>
+          <div>
+            <label htmlFor="edit-task-description" className={labelClasses}>
+              Description <span className="font-normal text-foreground-muted">(optional)</span>
+            </label>
+            <textarea
+              id="edit-task-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className={cn(inputClasses, "resize-none")}
+            />
+          </div>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 ml-2">Context (Optional)</label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={3}
-                placeholder="Outline the core requirements..."
-                className={cn(
-                  "w-full px-5 py-4 rounded-2xl bg-surface/40 text-white placeholder:text-white/20 outline-none resize-none text-sm font-light leading-relaxed",
-                  inputClasses
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Priority */}
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 ml-2 flex items-center gap-2">
-                  <BarChart3 className="w-3 h-3" /> Priority
-                </label>
-                <div className="relative">
-                  <select
-                    value={priority}
-                    onChange={(e) => setPriority(e.target.value as "low" | "medium" | "high")}
-                    className={cn(
-                      "w-full px-5 py-3.5 rounded-2xl bg-surface/40 text-white text-sm font-bold appearance-none cursor-pointer outline-none",
-                      inputClasses
-                    )}
-                  >
-                    <option value="low" className="bg-slate-900">Low Intensity</option>
-                    <option value="medium" className="bg-slate-900">Standard Flow</option>
-                    <option value="high" className="bg-slate-900">Critical Zenith</option>
-                  </select>
-                  <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
-                    <Tag className="w-4 h-4 text-white" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Due Date */}
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 ml-2 flex items-center gap-2">
-                  <Calendar className="w-3 h-3" /> Deadline
-                </label>
-                <Input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className={cn("font-bold text-white", inputClasses)}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label htmlFor="edit-task-priority" className={labelClasses}>
+                Priority
+              </label>
+              <div className="relative">
+                <select
+                  id="edit-task-priority"
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value as "low" | "medium" | "high")}
+                  className={cn(inputClasses, "appearance-none pr-10")}
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+                <ChevronDown
+                  className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted"
+                  aria-hidden="true"
                 />
               </div>
             </div>
 
-            {/* Tags */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 ml-2 flex items-center gap-2">
-                <Tag className="w-3 h-3" /> Categorization
+            <div>
+              <label htmlFor="edit-task-due-date" className={labelClasses}>
+                Due date <span className="font-normal text-foreground-muted">(optional)</span>
               </label>
-              <Input
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-                placeholder="Work, Strategy, Personal (comma separated)"
+              <input
+                id="edit-task-due-date"
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
                 className={inputClasses}
               />
             </div>
+          </div>
 
-            {/* Recurrence Section */}
-            <div className="space-y-4 pt-2 border-t border-white/10">
-              <div className="flex items-center gap-2 text-white/60">
-                <Repeat className="w-4 h-4" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Recurrence Pattern</span>
-              </div>
+          <div>
+            <label htmlFor="edit-task-tags" className={labelClasses}>
+              Tags <span className="font-normal text-foreground-muted">(optional, comma separated)</span>
+            </label>
+            <input
+              id="edit-task-tags"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              placeholder="Work, Personal"
+              className={inputClasses}
+            />
+          </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {RECURRENCE_OPTIONS.map(opt => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => setRecurrenceType(opt.value)}
-                    className={cn(
-                      "px-4 py-2.5 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all",
-                      recurrenceType === opt.value
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-white/5 border-white/10 text-white/60 hover:text-white hover:bg-white/10"
-                    )}
-                  >
+          <div className="border-t border-border pt-5">
+            <label htmlFor="edit-task-repeat" className={labelClasses}>
+              Repeat <span className="font-normal text-foreground-muted">(optional)</span>
+            </label>
+            <div className="relative">
+              <select
+                id="edit-task-repeat"
+                value={recurrenceType}
+                onChange={(e) => setRecurrenceType(e.target.value)}
+                className={cn(inputClasses, "appearance-none pr-10")}
+              >
+                {RECURRENCE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
                     {opt.label}
-                  </button>
+                  </option>
                 ))}
-              </div>
+              </select>
+              <ChevronDown
+                className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted"
+                aria-hidden="true"
+              />
+            </div>
 
-              {recurrenceType && (
-                <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                  {/* Interval */}
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-white/60 whitespace-nowrap">
-                      Repeat every
-                    </span>
-                    <input
-                      type="number"
-                      min="1"
-                      max="99"
-                      value={recurrenceInterval}
-                      onChange={(e) => setRecurrenceInterval(e.target.value)}
-                      className={cn(
-                        "w-20 px-3 py-2 rounded-xl bg-surface/40 text-white text-sm font-bold text-center outline-none",
-                        inputClasses
-                      )}
-                    />
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-white/60">
-                      {recurrenceType === "DAILY" ? "day(s)" :
-                       recurrenceType === "WEEKLY" ? "week(s)" :
-                       recurrenceType === "MONTHLY" ? "month(s)" : "year(s)"}
-                    </span>
+            {recurrenceType && (
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <label htmlFor="edit-repeat-interval" className="text-sm text-foreground-muted">
+                  Repeat every
+                </label>
+                <input
+                  id="edit-repeat-interval"
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={recurrenceInterval}
+                  onChange={(e) => setRecurrenceInterval(e.target.value)}
+                  className="w-20 rounded-xl border border-input-border bg-input-bg px-3 py-2 text-center text-base text-input-text outline-none focus:border-primary focus:ring-2 focus:ring-input-focus-ring"
+                />
+                <span className="text-sm text-foreground-muted">
+                  {recurrenceType === "DAILY"
+                    ? "day(s)"
+                    : recurrenceType === "WEEKLY"
+                      ? "week(s)"
+                      : recurrenceType === "MONTHLY"
+                        ? "month(s)"
+                        : "year(s)"}
+                </span>
+
+                {recurrenceType === "WEEKLY" && (
+                  <div className="flex flex-wrap gap-1.5" role="group" aria-label="Days of the week">
+                    {WEEKDAY_OPTIONS.map((day) => (
+                      <button
+                        key={day.value}
+                        type="button"
+                        onClick={() => handleWeekdayToggle(day.value)}
+                        aria-pressed={recurrenceWeekdays.includes(day.value)}
+                        className={cn(
+                          "h-9 min-w-9 rounded-lg border px-2 text-xs font-semibold transition-colors",
+                          recurrenceWeekdays.includes(day.value)
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-surface text-foreground-muted hover:text-foreground"
+                        )}
+                      >
+                        {day.label}
+                      </button>
+                    ))}
                   </div>
+                )}
+              </div>
+            )}
+          </div>
 
-                  {/* Weekday selector for weekly recurrence */}
-                  {recurrenceType === "WEEKLY" && (
-                    <div className="flex flex-wrap gap-2">
-                      {WEEKDAY_OPTIONS.map(day => (
-                        <button
-                          key={day.value}
-                          type="button"
-                          onClick={() => handleWeekdayToggle(day.value)}
-                          className={cn(
-                            "w-10 h-10 rounded-lg border text-xs font-bold uppercase transition-all",
-                            recurrenceWeekdays.includes(day.value)
-                              ? "bg-primary text-primary-foreground border-primary"
-                              : "bg-white/5 border-white/10 text-white/40 hover:text-white hover:bg-white/10"
-                          )}
-                        >
-                          {day.label.charAt(0)}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-4">
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-2 h-12"
-              >
-                {isSubmitting ? "Saving..." : "Save Changes"}
-              </Button>
-
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={onClose}
-                className="flex-1 h-12"
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </motion.div>
+          <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+            <Button type="submit" disabled={isSubmitting} className="h-12 flex-1 text-base">
+              {isSubmitting ? "Saving…" : "Save changes"}
+            </Button>
+            <Button type="button" variant="secondary" onClick={onClose} className="h-12">
+              Cancel
+            </Button>
+          </div>
+        </form>
       </div>
-    </AnimatePresence>
+    </div>
   );
 }

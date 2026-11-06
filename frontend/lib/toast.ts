@@ -50,28 +50,28 @@ export function toastLoading(message: string) {
  */
 export const taskToasts = {
   created: (title: string) =>
-    toastSuccess('Objective created', {
+    toastSuccess('Task created', {
       description: title.slice(0, 50) + (title.length > 50 ? '...' : ''),
     }),
 
   updated: (title: string) =>
-    toastSuccess('Objective updated', {
+    toastSuccess('Task updated', {
       description: title.slice(0, 50) + (title.length > 50 ? '...' : ''),
     }),
 
   deleted: (title: string, onUndo?: () => void) =>
-    toastSuccess('Objective deleted', {
+    toastSuccess('Task deleted', {
       description: title.slice(0, 50) + (title.length > 50 ? '...' : ''),
       action: onUndo ? { label: 'Undo', onClick: onUndo } : undefined,
     }),
 
   completed: (title: string) =>
-    toastSuccess('Objective completed', {
+    toastSuccess('Task completed', {
       description: title.slice(0, 50) + (title.length > 50 ? '...' : ''),
     }),
 
   uncompleted: (title: string) =>
-    toastInfo('Objective reactivated', {
+    toastInfo('Task marked as not done', {
       description: title.slice(0, 50) + (title.length > 50 ? '...' : ''),
     }),
 

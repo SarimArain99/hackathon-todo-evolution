@@ -336,8 +336,9 @@ allowed_origins = [
     frontend_url,
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    # Add your Vercel frontend URL here
-    # "https://your-app.vercel.app",
+    # Live production frontend (was missing from the defaults, so direct
+    # browser calls such as the health check failed CORS in production).
+    "https://zenith-flow-zeta.vercel.app",
 ]
 
 # Add Hugging Face proxy URL if configured
@@ -353,7 +354,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=[
         "Content-Type",
         "Authorization",

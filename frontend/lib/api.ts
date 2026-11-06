@@ -10,10 +10,6 @@
  */
 
 const API_PROXY = "/api/proxy";
-const isDev = process.env.NODE_ENV === "development";
-
-// Direct backend URL (used only for health check which doesn't require auth)
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 // Task type definitions matching the backend
 export interface Task {
@@ -22,6 +18,7 @@ export interface Task {
   parent_task_id?: number | null;
   title: string;
   description: string | null;
+  context?: string | null;
   completed: boolean;
   priority: "low" | "medium" | "high";
   tags: string[];
@@ -35,6 +32,7 @@ export interface Task {
 export interface TaskCreate {
   title: string;
   description?: string;
+  context?: string;
   completed?: boolean;
   priority?: "low" | "medium" | "high";
   tags?: string[];
@@ -46,6 +44,7 @@ export interface TaskCreate {
 export interface TaskUpdate {
   title?: string;
   description?: string;
+  context?: string;
   completed?: boolean;
   priority?: "low" | "medium" | "high";
   tags?: string[];
@@ -87,6 +86,12 @@ export interface UnreadCountResponse {
  *
  * Uses the proxy route which can access HttpOnly cookies server-side.
  * The proxy forwards the request to the backend with proper authentication.
+ *
+ * NOTE: task CRUD no longer uses this — it goes to the same-origin
+ * /api/tasks routes (lib: frontend/app/api/tasks) backed by Neon Postgres,
+ * because the FastAPI backend on Hugging Face is down (503 "Your space is
+ * in error"). Only notifications still use the proxy, and they fail while
+ * the backend is down.
  */
 export async function apiRequest<T>(
   endpoint: string,
@@ -123,8 +128,46 @@ export async function apiRequest<T>(
 }
 
 // ============================================================================
-// Task API Methods
+// Task API Methods — same-origin /api/tasks (Neon Postgres, no HF backend)
 // ============================================================================
+
+/**
+ * Same-origin request helper for the /api/tasks routes. Same error shape
+ * as apiRequest, but no /api/proxy prefix — the routes run in this Next.js
+ * app and check the Better Auth session cookie themselves.
+ */
+export async function sameOriginRequest<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options.headers as Record<string, string>),
+  };
+
+  const response = await fetch(endpoint, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    let errorMessage = `API Error: ${response.status}`;
+    try {
+      const error = JSON.parse(errorText);
+      errorMessage = error.error || error.detail || error.message || errorMessage;
+    } catch {
+      errorMessage = errorText || errorMessage;
+    }
+    throw new Error(errorMessage);
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  return response.json();
+}
 
 export const tasksApi = {
   /**
@@ -167,21 +210,21 @@ export const tasksApi = {
     }
 
     const query = searchParams.toString();
-    return apiRequest<TaskListResponse>(`/api/tasks${query ? `?${query}` : ""}`);
+    return sameOriginRequest<TaskListResponse>(`/api/tasks${query ? `?${query}` : ""}`);
   },
 
   /**
    * Get a single task by ID
    */
   async get(taskId: number): Promise<Task> {
-    return apiRequest<Task>(`/api/tasks/${taskId}`);
+    return sameOriginRequest<Task>(`/api/tasks/${taskId}`);
   },
 
   /**
    * Create a new task
    */
   async create(task: TaskCreate): Promise<Task> {
-    return apiRequest<Task>(`/api/tasks`, {
+    return sameOriginRequest<Task>(`/api/tasks`, {
       method: "POST",
       body: JSON.stringify(task),
     });
@@ -191,7 +234,7 @@ export const tasksApi = {
    * Update an existing task (PUT for edit mode)
    */
   async put(taskId: number, task: TaskUpdate): Promise<Task> {
-    return apiRequest<Task>(`/api/tasks/${taskId}`, {
+    return sameOriginRequest<Task>(`/api/tasks/${taskId}`, {
       method: "PUT",
       body: JSON.stringify(task),
     });
@@ -201,7 +244,7 @@ export const tasksApi = {
    * Update an existing task (PATCH for partial updates)
    */
   async update(taskId: number, task: TaskUpdate): Promise<Task> {
-    return apiRequest<Task>(`/api/tasks/${taskId}`, {
+    return sameOriginRequest<Task>(`/api/tasks/${taskId}`, {
       method: "PATCH",
       body: JSON.stringify(task),
     });
@@ -211,7 +254,7 @@ export const tasksApi = {
    * Delete a task
    */
   async delete(taskId: number): Promise<{ ok: boolean }> {
-    return apiRequest<{ ok: boolean }>(`/api/tasks/${taskId}`, {
+    return sameOriginRequest<{ ok: boolean }>(`/api/tasks/${taskId}`, {
       method: "DELETE",
     });
   },
@@ -220,7 +263,7 @@ export const tasksApi = {
    * Mark a task as completed
    */
   async complete(taskId: number, editScope: "this" | "all" = "this"): Promise<Task> {
-    return apiRequest<Task>(`/api/tasks/${taskId}/complete`, {
+    return sameOriginRequest<Task>(`/api/tasks/${taskId}/complete`, {
       method: "POST",
       body: JSON.stringify({ edit_scope: editScope }),
     });
@@ -230,7 +273,7 @@ export const tasksApi = {
    * Mark a task as incomplete (reopen)
    */
   async uncomplete(taskId: number): Promise<Task> {
-    return apiRequest<Task>(`/api/tasks/${taskId}/uncomplete`, {
+    return sameOriginRequest<Task>(`/api/tasks/${taskId}/uncomplete`, {
       method: "POST",
     });
   },
@@ -292,8 +335,19 @@ export const notificationsApi = {
 // ============================================================================
 
 export const healthApi = {
-  async check(): Promise<{ status: string; timestamp?: string }> {
-    const response = await fetch(`${API_URL}/health`, {
+  // Honest same-origin health: reports the real database/backend/chat
+  // status instead of claiming the app is ACTIVE while disconnected.
+  // (The old version called the FastAPI backend directly from the browser;
+  // that backend is down and its CORS list does not include the live site.)
+  async check(): Promise<{
+    status: string;
+    database?: string;
+    tasks?: string;
+    backend?: string;
+    chat?: string;
+    timestamp?: string;
+  }> {
+    const response = await fetch("/api/health", {
       credentials: "include",
     });
     return response.json();

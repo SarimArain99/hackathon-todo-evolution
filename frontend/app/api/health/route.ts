@@ -1,0 +1,47 @@
+/**
+ * GET /api/health — honest same-origin health status.
+ *
+ * Reports what is actually reachable from this deployment instead of a
+ * hardcoded "ACTIVE". The FastAPI backend is currently down (its Hugging
+ * Face Space returns 503 "Your space is in error"), so `backend` reports
+ * unavailable until it is redeployed somewhere healthy; task storage is
+ * checked live against the Postgres pool.
+ */
+
+import { NextResponse } from "next/server";
+import { getPool } from "@/lib/db";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+export async function GET() {
+  let database: "ok" | "unavailable" = "unavailable";
+  const pool = getPool();
+  if (pool) {
+    try {
+      await pool.query("SELECT 1");
+      database = "ok";
+    } catch {
+      database = "unavailable";
+    }
+  }
+
+  // The FastAPI backend is not probed on every call: it lives on a Hugging
+  // Face Space that is currently in error, and a server-side probe would
+  // add seconds of latency to a health check. Its configured URL is
+  // reported so callers can see what is (not) wired up.
+  const body = {
+    status: database === "ok" ? "ok" : "degraded",
+    database,
+    tasks: database === "ok" ? "ok" : "unavailable",
+    auth: database === "ok" ? "ok" : "unavailable",
+    backend: "unavailable" as const,
+    backendUrl: BACKEND_URL,
+    chat: "unavailable" as const,
+    chatReason: "AI chat needs the FastAPI backend plus OPENAI_API_KEY; the backend is down.",
+    timestamp: new Date().toISOString(),
+  };
+  return NextResponse.json(body, { status: database === "ok" ? 200 : 503 });
+}

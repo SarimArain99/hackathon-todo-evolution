@@ -1,114 +1,95 @@
----
-title: Hackathon Todo Evolution
-emoji: ✅
-colorFrom: blue
-colorTo: blue
-sdk: docker
-app_port: 7860
-pinned: false
-license: mit
----
+# Todo Evolution
 
-# ✅ Hackathon Todo Evolution
+A simple to-do list web app. Create an account, add tasks, set priorities
+and due dates, and filter your list by today, this week, or this month.
 
-[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![Next.js](https://img.shields.io/badge/Frontend-Next.js%2016-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+Built by [Muhammad Sarim](https://github.com/SarimArain99).
 
-A 5-phase spec-driven development (SDD) hackathon project building a modern task management application with full-stack TypeScript, React 19, and FastAPI.
+Live site: https://zenith-flow-zeta.vercel.app
 
----
+## What it does today
 
-## 🚀 Deployment Architecture
+- Email/password sign-up, log-in, log-out, and password reset (Better Auth,
+  session cookies stored in Postgres).
+- Tasks: create, edit, complete / mark as not done, and delete (with a
+  confirmation step).
+- Each task can have a description, priority (low / medium / high), tags, a
+  due date, and an optional repeat rule (daily / weekly / monthly / yearly).
+  Completing a repeating task completes that task only — new copies are not
+  created yet.
+- Search tasks by title or description; filter by status (all / not done /
+  completed), priority, and date (all / today / this week / this month);
+  sort by due date, priority, date created, or title.
+- Light and dark themes.
 
-The application uses a distributed architecture for scalability:
+## What it does not do (yet)
 
-- **Frontend**: Deployed on [Vercel](https://vercel.com) for edge-optimized delivery.
-- **Backend API**: Hugging Face Docker Space (containerized FastAPI).
-- **Database**: SQLite (ephemeral, see note below).
+- **AI chat is not included.** It was removed because it depended on a
+  FastAPI backend that is currently down.
+- **Reminders and notifications are not included.** Tasks can store a
+  reminder time, but nothing sends reminders today.
+- There is no offline mode, no sharing, and no mobile app.
 
-### ⚠️ Data Persistence Note
+## Tech stack
 
-**Phase II Limitation**: The Docker container uses SQLite storage which is **ephemeral**:
-- Data is lost on every new deployment
-- Data is lost when the Hugging Face Space "sleeps" (~48hr inactivity)
-- This is acceptable for Phase II hackathon submission
+- **Frontend:** Next.js 16.1.1 (App Router), React 19, TypeScript,
+  Tailwind CSS 4, shadcn/ui + Radix.
+- **Auth:** Better Auth 1.4 (email + password, database sessions).
+- **Database:** Neon Postgres — the same database holds the auth tables and
+  the `tasks` table.
+- **Task API:** same-origin Next.js routes under `/api/tasks` (see
+  `frontend/app/api/tasks/`). No separate backend is needed for tasks.
+- **Email:** Resend (password reset emails only).
 
-**Phase III Solution**: Migrate to [Neon Serverless Postgres](https://neon.tech) for persistent cloud storage.
+The `backend/` directory still contains the original FastAPI app (tasks,
+chat, reminders, notifications), but it is **not used by the deployed
+frontend** and is currently down. It is kept in the repo for a possible
+future redeploy.
 
----
+## Running it locally
 
-## 🛠️ Tech Stack
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-### Backend
-- **FastAPI**: High-performance async Python framework
-- **Docker**: Multi-stage production builds
-- **SQLModel**: Modern data validation and ORM
-- **JWT Authentication**: Better Auth compatible
+Open http://localhost:3000.
 
-### Frontend
-- **Next.js 16**: React 19 with App Router
-- **Tailwind CSS 4**: Utility-first styling
-- **Framer Motion**: UI animations
-- **Better Auth**: Authentication library
-- **shadcn/ui**: Component library
+### Environment variables
 
----
+Create `frontend/.env.local` (never commit it):
 
-## 📂 Project Structure
+| Variable | Required | What it is |
+| --- | --- | --- |
+| `DATABASE_URL` | Yes | Postgres connection string (Neon). Auth tables and the `tasks` table live here. |
+| `BETTER_AUTH_SECRET` | Yes | Random secret used to sign sessions. The app refuses to start without one. |
+| `RESEND_API_KEY` | No | Needed only to actually send password-reset emails. Without it, reset requests fail at the email step. |
+| `BETTER_AUTH_URL` | No | Public base URL of the app (defaults to `http://localhost:3000` locally). |
+| `BETTER_AUTH_TRUSTED_ORIGINS` | No | Extra comma-separated origins allowed for auth, in addition to localhost and the Vercel domains. |
+
+To build for production:
+
+```bash
+cd frontend
+npm run build
+npm run start
+```
+
+## Project structure
 
 ```text
 .
-├── backend/                # FastAPI Dockerized Backend
-│   ├── app/                # Application logic & routes
-│   ├── tests/              # Backend tests
-│   ├── Dockerfile          # Production Dockerfile
-│   └── pyproject.toml      # Python dependencies
-├── frontend/               # Next.js 16 Application
-│   ├── app/                # App router (pages & API)
-│   ├── components/         # UI components
-│   └── lib/                # Utilities & auth
-├── .github/workflows/      # CI/CD
-│   └── sync_to_hf.yml      # Sync to Hugging Face
-└── README.md
+├── frontend/               # Next.js 16 app (the whole product today)
+│   ├── app/                # Pages: landing, auth, dashboard, /api/tasks, /api/health
+│   ├── components/         # UI components (task list, task form, dialogs)
+│   └── lib/                # Auth client, task API client, DB access
+├── backend/                # FastAPI app (not used by the deployed frontend)
+└── BUILD.md                # Change log for the rebuild
 ```
 
----
+## Planned
 
-## 📡 API Endpoints
-
-| Method | Endpoint | Description |
-| --- | --- | --- |
-| `GET` | `/health` | Health check |
-| `GET` | `/health/with-db` | Health with DB verification |
-| `GET` | `/api/tasks` | List all tasks (auth) |
-| `POST` | `/api/tasks` | Create a task (auth) |
-| `GET` | `/api/tasks/{id}` | Get specific task (auth) |
-| `PUT` | `/api/tasks/{id}` | Update task (auth) |
-| `DELETE` | `/api/tasks/{id}` | Delete task (auth) |
-| `POST` | `/api/tasks/{id}/complete` | Mark complete (auth) |
-
-Interactive docs: `/docs` (Swagger) or `/redoc`
-
----
-
-## 🏆 Hackathon Roadmap
-
-| Phase | Description | Status | Points |
-| --- | --- | --- | --- |
-| **I** | Console Application | ✅ Complete | 100 |
-| **II** | Web Application (Fullstack) | 🚀 In Progress | 150 |
-| **III** | AI Productivity Agent | 📋 Planned | 200 |
-| **IV** | Kubernetes | 📋 Planned | 250 |
-| **V** | Cloud Native | 📋 Planned | 300 |
-
----
-
-## 📄 License
-
-MIT License - see LICENSE file for details.
-
----
-
-<p align="center">
-Built with ❤️ by <b>SarimArain99</b> using Spec-Driven Development.
-</p>
+- AI chat assistant (needs the backend redeployed with an OpenAI key).
+- Working reminders and notifications.
+- Recurring-task expansion (creating the next copy when one is completed).
