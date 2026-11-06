@@ -175,6 +175,51 @@ export async function ensureTasksTable(): Promise<void> {
     }
   }
 
+  // Fix missing defaults that break INSERTs. The API inserts only its own
+  // columns, so any other NOT NULL column without a default fails every
+  // INSERT (a legacy `status` enum with no default, or an `id` with no
+  // sequence, both fail with 23502). Give `id` a sequence default; relax
+  // NOT NULL on the rest. Existing rows are untouched.
+  const detail = await pool.query<{
+    column_name: string;
+    is_nullable: string;
+    column_default: string | null;
+  }>(
+    `SELECT column_name, is_nullable, column_default FROM information_schema.columns
+     WHERE table_schema = 'public' AND table_name = 'tasks'`
+  );
+  const WRITTEN = new Set([
+    "user_id", "title", "description", "context", "priority", "tags",
+    "due_date", "recurrence_rule", "reminder_at", "completed",
+  ]);
+  for (const row of detail.rows) {
+    if (row.column_name === "id") {
+      if (!row.column_default) {
+        const seq = await pool.query<{ exists: boolean }>(
+          `SELECT EXISTS (SELECT 1 FROM pg_class WHERE relkind = 'S' AND relname = 'tasks_id_seq') AS exists`
+        );
+        if (!seq.rows[0].exists) {
+          await migrate(`CREATE SEQUENCE tasks_id_seq OWNED BY tasks.id`, "create tasks_id_seq");
+          await migrate(
+            `SELECT setval('tasks_id_seq', COALESCE((SELECT MAX(id) FROM tasks), 0))`,
+            "setval tasks_id_seq"
+          );
+        }
+        await migrate(
+          `ALTER TABLE tasks ALTER COLUMN id SET DEFAULT nextval('tasks_id_seq'::regclass)`,
+          "id default nextval"
+        );
+      }
+      continue;
+    }
+    if (!WRITTEN.has(row.column_name) && row.is_nullable === "NO" && !row.column_default) {
+      await migrate(
+        `ALTER TABLE tasks ALTER COLUMN "${row.column_name}" DROP NOT NULL`,
+        `drop not-null ${row.column_name}`
+      );
+    }
+  }
+
   tableEnsured = true;
 }
 
@@ -186,6 +231,8 @@ export interface TasksProbe {
   code: string | null;
   /** Actual column types of the live `tasks` table, when readable. */
   columns: Record<string, string> | null;
+  /** Per-column nullability/default of the live `tasks` table, when readable. */
+  columnsDetail: Record<string, { nullable: boolean; default: string | null }> | null;
   /** Constraints on the live `tasks` table (name: type), when readable. */
   constraints: Record<string, string> | null;
 }
@@ -206,23 +253,30 @@ function pgCode(error: unknown): string {
  */
 export async function probeTasksTable(): Promise<TasksProbe> {
   const pool = getPool();
-  if (!pool) return { ok: false, step: "pool", code: "no-pool", columns: null, constraints: null };
+  if (!pool) return { ok: false, step: "pool", code: "no-pool", columns: null, columnsDetail: null, constraints: null };
   try {
     await ensureTasksTable();
   } catch (error) {
-    return { ok: false, step: "ensure", code: pgCode(error), columns: null, constraints: null };
+    return { ok: false, step: "ensure", code: pgCode(error), columns: null, columnsDetail: null, constraints: null };
   }
 
   let columns: Record<string, string> | null = null;
+  let columnsDetail: Record<string, { nullable: boolean; default: string | null }> | null = null;
   let constraints: Record<string, string> | null = null;
   try {
-    const cols = await pool.query<{ column_name: string; data_type: string; udt_name: string }>(
-      `SELECT column_name, data_type, udt_name FROM information_schema.columns
+    const cols = await pool.query<{ column_name: string; data_type: string; udt_name: string; is_nullable: string; column_default: string | null }>(
+      `SELECT column_name, data_type, udt_name, is_nullable, column_default
+       FROM information_schema.columns
        WHERE table_schema = 'public' AND table_name = 'tasks'`
     );
     columns = {};
+    columnsDetail = {};
     for (const row of cols.rows) {
       columns[row.column_name] = row.data_type === "ARRAY" ? `${row.udt_name}[]` : row.data_type;
+      columnsDetail[row.column_name] = {
+        nullable: row.is_nullable === "YES",
+        default: row.column_default,
+      };
     }
     const cons = await pool.query<{ constraint_name: string; constraint_type: string }>(
       `SELECT constraint_name, constraint_type FROM information_schema.table_constraints
@@ -233,13 +287,13 @@ export async function probeTasksTable(): Promise<TasksProbe> {
       constraints[row.constraint_name] = row.constraint_type;
     }
   } catch (error) {
-    return { ok: false, step: "columns", code: pgCode(error), columns: null, constraints: null };
+    return { ok: false, step: "columns", code: pgCode(error), columns: null, columnsDetail: null, constraints: null };
   }
 
   try {
     await pool.query("SELECT 1 FROM tasks LIMIT 1");
   } catch (error) {
-    return { ok: false, step: "table", code: pgCode(error), columns, constraints };
+    return { ok: false, step: "table", code: pgCode(error), columns, columnsDetail, constraints };
   }
 
   // The exact shape the list endpoint runs: full column list, parameterized
@@ -253,10 +307,27 @@ export async function probeTasksTable(): Promise<TasksProbe> {
       ["__health_probe__"]
     );
   } catch (error) {
-    return { ok: false, step: "list", code: pgCode(error), columns, constraints };
+    return { ok: false, step: "list", code: pgCode(error), columns, columnsDetail, constraints };
   }
 
-  return { ok: true, step: null, code: null, columns, constraints };
+  // The exact shape the create endpoint runs, with dummy values. This is a
+  // real INSERT (into a probe row that is deleted again immediately), so it
+  // only runs when the list probe already passed.
+  try {
+    const created = await pool.query<{ id: number }>(
+      `INSERT INTO tasks
+         (user_id, title, description, context, priority, tags, due_date,
+          recurrence_rule, reminder_at, completed)
+       VALUES ('__health_probe__', 'Health probe task', NULL, NULL, 'medium',
+               '{}', NULL, NULL, NULL, false)
+       RETURNING id`
+    );
+    await pool.query(`DELETE FROM tasks WHERE id = $1`, [created.rows[0].id]);
+  } catch (error) {
+    return { ok: false, step: "insert", code: pgCode(error), columns, columnsDetail, constraints };
+  }
+
+  return { ok: true, step: null, code: null, columns, columnsDetail, constraints };
 }
 
 /** A raw row from the tasks table. */

@@ -37,6 +37,7 @@ export async function GET() {
   let tasksErrorCode: string | null = null;
   let tasksProbeStep: string | null = null;
   let tasksColumns: Record<string, string> | null = null;
+  let tasksColumnsDetail: Record<string, { nullable: boolean; default: string | null }> | null = null;
   let tasksConstraints: Record<string, string> | null = null;
   if (database === "ok") {
     const probe = await probeTasksTable();
@@ -44,6 +45,7 @@ export async function GET() {
     tasksErrorCode = probe.code;
     tasksProbeStep = probe.step;
     tasksColumns = probe.columns;
+    tasksColumnsDetail = probe.columnsDetail;
     tasksConstraints = probe.constraints;
   }
 
@@ -58,6 +60,7 @@ export async function GET() {
     ...(tasksErrorCode ? { tasksErrorCode } : {}),
     ...(tasksProbeStep ? { tasksProbeStep } : {}),
     ...(tasksColumns ? { tasksColumns } : {}),
+    ...(tasksColumnsDetail ? { tasksColumnsDetail } : {}),
     ...(tasksConstraints ? { tasksConstraints } : {}),
     auth: database === "ok" ? "ok" : "unavailable",
     backend: "unavailable" as const,
