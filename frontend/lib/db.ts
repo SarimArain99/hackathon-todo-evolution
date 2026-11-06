@@ -220,6 +220,19 @@ export async function ensureTasksTable(): Promise<void> {
     }
   }
 
+  // The legacy table's timestamp columns can also lack defaults, which
+  // leaves every new task with NULL created_at/updated_at (sorting by
+  // creation date then means nothing). Give them now() when missing.
+  for (const col of ["created_at", "updated_at"]) {
+    const found = detail.rows.find((r) => r.column_name === col);
+    if (found && !found.column_default) {
+      await migrate(
+        `ALTER TABLE tasks ALTER COLUMN ${col} SET DEFAULT now()`,
+        `${col} default now()`
+      );
+    }
+  }
+
   tableEnsured = true;
 }
 
