@@ -94,6 +94,53 @@ export async function ensureTasksTable(): Promise<void> {
   await pool.query(
     `ALTER TABLE tasks ADD COLUMN IF NOT EXISTS tags TEXT[] NOT NULL DEFAULT '{}'`
   );
+
+  // Migrate legacy column TYPES. The live Neon database holds a
+  // pre-existing `tasks` table from the old backend era whose types do not
+  // match the API at all: user_id is INTEGER (Better Auth user ids are
+  // TEXT, so every `WHERE user_id = $1` failed with 22P02), priority is a
+  // Postgres enum (INSERTs of 'low'/'medium'/'high' fail unless the label
+  // happens to exist), and the timestamps are TIMESTAMP WITHOUT TIME ZONE.
+  // ADD COLUMN IF NOT EXISTS cannot fix a column that exists with the
+  // wrong type, so convert in place. Existing rows are preserved (integer
+  // user ids become their text form; they simply never match a Better Auth
+  // user). Each conversion is attempted independently and only logged on
+  // failure, so one blocked conversion does not stop the others; the
+  // health probe still reports any remaining failure at the list step.
+  const typeChecks = await pool.query<{ column_name: string; data_type: string }>(
+    `SELECT column_name, data_type FROM information_schema.columns
+     WHERE table_schema = 'public' AND table_name = 'tasks'
+       AND column_name IN ('user_id', 'priority', 'due_date', 'created_at', 'updated_at')`
+  );
+  const types = new Map(typeChecks.rows.map((r) => [r.column_name, r.data_type]));
+  const migrate = async (sql: string, label: string) => {
+    try {
+      await pool.query(sql);
+    } catch (error) {
+      console.error(`[tasks] Legacy column migration failed (${label}):`, error);
+    }
+  };
+  if (types.get("user_id") && types.get("user_id") !== "text") {
+    await migrate(
+      `ALTER TABLE tasks ALTER COLUMN user_id TYPE TEXT USING user_id::TEXT`,
+      "user_id integer -> text"
+    );
+  }
+  if (types.get("priority") === "USER-DEFINED") {
+    await migrate(
+      `ALTER TABLE tasks ALTER COLUMN priority TYPE TEXT USING priority::TEXT`,
+      "priority enum -> text"
+    );
+  }
+  for (const col of ["due_date", "created_at", "updated_at"]) {
+    if (types.get(col) === "timestamp without time zone") {
+      await migrate(
+        `ALTER TABLE tasks ALTER COLUMN ${col} TYPE TIMESTAMPTZ USING ${col} AT TIME ZONE 'UTC'`,
+        `${col} timestamp -> timestamptz`
+      );
+    }
+  }
+
   tableEnsured = true;
 }
 
