@@ -35,10 +35,14 @@ export async function GET() {
   // the error message, so no internals leak.
   let tasks: "ok" | "unavailable" = "unavailable";
   let tasksErrorCode: string | null = null;
+  let tasksProbeStep: string | null = null;
+  let tasksColumns: Record<string, string> | null = null;
   if (database === "ok") {
     const probe = await probeTasksTable();
     tasks = probe.ok ? "ok" : "unavailable";
     tasksErrorCode = probe.code;
+    tasksProbeStep = probe.step;
+    tasksColumns = probe.columns;
   }
 
   // The FastAPI backend is not probed on every call: it lives on a Hugging
@@ -50,6 +54,8 @@ export async function GET() {
     database,
     tasks,
     ...(tasksErrorCode ? { tasksErrorCode } : {}),
+    ...(tasksProbeStep ? { tasksProbeStep } : {}),
+    ...(tasksColumns ? { tasksColumns } : {}),
     auth: database === "ok" ? "ok" : "unavailable",
     backend: "unavailable" as const,
     backendUrl: BACKEND_URL,

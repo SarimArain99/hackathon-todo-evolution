@@ -97,27 +97,74 @@ export async function ensureTasksTable(): Promise<void> {
   tableEnsured = true;
 }
 
+export interface TasksProbe {
+  ok: boolean;
+  /** Which probe step failed, if any: ensure | table | columns | list | insert. */
+  step: string | null;
+  /** Postgres SQLSTATE code of the failure, if any (never the message). */
+  code: string | null;
+  /** Actual column types of the live `tasks` table, when readable. */
+  columns: Record<string, string> | null;
+}
+
+function pgCode(error: unknown): string {
+  return error && typeof error === "object" && "code" in error
+    ? String((error as { code: unknown }).code)
+    : "unknown";
+}
+
 /**
- * Probe the tasks table for real: returns ok only if a query against the
- * table succeeds. Used by /api/health — previously it reported tasks "ok"
- * whenever any SELECT 1 against the pool succeeded, which hid exactly
- * this kind of failure. On failure returns only the Postgres SQLSTATE code
- * (e.g. 42P01, 42703), never the message, so no internals leak.
+ * Probe the tasks table for real, step by step, using the exact query shapes
+ * the API uses. Used by /api/health — the old check reported tasks "ok"
+ * whenever any SELECT 1 against the pool succeeded, which hid a live
+ * failure where the pool was fine, a bare SELECT 1 passed, but every real
+ * tasks query failed. Only the step name and the Postgres SQLSTATE code
+ * are reported, never the message, so no internals leak.
  */
-export async function probeTasksTable(): Promise<{ ok: boolean; code: string | null }> {
+export async function probeTasksTable(): Promise<TasksProbe> {
   const pool = getPool();
-  if (!pool) return { ok: false, code: "no-pool" };
+  if (!pool) return { ok: false, step: "pool", code: "no-pool", columns: null };
   try {
     await ensureTasksTable();
-    await pool.query("SELECT 1 FROM tasks LIMIT 1");
-    return { ok: true, code: null };
   } catch (error) {
-    const code =
-      error && typeof error === "object" && "code" in error
-        ? String((error as { code: unknown }).code)
-        : "unknown";
-    return { ok: false, code };
+    return { ok: false, step: "ensure", code: pgCode(error), columns: null };
   }
+
+  let columns: Record<string, string> | null = null;
+  try {
+    const cols = await pool.query<{ column_name: string; data_type: string; udt_name: string }>(
+      `SELECT column_name, data_type, udt_name FROM information_schema.columns
+       WHERE table_schema = 'public' AND table_name = 'tasks'`
+    );
+    columns = {};
+    for (const row of cols.rows) {
+      columns[row.column_name] = row.data_type === "ARRAY" ? `${row.udt_name}[]` : row.data_type;
+    }
+  } catch (error) {
+    return { ok: false, step: "columns", code: pgCode(error), columns: null };
+  }
+
+  try {
+    await pool.query("SELECT 1 FROM tasks LIMIT 1");
+  } catch (error) {
+    return { ok: false, step: "table", code: pgCode(error), columns };
+  }
+
+  // The exact shape the list endpoint runs: full column list, parameterized
+  // user filter, ordering. A dummy user id matches nothing, so this is read-only.
+  try {
+    await pool.query(
+      `SELECT id, user_id, title, description, context, priority, tags,
+              due_date, recurrence_rule, reminder_at, completed,
+              created_at, updated_at
+       FROM tasks WHERE user_id = $1 ORDER BY created_at DESC, id DESC`,
+      ["__health_probe__"]
+    );
+  } catch (error) {
+    return { ok: false, step: "list", code: pgCode(error), columns };
+  }
+
+  return { ok: true, step: null, code: null, columns };
 }
 
 /** A raw row from the tasks table. */
