@@ -145,14 +145,22 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
   const { pool, response } = await requireTaskPool();
   if (!pool) return response;
 
-  const result = await pool.query<TaskRow>(
-    `SELECT ${SELECT_COLS} FROM tasks WHERE id = $1 AND user_id = $2`,
-    [id, user.id]
-  );
-  if (result.rows.length === 0) {
-    return NextResponse.json({ error: "Task not found." }, { status: 404 });
+  try {
+    const result = await pool.query<TaskRow>(
+      `SELECT ${SELECT_COLS} FROM tasks WHERE id = $1 AND user_id = $2`,
+      [id, user.id]
+    );
+    if (result.rows.length === 0) {
+      return NextResponse.json({ error: "Task not found." }, { status: 404 });
+    }
+    return NextResponse.json(toTaskResponse(result.rows[0]));
+  } catch (error) {
+    console.error("[tasks] Get failed:", error);
+    return NextResponse.json(
+      { error: "Could not load task. Please try again later." },
+      { status: 500 }
+    );
   }
-  return NextResponse.json(toTaskResponse(result.rows[0]));
 }
 
 async function updateTask(request: NextRequest, context: RouteContext) {
@@ -222,13 +230,21 @@ export async function DELETE(request: NextRequest, { params }: RouteContext) {
   const { pool, response } = await requireTaskPool();
   if (!pool) return response;
 
-  const result = await pool.query(
-    "DELETE FROM tasks WHERE id = $1 AND user_id = $2 RETURNING id",
-    [id, user.id]
-  );
-  if (result.rows.length === 0) {
-    return NextResponse.json({ error: "Task not found." }, { status: 404 });
+  try {
+    const result = await pool.query(
+      "DELETE FROM tasks WHERE id = $1 AND user_id = $2 RETURNING id",
+      [id, user.id]
+    );
+    if (result.rows.length === 0) {
+      return NextResponse.json({ error: "Task not found." }, { status: 404 });
+    }
+    // 200 with { ok: true } (not 204): callers read `.ok` off the result.
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("[tasks] Delete failed:", error);
+    return NextResponse.json(
+      { error: "Could not delete task. Please try again later." },
+      { status: 500 }
+    );
   }
-  // 200 with { ok: true } (not 204): callers read `.ok` off the result.
-  return NextResponse.json({ ok: true });
 }

@@ -9,7 +9,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { getPool } from "@/lib/db";
+import { getPool, probeTasksTable } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,14 +28,28 @@ export async function GET() {
     }
   }
 
+  // Tasks are probed for real (ensure the table, then query it). The old
+  // check reported tasks "ok" whenever any SELECT 1 against the pool
+  // succeeded, which hid a live failure where the pool was fine but every
+  // tasks query failed. Only the Postgres SQLSTATE code is reported, never
+  // the error message, so no internals leak.
+  let tasks: "ok" | "unavailable" = "unavailable";
+  let tasksErrorCode: string | null = null;
+  if (database === "ok") {
+    const probe = await probeTasksTable();
+    tasks = probe.ok ? "ok" : "unavailable";
+    tasksErrorCode = probe.code;
+  }
+
   // The FastAPI backend is not probed on every call: it lives on a Hugging
   // Face Space that is currently in error, and a server-side probe would
   // add seconds of latency to a health check. Its configured URL is
   // reported so callers can see what is (not) wired up.
   const body = {
-    status: database === "ok" ? "ok" : "degraded",
+    status: database === "ok" && tasks === "ok" ? "ok" : "degraded",
     database,
-    tasks: database === "ok" ? "ok" : "unavailable",
+    tasks,
+    ...(tasksErrorCode ? { tasksErrorCode } : {}),
     auth: database === "ok" ? "ok" : "unavailable",
     backend: "unavailable" as const,
     backendUrl: BACKEND_URL,
@@ -43,5 +57,7 @@ export async function GET() {
     chatReason: "AI chat needs the FastAPI backend plus OPENAI_API_KEY; the backend is down.",
     timestamp: new Date().toISOString(),
   };
-  return NextResponse.json(body, { status: database === "ok" ? 200 : 503 });
+  return NextResponse.json(body, {
+    status: database === "ok" && tasks === "ok" ? 200 : 503,
+  });
 }
