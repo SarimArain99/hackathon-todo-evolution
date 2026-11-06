@@ -113,18 +113,52 @@ export async function ensureTasksTable(): Promise<void> {
        AND column_name IN ('user_id', 'priority', 'due_date', 'created_at', 'updated_at')`
   );
   const types = new Map(typeChecks.rows.map((r) => [r.column_name, r.data_type]));
-  const migrate = async (sql: string, label: string) => {
+  const migrate = async (sql: string, label: string): Promise<boolean> => {
     try {
       await pool.query(sql);
+      return true;
     } catch (error) {
       console.error(`[tasks] Legacy column migration failed (${label}):`, error);
+      return false;
     }
   };
   if (types.get("user_id") && types.get("user_id") !== "text") {
-    await migrate(
+    // A legacy foreign key on user_id (e.g. to an old integer-id users
+    // table) blocks ALTER TYPE, so drop any such constraints first.
+    // Ownership is enforced by the API (every query filters by the session
+    // user), so no FK is re-added.
+    const fks = await pool.query<{ constraint_name: string }>(
+      `SELECT tc.constraint_name FROM information_schema.table_constraints tc
+       JOIN information_schema.key_column_usage kcu
+         ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema
+       WHERE tc.table_schema = 'public' AND tc.table_name = 'tasks'
+         AND tc.constraint_type = 'FOREIGN KEY' AND kcu.column_name = 'user_id'`
+    );
+    for (const fk of fks.rows) {
+      await migrate(
+        `ALTER TABLE tasks DROP CONSTRAINT "${fk.constraint_name}"`,
+        `drop FK ${fk.constraint_name}`
+      );
+    }
+    const converted = await migrate(
       `ALTER TABLE tasks ALTER COLUMN user_id TYPE TEXT USING user_id::TEXT`,
       "user_id integer -> text"
     );
+    if (!converted) {
+      // Fallback when something else (e.g. a dependent view) blocks the
+      // type change: keep the old values under a new name and add a fresh
+      // TEXT column. Old rows keep their data and simply never match a
+      // Better Auth user, exactly as a successful conversion would leave
+      // them (integer ids stringified to '1', '2', ...).
+      await migrate(
+        `ALTER TABLE tasks RENAME COLUMN user_id TO user_id_legacy`,
+        "user_id -> user_id_legacy"
+      );
+      await migrate(
+        `ALTER TABLE tasks ADD COLUMN user_id TEXT NOT NULL DEFAULT ''`,
+        "add user_id text"
+      );
+    }
   }
   if (types.get("priority") === "USER-DEFINED") {
     await migrate(
@@ -152,6 +186,8 @@ export interface TasksProbe {
   code: string | null;
   /** Actual column types of the live `tasks` table, when readable. */
   columns: Record<string, string> | null;
+  /** Constraints on the live `tasks` table (name: type), when readable. */
+  constraints: Record<string, string> | null;
 }
 
 function pgCode(error: unknown): string {
@@ -170,14 +206,15 @@ function pgCode(error: unknown): string {
  */
 export async function probeTasksTable(): Promise<TasksProbe> {
   const pool = getPool();
-  if (!pool) return { ok: false, step: "pool", code: "no-pool", columns: null };
+  if (!pool) return { ok: false, step: "pool", code: "no-pool", columns: null, constraints: null };
   try {
     await ensureTasksTable();
   } catch (error) {
-    return { ok: false, step: "ensure", code: pgCode(error), columns: null };
+    return { ok: false, step: "ensure", code: pgCode(error), columns: null, constraints: null };
   }
 
   let columns: Record<string, string> | null = null;
+  let constraints: Record<string, string> | null = null;
   try {
     const cols = await pool.query<{ column_name: string; data_type: string; udt_name: string }>(
       `SELECT column_name, data_type, udt_name FROM information_schema.columns
@@ -187,14 +224,22 @@ export async function probeTasksTable(): Promise<TasksProbe> {
     for (const row of cols.rows) {
       columns[row.column_name] = row.data_type === "ARRAY" ? `${row.udt_name}[]` : row.data_type;
     }
+    const cons = await pool.query<{ constraint_name: string; constraint_type: string }>(
+      `SELECT constraint_name, constraint_type FROM information_schema.table_constraints
+       WHERE table_schema = 'public' AND table_name = 'tasks'`
+    );
+    constraints = {};
+    for (const row of cons.rows) {
+      constraints[row.constraint_name] = row.constraint_type;
+    }
   } catch (error) {
-    return { ok: false, step: "columns", code: pgCode(error), columns: null };
+    return { ok: false, step: "columns", code: pgCode(error), columns: null, constraints: null };
   }
 
   try {
     await pool.query("SELECT 1 FROM tasks LIMIT 1");
   } catch (error) {
-    return { ok: false, step: "table", code: pgCode(error), columns };
+    return { ok: false, step: "table", code: pgCode(error), columns, constraints };
   }
 
   // The exact shape the list endpoint runs: full column list, parameterized
@@ -208,10 +253,10 @@ export async function probeTasksTable(): Promise<TasksProbe> {
       ["__health_probe__"]
     );
   } catch (error) {
-    return { ok: false, step: "list", code: pgCode(error), columns };
+    return { ok: false, step: "list", code: pgCode(error), columns, constraints };
   }
 
-  return { ok: true, step: null, code: null, columns };
+  return { ok: true, step: null, code: null, columns, constraints };
 }
 
 /** A raw row from the tasks table. */
