@@ -58,14 +58,17 @@ export async function GET() {
   // the key the chat route still works, but replies that it is not set
   // up yet.
   const chatAvailable = Boolean(process.env.OPENAI_API_KEY);
-  // Password reset / verification emails need RESEND_API_KEY. Only the
-  // presence of the variable is reported, never its value. When it is
-  // missing, sendResetPassword fails silently by design (the endpoint still
-  // returns "check your email" so as not to reveal whether an account
-  // exists), so without this line the breakage is invisible — that is
-  // exactly how the missing key went unnoticed. With it, /api/health says
-  // email: "unavailable" until the key is added in Vercel.
-  const emailAvailable = Boolean(process.env.RESEND_API_KEY);
+  // Password reset / verification emails are sent via Gmail SMTP
+  // (Nodemailer, lib/email.ts) and need GMAIL_USER plus a Gmail app
+  // password (GMAIL_APP_PASSWORD). Only the presence of the variables is
+  // reported, never their values. When either is missing, sendResetPassword
+  // throws and the reset request visibly fails instead of pretending an
+  // email was sent, so without this line the breakage would be invisible.
+  // (Resend was the sender until 2026-11-07, but zenith-flow.com was never
+  // verified there, so every send was rejected 403 "Domain not verified".)
+  const emailAvailable = Boolean(
+    process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD
+  );
   const body = {
     status: database === "ok" && tasks === "ok" ? "ok" : "degraded",
     database,
@@ -90,7 +93,7 @@ export async function GET() {
       ? {}
       : {
           emailReason:
-            "Password reset emails need RESEND_API_KEY; add it as a Vercel environment variable. Until then, reset requests say 'check your email' but no email is sent.",
+            "Password reset emails are sent via Gmail SMTP and need GMAIL_USER and GMAIL_APP_PASSWORD; add both as Vercel environment variables (the app password is created at myaccount.google.com under 2-Step Verification, it is not the account password). Until then, reset requests fail visibly instead of pretending an email was sent.",
         }),
     timestamp: new Date().toISOString(),
   };

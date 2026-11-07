@@ -5,7 +5,7 @@
  * - PostgreSQL database adapter for persistent credential storage
  * - JWT plugin for integration with FastAPI backend
  * - Email & password authentication with optional verification
- * - Password reset via email (requires Resend API key)
+ * - Password reset via email (Gmail SMTP — see lib/email.ts)
  *
  * Migration to database-backed sessions:
  * - User credentials stored in PostgreSQL (Neon)
@@ -16,15 +16,14 @@
  * - DATABASE_URL: PostgreSQL connection string
  * - BETTER_AUTH_SECRET: Secret key for signing tokens (32+ chars)
  * - BETTER_AUTH_TRUSTED_ORIGINS: Comma-separated list of trusted domains (OPTIONAL)
- * - RESEND_API_KEY: For password reset and email verification
- * - BETTER_AUTH_TRUSTED_ORIGINS: Comma-separated list of trusted domains (OPTIONAL)
+ * - GMAIL_USER: Gmail address that sends password reset/verification mail
+ * - GMAIL_APP_PASSWORD: Gmail app password for that account (NOT the account password)
  * - REQUIRE_EMAIL_VERIFICATION: Set to "true" to require email verification
- * - RESEND_FROM_EMAIL: Sender email for password reset/verification emails
  */
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import type { Pool as PgPool } from "pg";
-import { resend, checkRateLimit } from "./email";
+import { sendMail, checkRateLimit } from "./email";
 
 // Get database URL from environment
 const databaseUrl = process.env.DATABASE_URL;
@@ -190,10 +189,9 @@ export const auth = betterAuth({
         throw new Error("Too many password reset requests. Please try again later.");
       }
 
-      // Send reset email via Resend
+      // Send reset email via Gmail SMTP
       try {
-        await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || "noreply@zenith-flow.com",
+        await sendMail({
           to: user.email,
           subject: "Reset Your Dayline Password",
           html: `
@@ -226,17 +224,20 @@ export const auth = betterAuth({
           `,
         });
       } catch (error) {
+        // Do NOT swallow this: telling the user "check your email" when no
+        // email was sent is exactly how the old Resend failure went
+        // unnoticed. Log the failure and surface a plain-English error so
+        // the request visibly fails instead of silently pretending success.
         console.error("Failed to send reset email:", error);
-        // Don't throw - we don't want to reveal whether email exists
+        throw new Error("Could not send the password reset email. Please try again later.");
       }
     },
 
   // Email verification callback
   sendVerificationEmail: async ({ user, url }: { user: { email: string; name: string }; url: string }) => {
-      // Send verification email via Resend
+      // Send verification email via Gmail SMTP
       try {
-        await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || "noreply@zenith-flow.com",
+        await sendMail({
           to: user.email,
           subject: "Verify Your Dayline Account",
           html: `
@@ -268,7 +269,10 @@ export const auth = betterAuth({
           `,
         });
       } catch (error) {
+        // Same rule as the reset email: never pretend an email was sent
+        // when it was not.
         console.error("Failed to send verification email:", error);
+        throw new Error("Could not send the verification email. Please try again later.");
       }
     },
   },

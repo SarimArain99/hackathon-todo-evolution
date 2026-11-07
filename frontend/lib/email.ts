@@ -1,35 +1,71 @@
 /**
  * Email Service
  *
- * Handles email sending via Resend API with rate limiting.
+ * Handles email sending via Gmail SMTP (Nodemailer) with rate limiting.
  * Used for password reset and email verification.
+ *
+ * Previously this used the Resend API from noreply@zenith-flow.com, but
+ * zenith-flow.com was never added or verified in Resend, so every send
+ * was rejected with 403 "Domain not verified" and no reset email could
+ * ever be delivered. Gmail SMTP sends from the owner's Gmail account
+ * instead, so no sending domain needs to be verified.
+ *
+ * Environment variables required:
+ * - GMAIL_USER: Gmail address that sends the mail (e.g. sarimarain99@gmail.com)
+ * - GMAIL_APP_PASSWORD: Gmail app password for that account (16 chars,
+ *   created at myaccount.google.com under 2-Step Verification). This is
+ *   NOT the account password. Never commit it.
  */
 
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-// Lazy Resend client initialization (only when API key is available)
-let resendClient: Resend | null = null;
+// Lazy transporter initialization (only when credentials are available)
+let transporter: nodemailer.Transporter | null = null;
 
-function getResendClient(): Resend | null {
-  if (!process.env.RESEND_API_KEY) {
-    return null;
-  }
-  if (!resendClient) {
-    resendClient = new Resend(process.env.RESEND_API_KEY);
-  }
-  return resendClient;
+/** True only when both Gmail credentials are set (never reports values). */
+export function isEmailConfigured(): boolean {
+  return Boolean(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
 }
 
-// Export function to get client (throws during actual send, not init)
-export const resend = new Proxy({} as Resend, {
-  get(target, prop) {
-    const client = getResendClient();
-    if (!client) {
-      throw new Error("RESEND_API_KEY environment variable is not set. Email features require a valid API key.");
-    }
-    return (client as any)[prop];
-  },
-});
+function getTransporter(): nodemailer.Transporter {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    throw new Error(
+      "GMAIL_USER and GMAIL_APP_PASSWORD environment variables are required to send email. " +
+        "Create a Gmail app password for the sending account and set both as Vercel environment variables."
+    );
+  }
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
+    });
+  }
+  return transporter;
+}
+
+/**
+ * Send an email from the configured Gmail account.
+ *
+ * Throws when sending fails — callers must not swallow this: the user
+ * must not be told "check your email" when no email was sent.
+ */
+export async function sendMail({
+  to,
+  subject,
+  html,
+}: {
+  to: string;
+  subject: string;
+  html: string;
+}): Promise<void> {
+  const from = process.env.GMAIL_USER as string;
+  await getTransporter().sendMail({ from, to, subject, html });
+}
 
 /**
  * Rate limiting store (in-memory)
