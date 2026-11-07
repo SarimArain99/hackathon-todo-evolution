@@ -143,8 +143,9 @@ export default function HomePage() {
             </div>
             <p className="mt-10 text-sm leading-relaxed text-foreground-muted">
               Built with Next.js 16, Better Auth, Neon Postgres, and Tailwind
-              CSS. AI chat, reminders, and notifications are planned for a
-              later release — they are not part of the app today.
+              CSS. The Assistant can answer questions about your tasks and
+              add tasks from chat. Reminders and notifications are planned
+              for a later release.
             </p>
           </div>
         </section>

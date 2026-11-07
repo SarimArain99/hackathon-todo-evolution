@@ -280,6 +280,37 @@ export const tasksApi = {
 };
 
 // ============================================================================
+// Chat / Assistant API Methods
+// ============================================================================
+
+export interface ChatMessage {
+  id: number;
+  role: "user" | "assistant";
+  content: string;
+  created_at: string;
+}
+
+export interface ChatResponse {
+  messages: ChatMessage[];
+  chatAvailable?: boolean;
+}
+
+export const chatApi = {
+  /** Load the signed-in user's saved chat history (oldest first). */
+  async history(): Promise<ChatResponse> {
+    return sameOriginRequest<ChatResponse>("/api/chat");
+  },
+
+  /** Send a message; returns the saved user message + assistant reply. */
+  async send(message: string): Promise<ChatResponse> {
+    return sameOriginRequest<ChatResponse>("/api/chat", {
+      method: "POST",
+      body: JSON.stringify({ message }),
+    });
+  },
+};
+
+// ============================================================================
 // Notification API Methods
 // ============================================================================
 

@@ -53,6 +53,11 @@ export async function GET() {
   // Face Space that is currently in error, and a server-side probe would
   // add seconds of latency to a health check. Its configured URL is
   // reported so callers can see what is (not) wired up.
+  // The Assistant needs OPENAI_API_KEY. It is not probed from health —
+  // only the presence of the variable is reported, server-side. Without
+  // the key the chat route still works, but replies that it is not set
+  // up yet.
+  const chatAvailable = Boolean(process.env.OPENAI_API_KEY);
   const body = {
     status: database === "ok" && tasks === "ok" ? "ok" : "degraded",
     database,
@@ -65,8 +70,13 @@ export async function GET() {
     auth: database === "ok" ? "ok" : "unavailable",
     backend: "unavailable" as const,
     backendUrl: BACKEND_URL,
-    chat: "unavailable" as const,
-    chatReason: "AI chat needs the FastAPI backend plus OPENAI_API_KEY; the backend is down.",
+    chat: (chatAvailable ? "available" : "unavailable") as "available" | "unavailable",
+    ...(chatAvailable
+      ? {}
+      : {
+          chatReason:
+            "AI chat needs OPENAI_API_KEY; add it as a Vercel environment variable.",
+        }),
     timestamp: new Date().toISOString(),
   };
   return NextResponse.json(body, {

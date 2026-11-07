@@ -343,6 +343,82 @@ export async function probeTasksTable(): Promise<TasksProbe> {
   return { ok: true, step: null, code: null, columns, columnsDetail, constraints };
 }
 
+/** A raw row from the chat_messages table. */
+export interface ChatMessageRow {
+  id: number;
+  user_id: string;
+  role: "user" | "assistant";
+  content: string;
+  created_at: Date | string;
+}
+
+export function toChatMessageResponse(row: ChatMessageRow) {
+  return {
+    id: row.id,
+    role: row.role,
+    content: row.content,
+    created_at: toIso(row.created_at) as string,
+  };
+}
+
+export type ChatMessageResponse = ReturnType<typeof toChatMessageResponse>;
+
+export const CHAT_MESSAGES_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id SERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+  content TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+`;
+
+const CHAT_MESSAGES_SCHEMA_STATEMENTS: string[] = [
+  CHAT_MESSAGES_TABLE_SQL,
+  `CREATE INDEX IF NOT EXISTS chat_messages_user_created_idx ON chat_messages (user_id, created_at)`,
+  // Heal a pre-existing `chat_messages` table whose columns do not match
+  // the shape the API selects/inserts. CREATE TABLE IF NOT EXISTS is a
+  // no-op for such a table, so add each column explicitly (same pattern
+  // as ensureTasksTable).
+  `ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'user'`,
+  `ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS content TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now()`,
+];
+
+let chatTableEnsured = false;
+
+/** Create the chat_messages table (and index) if it does not exist yet. */
+export async function ensureChatMessagesTable(): Promise<void> {
+  const pool = getPool();
+  if (!pool) {
+    throw new Error("DATABASE_URL is not configured, so chat history is unavailable.");
+  }
+  if (chatTableEnsured) return;
+
+  // Check the existing table shape first: a legacy `user_id` that is not
+  // TEXT (Better Auth user ids are text) would break every per-user query.
+  const userIdType = await pool.query<{ data_type: string }>(
+    `SELECT data_type FROM information_schema.columns
+     WHERE table_schema = 'public' AND table_name = 'chat_messages' AND column_name = 'user_id'`
+  );
+  if (userIdType.rows.length > 0 && userIdType.rows[0].data_type !== "text") {
+    try {
+      await pool.query(
+        `ALTER TABLE chat_messages ALTER COLUMN user_id TYPE TEXT USING user_id::TEXT`
+      );
+    } catch (error) {
+      console.error("[chat] Legacy user_id migration failed:", error);
+    }
+  }
+
+  for (const statement of CHAT_MESSAGES_SCHEMA_STATEMENTS) {
+    await pool.query(statement);
+  }
+
+  chatTableEnsured = true;
+}
+
 /** A raw row from the tasks table. */
 export interface TaskRow {
   id: number;

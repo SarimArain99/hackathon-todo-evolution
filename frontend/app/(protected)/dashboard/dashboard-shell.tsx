@@ -8,9 +8,15 @@ import { Logo } from "@/components/auth-shell";
 export default function DashboardShell({
   children,
   user,
+  title = "Your tasks",
+  subtitle = "Create a task, set a priority and a due date, and check things off as you go.",
+  activeNav = "tasks",
 }: {
   children: React.ReactNode;
   user: { name?: string | null; email?: string | null };
+  title?: string;
+  subtitle?: string;
+  activeNav?: "tasks" | "chat";
 }) {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -25,9 +31,16 @@ export default function DashboardShell({
             <Link
               href="/dashboard"
               className="rounded-xl px-3 py-2 text-sm font-medium text-foreground hover:bg-hover-bg"
-              aria-current="page"
+              aria-current={activeNav === "tasks" ? "page" : undefined}
             >
               Tasks
+            </Link>
+            <Link
+              href="/chat"
+              className="rounded-xl px-3 py-2 text-sm font-medium text-foreground hover:bg-hover-bg"
+              aria-current={activeNav === "chat" ? "page" : undefined}
+            >
+              Assistant
             </Link>
             {user?.name && (
               <span className="hidden max-w-36 truncate text-sm text-foreground-muted sm:block">
@@ -42,10 +55,9 @@ export default function DashboardShell({
 
       {/* Page content */}
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
-        <h1 className="text-3xl font-bold tracking-tight">Your tasks</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
         <p className="mt-2 max-w-xl text-base leading-relaxed text-foreground-muted">
-          Create a task, set a priority and a due date, and check things off
-          as you go.
+          {subtitle}
         </p>
         <div className="mt-8">{children}</div>
       </main>
