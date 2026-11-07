@@ -58,6 +58,14 @@ export async function GET() {
   // the key the chat route still works, but replies that it is not set
   // up yet.
   const chatAvailable = Boolean(process.env.OPENAI_API_KEY);
+  // Password reset / verification emails need RESEND_API_KEY. Only the
+  // presence of the variable is reported, never its value. When it is
+  // missing, sendResetPassword fails silently by design (the endpoint still
+  // returns "check your email" so as not to reveal whether an account
+  // exists), so without this line the breakage is invisible — that is
+  // exactly how the missing key went unnoticed. With it, /api/health says
+  // email: "unavailable" until the key is added in Vercel.
+  const emailAvailable = Boolean(process.env.RESEND_API_KEY);
   const body = {
     status: database === "ok" && tasks === "ok" ? "ok" : "degraded",
     database,
@@ -76,6 +84,13 @@ export async function GET() {
       : {
           chatReason:
             "AI chat needs OPENAI_API_KEY; add it as a Vercel environment variable.",
+        }),
+    email: (emailAvailable ? "available" : "unavailable") as "available" | "unavailable",
+    ...(emailAvailable
+      ? {}
+      : {
+          emailReason:
+            "Password reset emails need RESEND_API_KEY; add it as a Vercel environment variable. Until then, reset requests say 'check your email' but no email is sent.",
         }),
     timestamp: new Date().toISOString(),
   };
