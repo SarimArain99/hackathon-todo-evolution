@@ -111,6 +111,7 @@ export function getDbPool(): PgPool | null {
 function getTrustedOrigins(): string[] {
   const origins = new Set<string>([
     "http://localhost:3000",
+    "https://dayline-todo.vercel.app",
     "https://zenith-flow-zeta.vercel.app",
     "https://zenith-flow-beta.vercel.app",
     // Wildcard for Vercel preview deployments. Supported by the installed
@@ -135,8 +136,9 @@ export const auth = betterAuth({
   // For production with Vercel, BETTER_AUTH_URL will be set automatically
 
   // Trusted origins for CSRF protection (live domain + Vercel previews).
-  // NOTE: the live site is zenith-flow-zeta.vercel.app — a previous merge
-  // dropped it from this list and broke sign-in on the live domain.
+  // NOTE: the live site is dayline-todo.vercel.app (renamed from
+  // zenith-flow-zeta.vercel.app) — a previous merge dropped the live
+  // domain from this list and broke sign-in on the live domain.
   trustedOrigins: getTrustedOrigins(),
   // Secret key for signing sessions. Fails hard at startup when unset —
   // there is no fallback secret (a publicly known dummy would let anyone

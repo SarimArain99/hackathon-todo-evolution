@@ -5,7 +5,7 @@ and due dates, and filter your list by today, this week, or this month.
 
 Built by [Muhammad Sarim](https://github.com/SarimArain99).
 
-Live site: https://zenith-flow-zeta.vercel.app
+Live site: https://dayline-todo.vercel.app
 
 ## What it does today
 

@@ -44,11 +44,11 @@ export const metadata: Metadata = {
     "Dayline is a simple, fast to-do app. Create tasks, set priorities and due dates, and check things off as you go.",
   keywords: ["todo", "to-do list", "task management", "productivity"],
   authors: [{ name: "Muhammad Sarim", url: "https://github.com/SarimArain99" }],
-  metadataBase: new URL("https://zenith-flow-zeta.vercel.app"),
+  metadataBase: new URL("https://dayline-todo.vercel.app"),
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://zenith-flow-zeta.vercel.app",
+    url: "https://dayline-todo.vercel.app",
     title: "Dayline — Plan your day. Get things done.",
     description:
       "Dayline is a simple, fast to-do app. Create tasks, set priorities and due dates, and check things off as you go.",
