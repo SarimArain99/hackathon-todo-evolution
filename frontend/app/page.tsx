@@ -35,7 +35,7 @@ export default function HomePage() {
       {/* Header */}
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
-          <Link href="/" aria-label="Todo Evolution — home">
+          <Link href="/" aria-label="Dayline — home">
             <Logo size="sm" compact />
           </Link>
           <nav className="flex items-center gap-2 sm:gap-3" aria-label="Main">
@@ -62,9 +62,9 @@ export default function HomePage() {
             Plan your day. Get things done.
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-foreground-muted">
-            Todo Evolution is a simple to-do list. Create tasks, set priorities
-            and due dates, and filter them by today, this week, or this month —
-            so you always know what to do next.
+            Dayline is a simple, fast to-do app. Create tasks, set priorities
+            and due dates, and check things off as you go — so you always
+            know what to do next.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
@@ -154,7 +154,7 @@ export default function HomePage() {
       <footer className="border-t border-border bg-surface">
         <div className="mx-auto flex w-full max-w-5xl flex-col items-start justify-between gap-4 px-4 py-8 text-sm text-foreground-muted sm:flex-row sm:items-center sm:px-6">
           <p>
-            © {new Date().getFullYear()} Todo Evolution. Built by{" "}
+            © {new Date().getFullYear()} Dayline. Built by{" "}
             <a
               href="https://github.com/SarimArain99"
               target="_blank"

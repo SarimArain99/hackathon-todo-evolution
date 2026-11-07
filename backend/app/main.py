@@ -252,7 +252,7 @@ async def lifespan(app: FastAPI):
 
 # Create FastAPI app
 app = FastAPI(
-    title="Hackathon Todo Evolution API",
+    title="Hackathon Dayline API",
     description="Backend API for the Todo application with JWT authentication",
     version="0.1.0",
     lifespan=lifespan,
@@ -445,7 +445,7 @@ app.include_router(jobs.router)  # Job trigger and management endpoints
 async def root() -> dict[str, str]:
     """Root endpoint with API information."""
     return {
-        "message": "Hackathon Todo Evolution API",
+        "message": "Hackathon Dayline API",
         "version": "0.1.0",
         "docs": "/docs",
         "health": "/health",

@@ -17,7 +17,7 @@ export default function DashboardShell({
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-border bg-surface">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <Link href="/dashboard" aria-label="Todo Evolution — your tasks">
+          <Link href="/dashboard" aria-label="Dayline — your tasks">
             <Logo size="sm" compact />
           </Link>
 
@@ -54,7 +54,7 @@ export default function DashboardShell({
       <footer className="border-t border-border bg-surface">
         <div className="mx-auto flex w-full max-w-5xl flex-col items-start justify-between gap-3 px-4 py-6 text-sm text-foreground-muted sm:flex-row sm:items-center sm:px-6">
           <p>
-            Todo Evolution — built by{" "}
+            Dayline — built by{" "}
             <a
               href="https://github.com/SarimArain99"
               target="_blank"

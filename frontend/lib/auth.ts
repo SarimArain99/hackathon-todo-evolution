@@ -193,7 +193,7 @@ export const auth = betterAuth({
         await resend.emails.send({
           from: process.env.RESEND_FROM_EMAIL || "noreply@zenith-flow.com",
           to: user.email,
-          subject: "Reset Your Todo Evolution Password",
+          subject: "Reset Your Dayline Password",
           html: `
             <!DOCTYPE html>
             <html>
@@ -208,7 +208,7 @@ export const auth = betterAuth({
             <body>
               <div class="container">
                 <h2>Reset Your Password</h2>
-                <p>We received a request to reset the password for your Todo Evolution account.</p>
+                <p>We received a request to reset the password for your Dayline account.</p>
                 <p>Click the button below to create a new password:</p>
                 <a href="${url}" class="button">Reset Password</a>
                 <p>Or copy and paste this link into your browser:</p>
@@ -216,7 +216,7 @@ export const auth = betterAuth({
                 <p><strong>This link expires in 1 hour.</strong></p>
                 <p>If you didn't request this reset, please ignore this email.</p>
                 <div class="footer">
-                  <p>© 2026 Todo Evolution. All rights reserved.</p>
+                  <p>© 2026 Dayline. All rights reserved.</p>
                 </div>
               </div>
             </body>
@@ -236,7 +236,7 @@ export const auth = betterAuth({
         await resend.emails.send({
           from: process.env.RESEND_FROM_EMAIL || "noreply@zenith-flow.com",
           to: user.email,
-          subject: "Verify Your Todo Evolution Account",
+          subject: "Verify Your Dayline Account",
           html: `
             <!DOCTYPE html>
             <html>
@@ -250,7 +250,7 @@ export const auth = betterAuth({
             </head>
             <body>
               <div class="container">
-                <h2>Welcome to Todo Evolution!</h2>
+                <h2>Welcome to Dayline!</h2>
                 <p>Thanks for signing up. Please verify your email address to complete your account setup.</p>
                 <p>Click the button below to verify your email:</p>
                 <a href="${url}" class="button">Verify Email</a>
@@ -258,7 +258,7 @@ export const auth = betterAuth({
                 <p style="word-break: break-all; color: #6366f1;">${url}</p>
                 <p><strong>This link expires in 1 hour.</strong></p>
                 <div class="footer">
-                  <p>© 2026 Todo Evolution. All rights reserved.</p>
+                  <p>© 2026 Dayline. All rights reserved.</p>
                 </div>
               </div>
             </body>

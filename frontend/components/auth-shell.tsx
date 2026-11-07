@@ -18,7 +18,7 @@ export function Logo({ size = "md", compact = false }: { size?: "sm" | "md"; com
         <Check className={`${icon} stroke-[3]`} />
       </span>
       <span className={`${text} font-bold tracking-tight text-foreground ${compact ? "hidden sm:inline" : ""}`}>
-        Todo Evolution
+        Dayline
       </span>
     </span>
   );
@@ -40,7 +40,7 @@ export function AuthShell({
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-10 text-foreground">
       <div className="w-full max-w-md">
         <div className="mb-8 flex justify-center">
-          <Link href="/" aria-label="Todo Evolution — home">
+          <Link href="/" aria-label="Dayline — home">
             <Logo />
           </Link>
         </div>

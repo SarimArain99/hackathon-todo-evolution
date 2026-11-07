@@ -37,11 +37,11 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "Todo Evolution — Plan your day. Get things done.",
-    template: "%s | Todo Evolution",
+    default: "Dayline — Plan your day. Get things done.",
+    template: "%s | Dayline",
   },
   description:
-    "Todo Evolution is a simple to-do list app. Create tasks, set priorities and due dates, and filter by today, this week, or this month.",
+    "Dayline is a simple, fast to-do app. Create tasks, set priorities and due dates, and check things off as you go.",
   keywords: ["todo", "to-do list", "task management", "productivity"],
   authors: [{ name: "Muhammad Sarim", url: "https://github.com/SarimArain99" }],
   metadataBase: new URL("https://zenith-flow-zeta.vercel.app"),
@@ -49,16 +49,16 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://zenith-flow-zeta.vercel.app",
-    title: "Todo Evolution — Plan your day. Get things done.",
+    title: "Dayline — Plan your day. Get things done.",
     description:
-      "A simple to-do list app. Create tasks, set priorities and due dates, and filter by today, this week, or this month.",
-    siteName: "Todo Evolution",
+      "Dayline is a simple, fast to-do app. Create tasks, set priorities and due dates, and check things off as you go.",
+    siteName: "Dayline",
   },
   twitter: {
     card: "summary",
-    title: "Todo Evolution",
+    title: "Dayline",
     description:
-      "A simple to-do list app. Create tasks, set priorities and due dates, and filter by today, this week, or this month.",
+      "Dayline is a simple, fast to-do app. Create tasks, set priorities and due dates, and check things off as you go.",
   },
 };
 

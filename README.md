@@ -1,4 +1,4 @@
-# Todo Evolution
+# Dayline
 
 A simple to-do list web app. Create an account, add tasks, set priorities
 and due dates, and filter your list by today, this week, or this month.
