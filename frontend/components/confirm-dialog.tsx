@@ -85,7 +85,7 @@ export function ConfirmDialog({
         aria-hidden="true"
       />
 
-      <div className="relative w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-xl sm:p-8">
+      <div className="relative max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-2xl border border-border bg-surface p-6 shadow-xl [max-width:calc(100vw-2rem)] sm:p-8">
         <button
           onClick={onClose}
           className="absolute right-5 top-5 rounded-lg p-2 text-foreground-muted hover:bg-hover-bg hover:text-foreground"
@@ -98,8 +98,8 @@ export function ConfirmDialog({
           <Icon className={cn("h-7 w-7", iconColor)} aria-hidden="true" />
         </div>
 
-        <h2 className="text-xl font-semibold text-foreground">{title}</h2>
-        <p className="mt-2 text-sm leading-relaxed text-foreground-muted">{message}</p>
+        <h2 className="break-words text-xl font-semibold text-foreground">{title}</h2>
+        <p className="mt-2 break-words text-sm leading-relaxed text-foreground-muted">{message}</p>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <button

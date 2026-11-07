@@ -141,7 +141,7 @@ export function TaskEditDialog({ task, isOpen, onClose, onTaskUpdated }: TaskEdi
         aria-hidden="true"
       />
 
-      <div className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-surface p-6 shadow-xl sm:p-8">
+      <div className="relative max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-surface p-6 shadow-xl [max-width:calc(100vw-2rem)] sm:p-8">
         <div className="mb-6 flex items-center justify-between">
           <h3 className="text-xl font-semibold text-foreground">Edit task</h3>
           <button

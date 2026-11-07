@@ -22,22 +22,22 @@ export default function DashboardShell({
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-border bg-surface">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <Link href="/dashboard" aria-label="Dayline — your tasks">
+        <div className="mx-auto flex w-full max-w-5xl min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-2 px-4 py-3 sm:flex-nowrap sm:gap-3 sm:px-6">
+          <Link href="/dashboard" aria-label="Dayline — your tasks" className="shrink-0">
             <Logo size="sm" compact />
           </Link>
 
-          <nav className="flex items-center gap-2 sm:gap-3" aria-label="Main">
+          <nav className="flex min-w-0 flex-wrap items-center gap-1.5 sm:flex-nowrap sm:gap-3" aria-label="Main">
             <Link
               href="/dashboard"
-              className="rounded-xl px-3 py-2 text-sm font-medium text-foreground hover:bg-hover-bg"
+              className="shrink-0 rounded-xl px-2 py-2 text-sm font-medium text-foreground hover:bg-hover-bg sm:px-3"
               aria-current={activeNav === "tasks" ? "page" : undefined}
             >
               Tasks
             </Link>
             <Link
               href="/chat"
-              className="rounded-xl px-3 py-2 text-sm font-medium text-foreground hover:bg-hover-bg"
+              className="shrink-0 rounded-xl px-2 py-2 text-sm font-medium text-foreground hover:bg-hover-bg sm:px-3"
               aria-current={activeNav === "chat" ? "page" : undefined}
             >
               Assistant
