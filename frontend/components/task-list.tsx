@@ -14,9 +14,11 @@ import { EmptyState } from "@/components/empty-state";
 interface TaskListProps {
   initialTasks?: Task[];
   refreshTrigger?: number;
+  /** Called after any in-page task mutation, so the dashboard (TodayLine) can refresh too. */
+  onTasksChange?: () => void;
 }
 
-export default function TaskList({ initialTasks = [], refreshTrigger }: TaskListProps) {
+export default function TaskList({ initialTasks = [], refreshTrigger, onTasksChange }: TaskListProps) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [total, setTotal] = useState<number>(initialTasks.length);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -74,11 +76,15 @@ export default function TaskList({ initialTasks = [], refreshTrigger }: TaskList
 
   const handleTaskChange = (taskId: number, updatedTask: Task) => {
     setTasks((prev) => prev.map((t) => (t.id === taskId ? updatedTask : t)));
+    // The list is updated above, but the TodayLine strip fetches its own
+    // "today" list — tell the dashboard so it refreshes in step, no reload.
+    onTasksChange?.();
   };
 
   const handleTaskDelete = (taskId: number) => {
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
     setTotal((prev) => Math.max(0, prev - 1));
+    onTasksChange?.();
   };
 
   const resetFilters = () => {

@@ -7,6 +7,8 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { TaskEditDialog } from "@/components/task-edit-dialog";
 import { Repeat, Pencil, Trash2 } from "lucide-react";
 
+import { isTaskOverdue } from "@/lib/dates";
+
 interface TaskItemProps {
   task: Task;
   onChange: (taskId: number, updatedTask: Task) => void;
@@ -70,7 +72,9 @@ export default function TaskItem({ task, onChange, onDelete }: TaskItemProps) {
   };
 
   const dueDate = task.due_date ? new Date(task.due_date) : null;
-  const isOverdue = dueDate !== null && dueDate < new Date() && !task.completed;
+  // Overdue only when the due day is strictly before today — a task due
+  // today is not overdue. See lib/dates.ts.
+  const isOverdue = isTaskOverdue(task.due_date, task.completed);
 
   return (
     <div

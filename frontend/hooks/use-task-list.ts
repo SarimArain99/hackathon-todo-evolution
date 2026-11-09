@@ -48,10 +48,14 @@ export const useTaskList = create<TaskListState>()(
       },
     }),
     {
-      name: "task-list-storage",
+      // The selected dashboard view (All / Today / This week / This month)
+      // is a plain UI preference — no sensitive data — and is restored on
+      // load so a reload keeps the view the user picked.
+      name: "dayline:dashboard-view",
       partialize: (state) => ({
         sortBy: state.sortBy,
         sortOrder: state.sortOrder,
+        presetFilter: state.presetFilter,
       }),
     }
   )
