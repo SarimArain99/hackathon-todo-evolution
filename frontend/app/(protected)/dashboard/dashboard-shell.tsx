@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { CalendarDays, ListChecks, MessageSquareText } from "lucide-react";
@@ -93,6 +94,47 @@ export default function DashboardShell({
   subtitle?: string;
   activeNav?: "tasks" | "chat";
 }) {
+  const footerRef = useRef<HTMLElement | null>(null);
+  const barRef = useRef<HTMLElement | null>(null);
+
+  // Mobile bottom bar: it floats 1rem above the viewport bottom while the
+  // user scrolls, but must never cover the footer. When the footer slides
+  // into view, lift the bar so its bottom edge stays 1rem above the
+  // footer's top edge — it "docks" above the footer at the end of the
+  // page, and floats again as soon as the user scrolls back up.
+  // The transform is written straight to the element (no React state) so
+  // scrolling stays smooth.
+  useEffect(() => {
+    const bar = barRef.current;
+    const footer = footerRef.current;
+    if (!bar || !footer) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const footerTop = footer.getBoundingClientRect().top;
+      const vh = window.innerHeight;
+      // Bar bottom normally sits at vh - 16px (bottom-4). To keep a 16px
+      // gap above the footer, lift it by (vh - footerTop) once the footer
+      // is on screen; 0 while the footer is below the viewport.
+      const lift = footerTop < vh ? Math.max(0, vh - footerTop) : 0;
+      bar.style.transform = `translateY(${-lift}px)`;
+    };
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    const ro = new ResizeObserver(schedule);
+    ro.observe(footer);
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      ro.disconnect();
+    };
+  }, []);
+
   return (
     <div className="flex min-h-dvh bg-background text-foreground">
       <LeftRail activeNav={activeNav} />
@@ -144,7 +186,7 @@ export default function DashboardShell({
         </main>
 
         {/* Footer */}
-        <footer className="border-t border-border bg-surface">
+        <footer ref={footerRef} className="border-t border-border bg-surface">
           <div className="mx-auto flex w-full max-w-5xl flex-col items-start justify-between gap-3 px-4 py-6 text-sm text-foreground-muted sm:flex-row sm:items-center sm:px-6">
             <p>
               Dayline — built by{" "}
@@ -179,9 +221,13 @@ export default function DashboardShell({
         </footer>
       </div>
 
-      {/* Mobile bottom bar: Tasks / Assistant, with safe-area inset. */}
+      {/* Mobile bottom bar: Tasks / Assistant, with safe-area inset.
+          Its position is managed by the effect above: it floats at
+          bottom-4 while scrolling and docks above the footer at the
+          end of the page. */}
       <nav
-        className="glass-float fixed inset-x-4 bottom-4 z-40 flex items-center justify-around rounded-full px-2 py-2 lg:hidden"
+        ref={barRef}
+        className="glass-float fixed inset-x-4 bottom-4 z-40 flex items-center justify-around rounded-full px-2 py-2 will-change-transform lg:hidden"
         style={{ paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom))" }}
         aria-label="Mobile"
       >
