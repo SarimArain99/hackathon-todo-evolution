@@ -102,7 +102,7 @@ export default function TaskForm({ onTaskCreated }: TaskFormProps) {
   return (
     <div
       id="add-task-form"
-      className="rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6"
+      className="rounded-3xl border border-border bg-surface p-5 shadow-sm sm:p-6"
     >
       <h2 className="text-lg font-semibold">Add a task</h2>
 
@@ -245,7 +245,7 @@ export default function TaskForm({ onTaskCreated }: TaskFormProps) {
                       onClick={() => handleWeekdayToggle(day.value)}
                       aria-pressed={recurrenceWeekdays.includes(day.value)}
                       className={cn(
-                        "h-9 min-w-9 rounded-lg border px-2 text-xs font-semibold transition-colors",
+                        "h-11 min-w-11 rounded-xl border px-2 text-xs font-semibold transition-colors",
                         recurrenceWeekdays.includes(day.value)
                           ? "border-primary bg-primary text-primary-foreground"
                           : "border-border bg-surface text-foreground-muted hover:text-foreground"

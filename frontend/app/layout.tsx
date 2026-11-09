@@ -1,12 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Outfit, JetBrains_Mono, DM_Serif_Display } from "next/font/google";
+import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/next";
 
-const outfit = Outfit({
-  variable: "--font-outfit",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+  display: "swap",
+  preload: true,
+});
+
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
   preload: true,
@@ -19,17 +26,10 @@ const jetbrainsMono = JetBrains_Mono({
   preload: false,
 });
 
-const dmSerif = DM_Serif_Display({
-  variable: "--font-display",
-  weight: ["400"],
-  subsets: ["latin"],
-  display: "swap",
-});
-
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f8fa" },
-    { media: "(prefers-color-scheme: dark)", color: "#0b0f16" },
+    { media: "(prefers-color-scheme: light)", color: "#fbfdfc" },
+    { media: "(prefers-color-scheme: dark)", color: "#1e212b" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -71,9 +71,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={`
-          ${outfit.variable}
+          ${spaceGrotesk.variable}
+          ${inter.variable}
           ${jetbrainsMono.variable}
-          ${dmSerif.variable}
           antialiased
         `}
         style={{
@@ -83,7 +83,7 @@ export default function RootLayout({
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange={false}
         >
@@ -96,7 +96,7 @@ export default function RootLayout({
             closeButton
             toastOptions={{
               style: {
-                fontFamily: "var(--font-outfit)",
+                fontFamily: "var(--font-inter)",
                 color: "var(--foreground)",
               },
             }}

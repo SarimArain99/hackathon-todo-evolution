@@ -3,146 +3,158 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Todo Evolution design tokens.
+ * Dayline design tokens — design-craft.
  *
- * Light theme is the default. Both themes use the same token names, so
- * every component reads foreground/background from tokens and stays
- * readable in either theme. The @theme inline block below is what makes
- * Tailwind utilities like bg-primary / text-foreground actually exist —
- * without it those classes generate no CSS at all.
+ * Dark premium is first. Light is equally strong, not a washed-out
+ * version of dark. Both themes share token names, so every component
+ * reads foreground/background from tokens and stays readable either way.
+ * One accent only: sea-green. Light accent #177245 is dark enough for
+ * 4.5:1 contrast with white text; dark accent is brighter sea-green.
  */
 
 :root {
-  /* Brand: a calm green. Dark enough in light mode for white text. */
-  --brand-accent: oklch(45% 0.16 155);
+  /* Brand accent — sea-green. Light value is the hex from the plan. */
+  --brand-accent: #177245;
+  --brand-accent-strong: oklch(0.42 0.13 155);
 
   /* Semantic tokens — light mode */
-  --background: oklch(98% 0.01 245);
-  --foreground: oklch(20% 0.05 245);
-  --foreground-muted: oklch(44% 0.03 245);
+  --background: oklch(0.99 0.005 160);
+  --foreground: oklch(0.2 0.02 160);
+  --foreground-muted: oklch(0.45 0.02 160);
 
   --primary: var(--brand-accent);
-  --primary-foreground: oklch(99% 0 0);
-  --primary-hover: oklch(40% 0.16 155);
+  --primary-foreground: oklch(0.99 0 0);
+  --primary-hover: oklch(0.36 0.13 155);
 
-  --surface: oklch(100% 0 0);
-  --surface-elevated: oklch(100% 0 0);
-  --surface-sunken: oklch(95% 0.01 245);
-  --hover-bg: oklch(93% 0.01 245);
+  --surface: oklch(1 0 0);
+  --surface-elevated: oklch(1 0 0);
+  --surface-sunken: oklch(0.96 0.008 160);
+  --hover-bg: oklch(0.94 0.01 160);
 
-  --border: oklch(87% 0.02 245);
-  --border-strong: oklch(76% 0.02 245);
+  --border: oklch(0.88 0.015 160);
+  --border-strong: oklch(0.78 0.02 160);
 
-  --glass-bg: oklch(100% 0 0 / 0.85);
-  --glass-border: oklch(87% 0.02 245);
+  --glass-bg: oklch(1 0 0 / 0.85);
+  --glass-border: oklch(0.88 0.015 160);
   --glass-shadow: 0 10px 40px -12px rgba(15, 23, 42, 0.15);
 
-  --danger: oklch(48% 0.19 25);
-  --warning: oklch(48% 0.14 85);
-  --success: oklch(45% 0.16 155);
-  --info: oklch(45% 0.14 250);
+  --danger: oklch(0.48 0.19 25);
+  --warning: oklch(0.46 0.14 85);
+  --success: var(--brand-accent);
+  --info: oklch(0.45 0.14 250);
 
-  --priority-low-bg: oklch(45% 0.16 155 / 0.1);
-  --priority-low-text: oklch(42% 0.16 155);
-  --priority-low-border: oklch(45% 0.16 155 / 0.35);
+  --priority-low-bg: oklch(0.42 0.13 155 / 0.1);
+  --priority-low-text: oklch(0.38 0.13 155);
+  --priority-low-border: oklch(0.42 0.13 155 / 0.35);
 
-  --priority-medium-bg: oklch(55% 0.14 85 / 0.12);
-  --priority-medium-text: oklch(42% 0.13 85);
-  --priority-medium-border: oklch(55% 0.14 85 / 0.4);
+  --priority-medium-bg: oklch(0.55 0.14 85 / 0.12);
+  --priority-medium-text: oklch(0.4 0.13 85);
+  --priority-medium-border: oklch(0.55 0.14 85 / 0.4);
 
-  --priority-high-bg: oklch(55% 0.19 25 / 0.1);
-  --priority-high-text: oklch(45% 0.19 25);
-  --priority-high-border: oklch(55% 0.19 25 / 0.4);
+  --priority-high-bg: oklch(0.55 0.19 25 / 0.1);
+  --priority-high-text: oklch(0.44 0.19 25);
+  --priority-high-border: oklch(0.55 0.19 25 / 0.4);
 
-  --state-success-bg: oklch(45% 0.16 155 / 0.1);
-  --state-success-text: oklch(42% 0.16 155);
-  --state-success-border: oklch(45% 0.16 155 / 0.35);
+  --state-success-bg: oklch(0.42 0.13 155 / 0.1);
+  --state-success-text: oklch(0.36 0.13 155);
+  --state-success-border: oklch(0.42 0.13 155 / 0.35);
 
-  --state-error-bg: oklch(55% 0.19 25 / 0.08);
-  --state-error-text: oklch(45% 0.19 25);
-  --state-error-border: oklch(55% 0.19 25 / 0.35);
+  --state-error-bg: oklch(0.55 0.19 25 / 0.08);
+  --state-error-text: oklch(0.44 0.19 25);
+  --state-error-border: oklch(0.55 0.19 25 / 0.35);
 
-  --state-warning-bg: oklch(55% 0.14 85 / 0.1);
-  --state-warning-text: oklch(42% 0.13 85);
-  --state-warning-border: oklch(55% 0.14 85 / 0.4);
+  --state-warning-bg: oklch(0.55 0.14 85 / 0.1);
+  --state-warning-text: oklch(0.4 0.13 85);
+  --state-warning-border: oklch(0.55 0.14 85 / 0.4);
 
-  --state-info-bg: oklch(55% 0.14 250 / 0.1);
-  --state-info-text: oklch(42% 0.14 250);
-  --state-info-border: oklch(55% 0.14 250 / 0.35);
+  --state-info-bg: oklch(0.55 0.14 250 / 0.1);
+  --state-info-text: oklch(0.42 0.14 250);
+  --state-info-border: oklch(0.55 0.14 250 / 0.35);
 
-  --input-bg: oklch(100% 0 0);
-  --input-border: oklch(82% 0.02 245);
-  --input-text: oklch(20% 0.05 245);
-  --input-placeholder: oklch(58% 0.02 245);
-  --input-focus-ring: oklch(45% 0.16 155 / 0.35);
+  --input-bg: oklch(1 0 0);
+  --input-border: oklch(0.82 0.015 160);
+  --input-text: oklch(0.2 0.02 160);
+  --input-placeholder: oklch(0.58 0.015 160);
+  --input-focus-ring: oklch(0.42 0.13 155 / 0.35);
 
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
+  /* Radius system — one scale, concentric nesting */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
   --radius-2xl: 1.5rem;
   --radius-3xl: 2rem;
+  --radius-pill: 999px;
+
+  /* Motion tokens */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 150ms;
+  --dur-ui: 240ms;
+  --dur-enter: 700ms;
+  --stagger: 60ms;
 }
 
 .dark {
-  --background: #0b0f16;
-  --foreground: oklch(96% 0.01 245);
-  --foreground-muted: oklch(74% 0.02 245);
+  --background: oklch(0.14 0.01 270);
+  --foreground: oklch(0.92 0.01 270);
+  --foreground-muted: oklch(0.64 0.015 270);
 
-  --primary: oklch(76% 0.18 155);
-  --primary-foreground: oklch(16% 0.05 155);
-  --primary-hover: oklch(82% 0.18 155);
+  --primary: oklch(0.74 0.16 155);
+  --primary-foreground: oklch(0.14 0.03 155);
+  --primary-hover: oklch(0.8 0.16 155);
+  --brand-accent-strong: oklch(0.74 0.16 155);
 
-  --surface: #131a26;
-  --surface-elevated: #182130;
-  --surface-sunken: #0a0e17;
-  --hover-bg: #1c2636;
+  --surface: oklch(0.17 0.01 270);
+  --surface-elevated: oklch(0.2 0.01 270);
+  --surface-sunken: oklch(0.11 0.01 270);
+  --hover-bg: oklch(0.21 0.01 270);
 
-  --border: rgba(255, 255, 255, 0.14);
-  --border-strong: rgba(255, 255, 255, 0.28);
+  --border: oklch(1 0 0 / 0.1);
+  --border-strong: oklch(1 0 0 / 0.24);
 
-  --glass-bg: rgba(19, 26, 38, 0.85);
-  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-bg: oklch(0.17 0.01 270 / 0.82);
+  --glass-border: oklch(1 0 0 / 0.14);
   --glass-shadow: 0 25px 60px -20px rgba(0, 0, 0, 0.7);
 
-  --danger: oklch(72% 0.19 25);
-  --warning: oklch(78% 0.14 85);
-  --success: oklch(76% 0.18 155);
-  --info: oklch(74% 0.14 250);
+  --danger: oklch(0.72 0.19 25);
+  --warning: oklch(0.78 0.14 85);
+  --success: oklch(0.74 0.16 155);
+  --info: oklch(0.74 0.14 250);
 
-  --priority-low-bg: oklch(76% 0.18 155 / 0.15);
-  --priority-low-text: oklch(84% 0.18 155);
-  --priority-low-border: oklch(76% 0.18 155 / 0.4);
+  --priority-low-bg: oklch(0.74 0.16 155 / 0.15);
+  --priority-low-text: oklch(0.84 0.16 155);
+  --priority-low-border: oklch(0.74 0.16 155 / 0.4);
 
-  --priority-medium-bg: oklch(74% 0.14 85 / 0.15);
-  --priority-medium-text: oklch(84% 0.14 85);
-  --priority-medium-border: oklch(74% 0.14 85 / 0.4);
+  --priority-medium-bg: oklch(0.74 0.14 85 / 0.15);
+  --priority-medium-text: oklch(0.84 0.14 85);
+  --priority-medium-border: oklch(0.74 0.14 85 / 0.4);
 
-  --priority-high-bg: oklch(68% 0.19 25 / 0.15);
-  --priority-high-text: oklch(80% 0.19 25);
-  --priority-high-border: oklch(68% 0.19 25 / 0.4);
+  --priority-high-bg: oklch(0.68 0.19 25 / 0.15);
+  --priority-high-text: oklch(0.8 0.19 25);
+  --priority-high-border: oklch(0.68 0.19 25 / 0.4);
 
-  --state-success-bg: oklch(76% 0.18 155 / 0.15);
-  --state-success-text: oklch(84% 0.18 155);
-  --state-success-border: oklch(76% 0.18 155 / 0.4);
+  --state-success-bg: oklch(0.74 0.16 155 / 0.15);
+  --state-success-text: oklch(0.84 0.16 155);
+  --state-success-border: oklch(0.74 0.16 155 / 0.4);
 
-  --state-error-bg: oklch(68% 0.19 25 / 0.15);
-  --state-error-text: oklch(80% 0.19 25);
-  --state-error-border: oklch(68% 0.19 25 / 0.4);
+  --state-error-bg: oklch(0.68 0.19 25 / 0.15);
+  --state-error-text: oklch(0.8 0.19 25);
+  --state-error-border: oklch(0.68 0.19 25 / 0.4);
 
-  --state-warning-bg: oklch(74% 0.14 85 / 0.15);
-  --state-warning-text: oklch(84% 0.14 85);
-  --state-warning-border: oklch(74% 0.14 85 / 0.4);
+  --state-warning-bg: oklch(0.74 0.14 85 / 0.15);
+  --state-warning-text: oklch(0.84 0.14 85);
+  --state-warning-border: oklch(0.74 0.14 85 / 0.4);
 
-  --state-info-bg: oklch(68% 0.14 250 / 0.15);
-  --state-info-text: oklch(78% 0.14 250);
-  --state-info-border: oklch(68% 0.14 250 / 0.4);
+  --state-info-bg: oklch(0.68 0.14 250 / 0.15);
+  --state-info-text: oklch(0.78 0.14 250);
+  --state-info-border: oklch(0.68 0.14 250 / 0.4);
 
-  --input-bg: rgba(255, 255, 255, 0.05);
-  --input-border: rgba(255, 255, 255, 0.16);
-  --input-text: oklch(96% 0.01 245);
-  --input-placeholder: oklch(70% 0.02 245);
-  --input-focus-ring: oklch(76% 0.18 155 / 0.4);
+  --input-bg: oklch(1 0 0 / 0.05);
+  --input-border: oklch(1 0 0 / 0.16);
+  --input-text: oklch(0.96 0.01 270);
+  --input-placeholder: oklch(0.7 0.015 270);
+  --input-focus-ring: oklch(0.74 0.16 155 / 0.4);
 }
 
 /* Map the tokens to Tailwind utilities (bg-primary, text-foreground, …). */
@@ -190,8 +202,8 @@
   --color-priority-high-text: var(--priority-high-text);
   --color-priority-high-border: var(--priority-high-border);
   --color-glass-bg: var(--glass-bg);
-  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-display), Georgia, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-mono), ui-monospace, monospace;
 }
 
@@ -203,13 +215,27 @@
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-space-grotesk), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 
   html {
     scroll-behavior: smooth;
     scrollbar-gutter: stable;
+    scroll-padding-top: 5.5rem;
   }
 
   /* Safety net: no page element may ever create a horizontal scrollbar.
@@ -237,15 +263,115 @@
     background-color: var(--surface);
     color: var(--foreground);
   }
+
+  /* One visible focus style everywhere: 2px ring, 2px offset, accent. */
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  /* Hover-only effects live behind a fine-pointer query (see utilities). */
+  ::selection {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
 }
 
 @layer utilities {
-  /* Simple card surface: solid, readable in both themes. */
+  /* Solid card surface. Glass is reserved for the floating layer only. */
   .glass-panel {
     background: var(--surface);
     border: 1px solid var(--border);
     box-shadow: var(--glass-shadow);
   }
+
+  /* Liquid Glass — floating layer only (nav pill, chat composer).
+     Never glass-on-glass, never behind long text. */
+  .glass-float {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(22px) saturate(160%) brightness(1.05);
+    backdrop-filter: blur(22px) saturate(160%) brightness(1.05);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.25),
+      var(--glass-shadow);
+  }
+
+  /* Scroll reveal: visible by default, animated in by JS adding .is-in.
+     No-JS and reduced-motion users always see the content. */
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+  .reveal--ready {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+      opacity var(--dur-enter) var(--ease-out),
+      transform var(--dur-enter) var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+  }
+  .reveal--ready.is-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Dayline track: the horizontal line through the day. */
+  .dayline-track {
+    background: var(--border);
+  }
+  .dayline-fill {
+    background: var(--primary);
+  }
+
+  /* Typing dots for the Assistant. */
+  .typing-dot {
+    animation: typing-bounce 1.2s ease-in-out infinite;
+  }
+  .typing-dot:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+  .typing-dot:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  @keyframes typing-bounce {
+    0%,
+    60%,
+    100% {
+      transform: translateY(0);
+      opacity: 0.4;
+    }
+    30% {
+      transform: translateY(-4px);
+      opacity: 1;
+    }
+  }
+
+  /* Hero headline line mask reveal. */
+  .hero-line {
+    display: block;
+    overflow: clip;
+  }
+  .hero-line > span {
+    display: block;
+    transform: translateY(105%);
+  }
+  .hero-line.in > span {
+    transform: none;
+    transition: transform 800ms var(--ease-out);
+    transition-delay: calc(var(--i, 0) * 70ms);
+  }
+}
+
+/* Press feedback is CSS, not JS: every button scales 0.97 on press. */
+@media (hover: hover) and (pointer: fine) {
+  .btn-press:hover {
+    filter: brightness(1.06);
+  }
+}
+.btn-press:active {
+  transform: scale(0.97);
 }
 
 /* Content must never depend on animation to become visible. If the user
@@ -260,5 +386,28 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  .reveal--ready {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .hero-line > span {
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* Reduced transparency / higher contrast: glass becomes solid. */
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .glass-float {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--surface);
+    border-color: var(--border-strong);
+  }
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .glass-float {
+    background: var(--surface);
   }
 }

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signUp, toPlainEnglishAuthError } from "@/lib/auth-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import {
   AuthShell,
   AuthError,
@@ -136,8 +136,31 @@ export default function SignUpPage() {
           onChange={setPassword}
           placeholder="At least 8 characters"
           autoComplete="new-password"
-          hint="Password must be at least 8 characters long."
         />
+
+        {/* Password rules that tick live as the user types. */}
+        <ul className="space-y-1.5" aria-label="Password rules">
+          {[
+            { met: password.length >= 8, text: "At least 8 characters" },
+            {
+              met: confirmPassword.length > 0 && password === confirmPassword,
+              text: "Passwords match",
+            },
+          ].map((rule) => (
+            <li
+              key={rule.text}
+              className={`flex items-center gap-2 text-sm ${rule.met ? "text-state-success-text" : "text-foreground-muted"}`}
+            >
+              <span
+                className={`flex h-5 w-5 items-center justify-center rounded-full border ${rule.met ? "border-primary bg-primary text-primary-foreground" : "border-border bg-surface"}`}
+                aria-hidden="true"
+              >
+                {rule.met && <Check className="h-3 w-3 stroke-[3]" />}
+              </span>
+              {rule.text}
+            </li>
+          ))}
+        </ul>
 
         <PasswordField
           id="confirm-password"

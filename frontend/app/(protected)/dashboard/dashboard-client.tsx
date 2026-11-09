@@ -3,6 +3,7 @@
 import { useState } from "react";
 import TaskList from "@/components/task-list";
 import TaskForm from "@/components/task-form";
+import TodayLine from "@/components/today-line";
 import type { Task } from "@/lib/api";
 
 export default function DashboardClient() {
@@ -14,6 +15,8 @@ export default function DashboardClient() {
 
   return (
     <div className="space-y-8">
+      <TodayLine refreshTrigger={refreshTrigger} onTodayChange={() => setRefreshTrigger((p) => p + 1)} />
+
       <section aria-label="Add a task">
         <TaskForm onTaskCreated={handleTaskCreated} />
       </section>

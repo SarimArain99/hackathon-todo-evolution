@@ -92,17 +92,22 @@ export default function TaskItem({ task, onChange, onDelete }: TaskItemProps) {
             disabled={isDeleting}
             aria-label={task.completed ? "Mark as not done" : "Mark as complete"}
             aria-pressed={task.completed}
-            className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border-2 transition-colors ${
-              task.completed
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-input-border bg-surface hover:border-primary"
-            }`}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors"
           >
-            {task.completed && (
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-              </svg>
-            )}
+            <span
+              className={`flex h-7 w-7 items-center justify-center rounded-lg border-2 transition-colors ${
+                task.completed
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-input-border bg-surface hover:border-primary"
+              }`}
+              aria-hidden="true"
+            >
+              {task.completed && (
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </span>
           </button>
 
           <div className="min-w-0 flex-1">
@@ -223,21 +228,21 @@ export default function TaskItem({ task, onChange, onDelete }: TaskItemProps) {
             <button
               onClick={() => setShowEditDialog(true)}
               disabled={isDeleting || task.completed}
-              className="rounded-lg p-2 text-foreground-muted transition-colors hover:bg-hover-bg hover:text-primary disabled:opacity-30"
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-foreground-muted transition-colors hover:bg-hover-bg hover:text-primary disabled:opacity-30"
               aria-label="Edit task"
             >
-              <Pencil className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+              <Pencil className="h-5 w-5" aria-hidden="true" />
             </button>
             <button
               onClick={() => setShowDeleteDialog(true)}
               disabled={isDeleting}
-              className="rounded-lg p-2 text-foreground-muted transition-colors hover:bg-hover-bg hover:text-danger disabled:opacity-30"
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-foreground-muted transition-colors hover:bg-hover-bg hover:text-danger disabled:opacity-30"
               aria-label="Delete task"
             >
               {isDeleting ? (
-                <span className="block h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent sm:h-5 sm:w-5" />
+                <span className="block h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               ) : (
-                <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+                <Trash2 className="h-5 w-5" aria-hidden="true" />
               )}
             </button>
           </div>

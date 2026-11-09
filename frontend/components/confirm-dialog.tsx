@@ -88,7 +88,7 @@ export function ConfirmDialog({
       <div className="relative max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-2xl border border-border bg-surface p-6 shadow-xl [max-width:calc(100vw-2rem)] sm:p-8">
         <button
           onClick={onClose}
-          className="absolute right-5 top-5 rounded-lg p-2 text-foreground-muted hover:bg-hover-bg hover:text-foreground"
+          className="absolute right-5 top-5 flex h-11 w-11 items-center justify-center rounded-xl text-foreground-muted hover:bg-hover-bg hover:text-foreground"
           aria-label="Close dialog"
         >
           <X className="h-4 w-4" aria-hidden="true" />
@@ -105,7 +105,7 @@ export function ConfirmDialog({
           <button
             ref={cancelButtonRef}
             onClick={onClose}
-            className="flex-1 rounded-xl border border-border bg-surface px-6 py-3 text-sm font-semibold text-foreground-muted hover:bg-hover-bg hover:text-foreground"
+            className="flex-1 min-h-12 rounded-xl border border-border bg-surface px-6 py-3 text-sm font-semibold text-foreground-muted hover:bg-hover-bg hover:text-foreground"
           >
             {cancelLabel}
           </button>
@@ -115,7 +115,7 @@ export function ConfirmDialog({
               onClose();
             }}
             className={cn(
-              "flex-1 rounded-xl px-6 py-3 text-sm font-semibold shadow-sm",
+              "flex-1 min-h-12 rounded-xl px-6 py-3 text-sm font-semibold shadow-sm",
               confirmBg
             )}
           >

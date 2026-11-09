@@ -2,7 +2,6 @@
  * Task Filter Controls
  *
  * Preset date filter buttons with clear option.
- * Theme: Connected to globals.css CSS variables
  */
 
 "use client";
@@ -14,8 +13,8 @@ import { cn } from "@/lib/utils";
 const FILTER_OPTIONS = [
   { value: null, label: "All" },
   { value: "today", label: "Today" },
-  { value: "this_week", label: "This Week" },
-  { value: "this_month", label: "This Month" },
+  { value: "this_week", label: "This week" },
+  { value: "this_month", label: "This month" },
 ] as const;
 
 export function TaskFilterControls() {
@@ -24,16 +23,18 @@ export function TaskFilterControls() {
   const hasActiveFilter = presetFilter !== null;
 
   return (
-    <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filter by date">
       {FILTER_OPTIONS.map((opt) => (
         <button
           key={opt.value || "all"}
+          type="button"
           onClick={() => setPresetFilter(opt.value)}
+          aria-pressed={presetFilter === opt.value}
           className={cn(
-            "px-4 py-3 rounded-2xl border text-sm font-bold uppercase tracking-wider transition-all",
+            "min-h-11 rounded-full border px-4 py-2 text-sm font-semibold transition-colors",
             presetFilter === opt.value
-              ? "bg-[var(--primary)] text-[var(--primary-foreground)] border-[var(--primary)]"
-              : "bg-[var(--glass-bg)] border-[var(--glass-border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-overlay)]"
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-border bg-surface text-foreground-muted hover:bg-hover-bg hover:text-foreground"
           )}
         >
           {opt.label}
@@ -41,10 +42,11 @@ export function TaskFilterControls() {
       ))}
       {hasActiveFilter && (
         <button
+          type="button"
           onClick={clearFilters}
-          className="px-4 py-3 rounded-2xl border border-[var(--glass-border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-overlay)] text-sm font-bold uppercase tracking-wider transition-all flex items-center gap-2"
+          className="flex min-h-11 items-center gap-1.5 rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground-muted transition-colors hover:bg-hover-bg hover:text-foreground"
         >
-          <X className="w-3 h-3" />
+          <X className="h-3.5 w-3.5" aria-hidden="true" />
           Clear
         </button>
       )}

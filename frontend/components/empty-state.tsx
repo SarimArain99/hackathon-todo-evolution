@@ -22,7 +22,7 @@ export function EmptyState({
   onAddTask,
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-surface px-6 py-16 text-center">
+    <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-surface px-6 py-16 text-center">
       <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-surface-sunken">
         <Inbox className="h-8 w-8 text-primary" aria-hidden="true" />
       </div>

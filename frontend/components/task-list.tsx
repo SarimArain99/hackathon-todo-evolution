@@ -108,7 +108,7 @@ export default function TaskList({ initialTasks = [], refreshTrigger }: TaskList
   return (
     <div className="space-y-6">
       {/* Search, status and priority */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 shadow-sm sm:p-5 lg:flex-row">
+      <div className="flex flex-col gap-3 rounded-3xl border border-border bg-surface p-4 shadow-sm sm:p-5 lg:flex-row">
         <div className="relative flex-1">
           <label htmlFor="task-search" className="sr-only">
             Search tasks
