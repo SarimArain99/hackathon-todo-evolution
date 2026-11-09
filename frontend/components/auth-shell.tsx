@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { forwardRef, useState } from "react";
 import Link from "next/link";
 import { Check, Eye, EyeOff } from "lucide-react";
 import Dayline, { type DaylineItem } from "@/components/dayline";
@@ -67,7 +67,11 @@ function AuthBrand() {
 
 /**
  * Split-screen auth layout: form on one side, the Dayline brand panel on
- * the other (1024px and up). Stacked on phones, brand panel first.
+ * the other (1024px and up). Stacked on phones, form first — the brand
+ * panel sits below it. The form must be first on phones: when the virtual
+ * keyboard closes after tapping Log in / Sign up, the browser can jump the
+ * page up, and a jump to the top must land on the form, not on the brand
+ * headline.
  */
 export function AuthShell({
   title,
@@ -82,7 +86,7 @@ export function AuthShell({
 }) {
   return (
     <main className="flex min-h-dvh flex-col bg-background text-foreground lg:grid lg:grid-cols-2">
-      <div className="px-4 pb-2 pt-6 sm:px-6 lg:hidden">
+      <div className="order-2 px-4 pb-8 pt-2 sm:px-6 lg:hidden">
         <AuthBrand />
       </div>
 
@@ -95,7 +99,7 @@ export function AuthShell({
         </div>
       </div>
 
-      <div className="flex flex-1 items-center justify-center px-4 py-8 sm:px-6">
+      <div className="order-1 flex flex-1 items-center justify-center px-4 py-8 sm:px-6">
         <div className="w-full max-w-md">
           <div className="mb-8 flex justify-center lg:hidden">
             <Link href="/" aria-label="Dayline — home">
@@ -192,18 +196,23 @@ export function PasswordField({
   );
 }
 
-/** Plain-language error box used on the auth pages. */
-export function AuthError({ message }: { message: string | null }) {
-  if (!message) return null;
-  return (
-    <div
-      role="alert"
-      className="mb-5 rounded-xl border border-state-error-border bg-state-error-bg px-4 py-3 text-sm text-state-error-text"
-    >
-      {message}
-    </div>
-  );
-}
+/** Plain-language error box used on the auth pages. Forwards a ref so the
+ * page can move focus to it (without scrolling) when an attempt fails. */
+export const AuthError = forwardRef<HTMLDivElement, { message: string | null }>(
+  function AuthError({ message }, ref) {
+    if (!message) return null;
+    return (
+      <div
+        ref={ref}
+        tabIndex={-1}
+        role="alert"
+        className="mb-5 rounded-xl border border-state-error-border bg-state-error-bg px-4 py-3 text-sm text-state-error-text outline-none"
+      >
+        {message}
+      </div>
+    );
+  }
+);
 
 /** Plain-language success/notice box used on the auth pages. */
 export function AuthNotice({ children }: { children: React.ReactNode }) {

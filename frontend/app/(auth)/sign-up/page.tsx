@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { signUp, toPlainEnglishAuthError } from "@/lib/auth-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -24,6 +24,19 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  // If the attempt fails (or needs email verification), the page must stay
+  // on the form: on phones the virtual keyboard closing can jump the
+  // scroll up to the brand panel, so bring the error itself back into
+  // view and focus it (or the form, when there is only a notice).
+  useEffect(() => {
+    if (!error && !notice) return;
+    const target = errorRef.current ?? formRef.current;
+    target?.scrollIntoView({ block: "nearest" });
+    errorRef.current?.focus({ preventScroll: true });
+  }, [error, notice]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,8 +99,8 @@ export default function SignUpPage() {
         </>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <AuthError message={error} />
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
+        <AuthError ref={errorRef} message={error} />
         {notice && (
           <AuthNotice>
             {notice}{" "}

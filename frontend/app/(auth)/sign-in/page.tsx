@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { signIn, toPlainEnglishAuthError } from "@/lib/auth-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -20,6 +20,17 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  // If the attempt fails, the page must stay on the form: on phones the
+  // virtual keyboard closing can jump the scroll up to the brand panel,
+  // so bring the error itself back into view and focus it.
+  useEffect(() => {
+    if (!error) return;
+    errorRef.current?.scrollIntoView({ block: "nearest" });
+    errorRef.current?.focus({ preventScroll: true });
+  }, [error]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,8 +73,8 @@ export default function SignInPage() {
         </>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <AuthError message={error} />
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
+        <AuthError ref={errorRef} message={error} />
 
         <div>
           <label htmlFor="email" className={labelClassName}>
