@@ -4,20 +4,15 @@ import { forwardRef, useState } from "react";
 import Link from "next/link";
 import { Check, Eye, EyeOff } from "lucide-react";
 import Dayline, { type DaylineItem } from "@/components/dayline";
+import { DaylineMark } from "@/components/dayline-mark";
 
 /** Shared logo used on the landing page, auth pages and dashboard. */
 export function Logo({ size = "md", compact = false }: { size?: "sm" | "md"; compact?: boolean }) {
-  const box = size === "sm" ? "h-9 w-9 rounded-xl" : "h-11 w-11 rounded-2xl";
-  const icon = size === "sm" ? "h-5 w-5" : "h-6 w-6";
+  const box = size === "sm" ? "h-9 w-9" : "h-11 w-11";
   const text = size === "sm" ? "text-lg" : "text-xl";
   return (
     <span className="flex items-center gap-2.5">
-      <span
-        className={`${box} flex items-center justify-center bg-primary text-primary-foreground`}
-        aria-hidden="true"
-      >
-        <Check className={`${icon} stroke-[3]`} />
-      </span>
+      <DaylineMark className={box} />
       <span className={`font-display ${text} font-bold tracking-tight text-foreground ${compact ? "hidden sm:inline" : ""}`}>
         Dayline
       </span>
