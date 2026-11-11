@@ -201,7 +201,7 @@ export const auth = betterAuth({
               <style>
                 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a1a; }
                 .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
-                .button { display: inline-block; padding: 14px 28px; background: #6366f1; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+                .button { display: inline-block; padding: 14px 28px; background: #3F6E5A; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
                 .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e5e5; font-size: 12px; color: #666; }
               </style>
             </head>
@@ -212,7 +212,7 @@ export const auth = betterAuth({
                 <p>Click the button below to create a new password:</p>
                 <a href="${url}" class="button">Reset Password</a>
                 <p>Or copy and paste this link into your browser:</p>
-                <p style="word-break: break-all; color: #6366f1;">${url}</p>
+                <p style="word-break: break-all; color: #3F6E5A;">${url}</p>
                 <p><strong>This link expires in 1 hour.</strong></p>
                 <p>If you didn't request this reset, please ignore this email.</p>
                 <div class="footer">
@@ -247,7 +247,7 @@ export const auth = betterAuth({
               <style>
                 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a1a; }
                 .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
-                .button { display: inline-block; padding: 14px 28px; background: #6366f1; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+                .button { display: inline-block; padding: 14px 28px; background: #3F6E5A; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
                 .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e5e5; font-size: 12px; color: #666; }
               </style>
             </head>
@@ -258,7 +258,7 @@ export const auth = betterAuth({
                 <p>Click the button below to verify your email:</p>
                 <a href="${url}" class="button">Verify Email</a>
                 <p>Or copy and paste this link into your browser:</p>
-                <p style="word-break: break-all; color: #6366f1;">${url}</p>
+                <p style="word-break: break-all; color: #3F6E5A;">${url}</p>
                 <p><strong>This link expires in 1 hour.</strong></p>
                 <div class="footer">
                   <p>© 2026 Dayline. All rights reserved.</p>

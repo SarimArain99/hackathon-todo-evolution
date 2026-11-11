@@ -1,8 +1,8 @@
 import { useId } from "react";
 
 /**
- * The Dayline mark — the clock dial: a glossy green gauge ring with tick
- * marks and a glowing "now" dot, on a dark teal tile. A clean SVG redraw
+ * The Dayline mark — the clock dial: a sage gauge ring with tick
+ * marks and a glowing "now" dot, on a deep sage tile. A clean SVG redraw
  * of the generated clock-dial logo Muhammad picked, so it stays crisp at
  * every size and needs no binary asset.
  *
@@ -31,18 +31,18 @@ export function DaylineMark({ className }: { className?: string }) {
     <svg viewBox="0 0 100 100" className={className} aria-hidden="true">
       <defs>
         <linearGradient id={tileId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#013240" />
-          <stop offset="100%" stopColor="#002029" />
+          <stop offset="0%" stopColor="#1F2C25" />
+          <stop offset="100%" stopColor="#111A15" />
         </linearGradient>
         <linearGradient id={ringId} x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0%" stopColor="#015c4d" />
-          <stop offset="45%" stopColor="#419c80" />
-          <stop offset="100%" stopColor="#03f36e" />
+          <stop offset="0%" stopColor="#2E5244" />
+          <stop offset="45%" stopColor="#5F8C76" />
+          <stop offset="100%" stopColor="#A8C9B6" />
         </linearGradient>
         <radialGradient id={dotId} cx="0.5" cy="0.5" r="0.5">
           <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="35%" stopColor="#08e284" />
-          <stop offset="100%" stopColor="#08e284" stopOpacity="0" />
+          <stop offset="35%" stopColor="#9CC3AC" />
+          <stop offset="100%" stopColor="#9CC3AC" stopOpacity="0" />
         </radialGradient>
       </defs>
       <rect width="100" height="100" rx="16" fill={`url(#${tileId})`} />
@@ -63,14 +63,14 @@ export function DaylineMark({ className }: { className?: string }) {
           y1={t.y1}
           x2={t.x2}
           y2={t.y2}
-          stroke="#2ecc71"
+          stroke="#8FB59F"
           strokeOpacity={t.long ? 0.9 : 0.65}
           strokeWidth={t.long ? 1 : 0.7}
           strokeLinecap="round"
         />
       ))}
       <circle cx="63" cy="29" r="6.5" fill={`url(#${dotId})`} />
-      <circle cx="63" cy="29" r="3" fill="#08e284" />
+      <circle cx="63" cy="29" r="3" fill="#9CC3AC" />
     </svg>
   );
 }
